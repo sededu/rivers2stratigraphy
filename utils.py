@@ -17,8 +17,9 @@ def format_table(number):
     return(string)
 
 
-def patchColors():
-    [ plt.cm.viridis(x) for x in utils.normalizeColor(np.hstack(chanList['Qw']), Qwmin, Qwmax) ]
+def new_ylims(yView, Bast):
+    return (Bast-yView, Bast+0.1*yView)
+
 
 def normalizeColor(v, minV, maxV):
     return (v-minV)/(maxV-minV)

@@ -22,14 +22,14 @@ import geom, sedtrans, utils
 
 # model run params
 # TIME = 20000 # model duration
-dt = 10 # timestep in yrs
+dt = 50 # timestep in yrs
 # T = TIME / dt # number of timesteps
 # QwInit = 200 # starting flood discharge
 # fact = 10 # factor increase in discharge through PETM release phase
 # dur = 10000 # duration of PETM release phase
 # sigInit = 0.001 # subsidence
 # Qw = set_Qw('lin', Qwinit, fact, dur, dt, T) # create curve for flood discharges
-Bb = 2000 # width of belt
+Bb = 4000 # width of belt
 
 # setup params
 Cf = 0.004 # friction coeff
@@ -47,12 +47,13 @@ connu = 1.004e-6
     
 # initial conditions
 yView = 100
-QwInit = 300
+QwInit = 1000
 Qhat = geom.Qhatfun(QwInit, D50, cong) # dimensionless Qw
 Rep = geom.Repfun(D50, conR, cong, connu) # particle Reynolds num
 Hbar = geom.Hbarfun(Qhat, Rep) # dimensionless depth
 Hnbf = geom.dimless2dimfun(Hbar, QwInit, cong) # depth
 Bast = -yView + Hnbf # Basin top level
+Bast = 0 # Basin top level
 Ccc = np.array([ (Bb / 2), (0 - (Hnbf / 2)) ]) # Channel center center
 avulct = 0 # count time since last avul (for triggering)
 dx = dt * (dxstd * np.random.randn()) # lateral migration per timestep [m/yr]
@@ -90,8 +91,8 @@ BastLine, = plt.plot([0, Bb*2], [Bast, Bast], 'k--') # plot basin top
 slide_color = 'lightgoldenrodyellow'
 
 QwInit = QwInit
-Qwmin = 100
-Qwmax = 2000
+Qwmin = 200
+Qwmax = 4000
 Qwstep = 100
 slide_Qw_ax = plt.axes([0.575, 0.85, 0.36, 0.05], facecolor=slide_color)
 slide_Qw = utils.MinMaxSlider(slide_Qw_ax, 'water discharge (m$^3$/s)', Qwmin, Qwmax, 
@@ -101,14 +102,14 @@ QwCmap = plt.cm.viridis(QwCmapIdx)
 
 sigInit = 0.005
 sigmin = 0.0001
-sigmax = 0.05
+sigmax = 0.01
 slide_sig_ax = plt.axes([0.575, 0.7, 0.36, 0.05], facecolor=slide_color)
 slide_sig = utils.MinMaxSlider(slide_sig_ax, 'subsidence (m/yr)', sigmin, sigmax, 
-valinit=sigInit, valstep=0.0005, valfmt="%g", transform=ax.transAxes)
+valinit=sigInit, valstep=0.001, valfmt="%g", transform=ax.transAxes)
 
 TaInit = 500
-Tamin = 10
-Tamax = 2000
+Tamin = dt
+Tamax = 1000
 slide_Ta_ax = plt.axes([0.575, 0.55, 0.36, 0.05], facecolor=slide_color)
 slide_Ta = utils.MinMaxSlider(slide_Ta_ax, 'avulsion timescale (yr)', Tamin, Tamax, 
 valinit=TaInit, valstep=10, valfmt="%i", transform=ax.transAxes)
@@ -137,10 +138,8 @@ ax.add_collection(chanColl)
 
 # time looping
 while plt.fignum_exists(1):
-    # update position of old channels
-    # for c in 
-
-    # get new values from sliders
+    
+    # get new values from sliders -- do this only if changed?
     Qw = slide_Qw.val
     sig = slide_sig.val
     Ta = slide_Ta.val
@@ -176,7 +175,7 @@ while plt.fignum_exists(1):
     # rec(t, :) = [Qw, Bc, Hnbf, S, dx, sig, qsin, Fa, avulrec] # store data
     
     # update plot
-    if loopcnt % 5 == 0:
+    if loopcnt % 2 == 0 or avulcnt == 0:
         BastLine.set_ydata([Bast, Bast])
 
         newCoords = geom.Ccc2coordsfun(Ccc, Bc, Hnbf)
@@ -194,8 +193,16 @@ while plt.fignum_exists(1):
         chanColl = PatchCollection(chanListPoly)
         chanColl.set_edgecolor('0')
         chanColl.set_facecolor( np.vstack(chanList['Qw']) )
-        ax.add_collection(chanColl) 
+        ax.add_collection(chanColl)
+        ax.set_ylim(utils.new_ylims(yView, Bast))
 
-    plt.pause(0.001)
+        # print(np.shape(utils.new_ylims(yView, Bast)))
+
+    # update position of channels
+    # chanList['coords'][...,1] = chanList['coords'][...,1] - (sig*dt)
+
+
+
+    plt.pause(0.0000001)
     avulcnt += dt
     loopcnt += dt
