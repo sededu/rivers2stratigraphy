@@ -25,7 +25,7 @@ from concave_hull import alpha_shape
 
 # model run params
 dt = 50 # timestep in yrs
-Bb = 4000 # width of belt
+Bb = 3000 # width of belt
 
 # setup params
 Cf = 0.004 # friction coeff
@@ -41,13 +41,13 @@ conrhof = 1000
 connu = 1.004e-6
     
 # initial conditions
-yView = 400
+yViewInit = 300
 QwInit = 1000
 Qhat = geom.Qhatfun(QwInit, D50, cong) # dimensionless Qw
 Rep = geom.Repfun(D50, conR, cong, connu) # particle Reynolds num
 Hbar = geom.Hbarfun(Qhat, Rep) # dimensionless depth
 Hnbf = geom.dimless2dimfun(Hbar, QwInit, cong) # depth
-Bast = -yView + Hnbf # Basin top level
+Bast = -yViewInit + Hnbf # Basin top level
 Bast = 0 # Basin top level
 Ccc = np.array([ (Bb / 2), (0 - (Hnbf / 2)) ]) # Channel center center
 avulct = 0 # count time since last avul (for triggering)
@@ -61,7 +61,7 @@ fig, ax = plt.subplots()
 plt.subplots_adjust(left=0.075, bottom=0.1, top=0.95, right=0.5)
 ax.set_xlabel("channel belt (m)")
 ax.set_ylabel("stratigraphy (m)")
-plt.ylim(-yView, 0.1*yView)
+plt.ylim(-yViewInit, 0.1*yViewInit)
 plt.xlim(0, Bb)
 
 # add plot elements
@@ -95,19 +95,27 @@ slide_Ta = utils.MinMaxSlider(slide_Ta_ax, 'avulsion timescale (yr)', Tamin, Tam
 valinit=TaInit, valstep=10, valfmt="%i", transform=ax.transAxes)
 
 rad_col_ax = plt.axes([0.575, 0.3, 0.3, 0.15], facecolor=slide_color)
-rad_col = widget.RadioButtons(rad_col_ax, ('Water discharge', 'avulsion num.'))
-rad_col.on_clicked(utils.update_colFlag)
+rad_col = widget.RadioButtons(rad_col_ax, ('Deposit age', 'Water discharge', 'Avulsion number'))
 
+yViewInit = yViewInit
+yViewmin = 25
+yViewmax = 300
+slide_yView_ax = plt.axes([0.575, 0.1, 0.36, 0.05], facecolor=slide_color)
+slide_yView = utils.MinMaxSlider(slide_yView_ax, 'stratigraphic view (m)', yViewmin, yViewmax, 
+valinit=yViewInit, valstep=25, valfmt="%i", transform=ax.transAxes)
+
+
+# initialize a few more things
 loopcnt = 0 # loop counter
 avulcnt = 0 # avulsion timer 
 avulrec = 0 # number avulsion
 avulCmap = plt.cm.Set1(range(9))
 
 chanAct = np.zeros(1, dtype=[('coords', float, (4,2)),
-                             ('sig',     float, 1),
-                             ('avul',   float, 4),
-                             ('Qw',    float, 4),
-                             ('age',    int, 1)])
+                             ('sig',    float,  1),
+                             ('avul',   float,  4),
+                             ('Qw',     float,  4),
+                             ('age',    int,    1)])
 chanList = chanAct # all channels in memory
 chanListPoly = []
 chanColl = PatchCollection(chanListPoly)
@@ -115,8 +123,9 @@ ax.add_collection(chanColl)
 
 chanActShp = sg.box(Ccc[0], Ccc[1], Ccc[0], Ccc[1])
 
-col_dict = {'Water discharge': 'Qw', 'avulsion num.': 'avul'}
-# colFlag = col_dict[label]
+col_dict = {'Water discharge': 'Qw', 
+            'Avulsion number': 'avul',
+            'Deposit age': 'age'}
 
 # time looping
 while plt.fignum_exists(1):
@@ -125,8 +134,8 @@ while plt.fignum_exists(1):
     Qw = slide_Qw.val
     sig = slide_sig.val
     Ta = slide_Ta.val
+    yView = slide_yView.val
     colFlag = col_dict[rad_col.value_selected]
-    print(colFlag)
 
     # find new geom
     Qhat = geom.Qhatfun(Qw, D50, cong)
@@ -181,6 +190,10 @@ while plt.fignum_exists(1):
             chanColl.set_facecolor( np.vstack(chanList['Qw']) )
         elif colFlag == 'avul':
             chanColl.set_facecolor( np.vstack(chanList['avul']) )
+        elif colFlag == 'age':
+            ageCmap = plt.cm.viridis( utils.normalizeColor(
+                chanList['age'], chanList['age'].min(), loopcnt).flatten() )
+            chanColl.set_facecolor( ageCmap )
         ax.add_collection(chanColl)
 
         ax.set_ylim(utils.new_ylims(yView, Bast))
