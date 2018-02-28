@@ -17,18 +17,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.widgets as widget
 from matplotlib.patches import Polygon
-from matplotlib.collections import PatchCollection
+from matplotlib.collections import PatchCollection, LineCollection
+import shapely.geometry as sg
+import shapely.ops as so
 import geom, sedtrans, utils
+from concave_hull import alpha_shape
 
 # model run params
-# TIME = 20000 # model duration
 dt = 50 # timestep in yrs
-# T = TIME / dt # number of timesteps
-# QwInit = 200 # starting flood discharge
-# fact = 10 # factor increase in discharge through PETM release phase
-# dur = 10000 # duration of PETM release phase
-# sigInit = 0.001 # subsidence
-# Qw = set_Qw('lin', Qwinit, fact, dur, dt, T) # create curve for flood discharges
 Bb = 4000 # width of belt
 
 # setup params
@@ -36,7 +32,6 @@ Cf = 0.004 # friction coeff
 D50 = 300*1e-6
 Beta = 1.5 # exponent to avulsion function
 Gamma = 1e-2 # factor for avulsion timing
-# Ta = 500 # timescale of avulsion, [yr]
 Df = 0.001 # dampening factor to lateral migration rate change
 dxstd = 0.5 # stdev of lateral migration dist, [m/yr]?
 
@@ -46,7 +41,7 @@ conrhof = 1000
 connu = 1.004e-6
     
 # initial conditions
-yView = 100
+yView = 400
 QwInit = 1000
 Qhat = geom.Qhatfun(QwInit, D50, cong) # dimensionless Qw
 Rep = geom.Repfun(D50, conR, cong, connu) # particle Reynolds num
@@ -57,10 +52,6 @@ Bast = 0 # Basin top level
 Ccc = np.array([ (Bb / 2), (0 - (Hnbf / 2)) ]) # Channel center center
 avulct = 0 # count time since last avul (for triggering)
 dx = dt * (dxstd * np.random.randn()) # lateral migration per timestep [m/yr]
-
-
-# sig = sigInit
-# Qw = QwInit
 
 # setup the figure
 plt.rcParams['toolbar'] = 'None'
@@ -75,17 +66,6 @@ plt.xlim(0, Bb)
 
 # add plot elements
 BastLine, = plt.plot([0, Bb*2], [Bast, Bast], 'k--') # plot basin top
-
-# zedLine = plt.plot(x[:mouIdx]/1000, eta[:mouIdx]+zed[:mouIdx], \
-# 'k--', lw=1.2) # plot levee
-# waterLine, = plt.plot(x/1000, eta+H, lw=2, color='blue') # plot initial condition
-# QwValue = plt.text(0.7, 0.9, "Qw = " + utils.format_number(Qw), transform=ax.transAxes)
-# BwValue = plt.text(( (Xs[1]-Xs[0])/4 + Xs[0])/1000, 52, \
-# "backwater from \n" + "RK " + str(L*mou/1000-round(Xs[0]/1000)) + " to " + str(L*mou/1000-round(Xs[1]/1000)), \
-# horizontalalignment="center", backgroundcolor="white")
-# BwBracket, = plt.plot(np.array([Xs[0], Xs[0], Xs[1], Xs[1]])/1000, np.array([36, 40, 40, 36]), 'k-', lw=1.2)
-
-
 
 # add sliders
 slide_color = 'lightgoldenrodyellow'
@@ -105,7 +85,7 @@ sigmin = 0.0001
 sigmax = 0.01
 slide_sig_ax = plt.axes([0.575, 0.7, 0.36, 0.05], facecolor=slide_color)
 slide_sig = utils.MinMaxSlider(slide_sig_ax, 'subsidence (m/yr)', sigmin, sigmax, 
-valinit=sigInit, valstep=0.001, valfmt="%g", transform=ax.transAxes)
+valinit=sigInit, valstep=0.0005, valfmt="%g", transform=ax.transAxes)
 
 TaInit = 500
 Tamin = dt
@@ -114,27 +94,29 @@ slide_Ta_ax = plt.axes([0.575, 0.55, 0.36, 0.05], facecolor=slide_color)
 slide_Ta = utils.MinMaxSlider(slide_Ta_ax, 'avulsion timescale (yr)', Tamin, Tamax, 
 valinit=TaInit, valstep=10, valfmt="%i", transform=ax.transAxes)
 
-
-# Qwmap = parula(length(unique(Qw))) # map to color by discharge
-# [~, ~, Qwidx] = unique(Qw) # get ref index
-# strat = figure()
-
+rad_col_ax = plt.axes([0.575, 0.3, 0.3, 0.15], facecolor=slide_color)
+rad_col = widget.RadioButtons(rad_col_ax, ('Water discharge', 'avulsion num.'))
+rad_col.on_clicked(utils.update_colFlag)
 
 loopcnt = 0 # loop counter
 avulcnt = 0 # avulsion timer 
 avulrec = 0 # number avulsion
-
+avulCmap = plt.cm.Set1(range(9))
 
 chanAct = np.zeros(1, dtype=[('coords', float, (4,2)),
                              ('sig',     float, 1),
-                             ('avul',   int, 1),
+                             ('avul',   float, 4),
                              ('Qw',    float, 4),
                              ('age',    int, 1)])
 chanList = chanAct # all channels in memory
 chanListPoly = []
 chanColl = PatchCollection(chanListPoly)
 ax.add_collection(chanColl)
-# print("chanAct = ", chanAct)
+
+chanActShp = sg.box(Ccc[0], Ccc[1], Ccc[0], Ccc[1])
+
+col_dict = {'Water discharge': 'Qw', 'avulsion num.': 'avul'}
+# colFlag = col_dict[label]
 
 # time looping
 while plt.fignum_exists(1):
@@ -143,6 +125,8 @@ while plt.fignum_exists(1):
     Qw = slide_Qw.val
     sig = slide_sig.val
     Ta = slide_Ta.val
+    colFlag = col_dict[rad_col.value_selected]
+    print(colFlag)
 
     # find new geom
     Qhat = geom.Qhatfun(Qw, D50, cong)
@@ -162,29 +146,30 @@ while plt.fignum_exists(1):
         dx = (dt * dxstd * np.random.randn()) + ((1-Df)*dx)
     Ccc = [Ccc[0] + dx, Bast - (Hnbf/2)] # new channel center
     
-    # avulsion handler
-    avulcnt += 1 # increase since avul count
-    if avulcnt > Ta: # if time since is more than Ta: due for one
-        Ccc = np.hstack([np.random.uniform(Bc/2, Bb-Bc/2, 1), Ccc[1]])
-        dx = 0 # reset dampening to 0 for new channel
-        avulcnt = 0 # reset count
-        avulrec += 1 # increment avulsion number
-        # chanList = np.vstack((chanList, chanAct))
-    
-    # store data
-    # rec(t, :) = [Qw, Bc, Hnbf, S, dx, sig, qsin, Fa, avulrec] # store data
-    
     # update plot
-    if loopcnt % 2 == 0 or avulcnt == 0:
+    if loopcnt % 5 == 0 or avulcnt == 0:
         BastLine.set_ydata([Bast, Bast])
 
         newCoords = geom.Ccc2coordsfun(Ccc, Bc, Hnbf)
+        newActShp = sg.box(Ccc[0]-Bc/2, Ccc[1]-Hnbf/2, Ccc[0]+Bc/2, Ccc[1]+Hnbf/2)
         chanAct['coords'] = newCoords
         chanAct['sig'] = sig
-        chanAct['avul'] = avulrec
+        chanAct['avul'] = avulCmap[avulrec % 9]
         chanAct['Qw'] = plt.cm.viridis(utils.normalizeColor(Qw, Qwmin, Qwmax))
         chanAct['age'] = loopcnt
+
+        # method 1 -- all indiv
         chanActPoly = Polygon(newCoords, facecolor='0.5', edgecolor='black')
+        
+        # method 2 -- unions
+        # chanActShp_un = so.unary_union([chanActShp, newActShp])
+        # if chanActShp_un.type == 'Polygon':
+        #     chanActShp = chanActShp_un
+        # elif chanActShp_un.type == 'MultiPolygon':
+        #     chanActPtList = geom.concave_hull(sg.mapping(chanActShp), sg.mapping(newActShp), dx)
+        #     chanActShp = sg.Polygon(chanActPtList)
+        # chanActPoly = Polygon(np.transpose((*[chanActShp.exterior.xy])))
+
 
         chanList = np.vstack((chanList, chanAct))
         chanListPoly.append(chanActPoly)
@@ -192,11 +177,25 @@ while plt.fignum_exists(1):
         chanColl.remove()
         chanColl = PatchCollection(chanListPoly)
         chanColl.set_edgecolor('0')
-        chanColl.set_facecolor( np.vstack(chanList['Qw']) )
+        if colFlag == 'Qw':
+            chanColl.set_facecolor( np.vstack(chanList['Qw']) )
+        elif colFlag == 'avul':
+            chanColl.set_facecolor( np.vstack(chanList['avul']) )
         ax.add_collection(chanColl)
+
         ax.set_ylim(utils.new_ylims(yView, Bast))
 
         # print(np.shape(utils.new_ylims(yView, Bast)))
+
+    # avulsion handler
+    avulcnt += 1 # increase since avul count
+    if avulcnt > Ta: # if time since is more than Ta: due for one
+        Ccc = np.hstack([np.random.uniform(Bc/2, Bb-Bc/2, 1), Ccc[1]])
+        dx = 0 # reset dampening to 0 for new channel
+        avulcnt = 0 # reset count
+        avulrec += 1 # increment avulsion number
+        chanActShp = sg.box(Ccc[0]-Bc/2, Ccc[1]-Hnbf/2, Ccc[0]+Bc/2, Ccc[1]+Hnbf/2)
+        # chanList = np.vstack((chanList, chanAct))
 
     # update position of channels
     # chanList['coords'][...,1] = chanList['coords'][...,1] - (sig*dt)

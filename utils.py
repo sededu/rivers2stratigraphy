@@ -4,6 +4,12 @@ from matplotlib.widgets import AxesWidget
 import six
 
 
+def update_colFlag(label):
+    col_dict = {'Water discharge': 'Qw', 'avulsion num.': 'avul'}
+    colFlag = col_dict[label]
+    return colFlag
+
+
 def format_number(number):
     integer = int(round(number, -1))
     string = "{:,}".format(integer)
