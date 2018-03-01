@@ -20,12 +20,13 @@ from matplotlib.patches import Polygon
 from matplotlib.collections import PatchCollection, LineCollection
 import shapely.geometry as sg
 import shapely.ops as so
+from itertools import compress
 import geom, sedtrans, utils
-from concave_hull import alpha_shape
+# from concave_hull import alpha_shape
 
 # model run params
 dt = 50 # timestep in yrs
-Bb = 3000 # width of belt
+Bb = 2000 # width of belt
 
 # setup params
 Cf = 0.004 # friction coeff
@@ -41,7 +42,7 @@ conrhof = 1000
 connu = 1.004e-6
     
 # initial conditions
-yViewInit = 300
+yViewInit = 100
 QwInit = 1000
 Qhat = geom.Qhatfun(QwInit, D50, cong) # dimensionless Qw
 Rep = geom.Repfun(D50, conR, cong, connu) # particle Reynolds num
@@ -89,7 +90,7 @@ valinit=sigInit, valstep=0.0005, valfmt="%g", transform=ax.transAxes)
 
 TaInit = 500
 Tamin = dt
-Tamax = 1000
+Tamax = 1500
 slide_Ta_ax = plt.axes([0.575, 0.55, 0.36, 0.05], facecolor=slide_color)
 slide_Ta = utils.MinMaxSlider(slide_Ta_ax, 'avulsion timescale (yr)', Tamin, Tamax, 
 valinit=TaInit, valstep=10, valfmt="%i", transform=ax.transAxes)
@@ -99,7 +100,7 @@ rad_col = widget.RadioButtons(rad_col_ax, ('Deposit age', 'Water discharge', 'Av
 
 yViewInit = yViewInit
 yViewmin = 25
-yViewmax = 300
+yViewmax = 250
 slide_yView_ax = plt.axes([0.575, 0.1, 0.36, 0.05], facecolor=slide_color)
 slide_yView = utils.MinMaxSlider(slide_yView_ax, 'stratigraphic view (m)', yViewmin, yViewmax, 
 valinit=yViewInit, valstep=25, valfmt="%i", transform=ax.transAxes)
@@ -110,7 +111,7 @@ loopcnt = 0 # loop counter
 avulcnt = 0 # avulsion timer 
 avulrec = 0 # number avulsion
 avulCmap = plt.cm.Set1(range(9))
-
+    
 chanAct = np.zeros(1, dtype=[('coords', float, (4,2)),
                              ('sig',    float,  1),
                              ('avul',   float,  4),
@@ -147,16 +148,18 @@ while plt.fignum_exists(1):
     S = Sbar
     
     # update model configurations
-    qsin = sedtrans.qsEH(D50, Cf, sedtrans.taubfun(Hnbf, S, cong, conrhof), conR, cong, conrhof)  # sedment transport rate based on new geom
+    qsin = sedtrans.qsEH(D50, Cf, 
+                         sedtrans.taubfun(Hnbf, S, cong, conrhof), 
+                         conR, cong, conrhof)  # sedment transport rate based on new geom
     dx = (dt * dxstd * np.random.randn()) + ((1-Df)*dx) # lateral migration for dt
+    # print(dx)
     Bast = Bast + (sig * dt)
-    # Bast = Bast
     while Ccc[0] + dx > Bb-(Bc/2) or Ccc[0] + dx < 0+(Bc/2): # keep channel within belt
         dx = (dt * dxstd * np.random.randn()) + ((1-Df)*dx)
     Ccc = [Ccc[0] + dx, Bast - (Hnbf/2)] # new channel center
     
     # update plot
-    if loopcnt % 5 == 0 or avulcnt == 0:
+    if loopcnt % 10 == 0 or avulcnt == 0:
         BastLine.set_ydata([Bast, Bast])
 
         newCoords = geom.Ccc2coordsfun(Ccc, Bc, Hnbf)
@@ -179,7 +182,6 @@ while plt.fignum_exists(1):
         #     chanActShp = sg.Polygon(chanActPtList)
         # chanActPoly = Polygon(np.transpose((*[chanActShp.exterior.xy])))
 
-
         chanList = np.vstack((chanList, chanAct))
         chanListPoly.append(chanActPoly)
 
@@ -196,9 +198,8 @@ while plt.fignum_exists(1):
             chanColl.set_facecolor( ageCmap )
         ax.add_collection(chanColl)
 
+        # scroll the view
         ax.set_ylim(utils.new_ylims(yView, Bast))
-
-        # print(np.shape(utils.new_ylims(yView, Bast)))
 
     # avulsion handler
     avulcnt += 1 # increase since avul count
@@ -208,13 +209,15 @@ while plt.fignum_exists(1):
         avulcnt = 0 # reset count
         avulrec += 1 # increment avulsion number
         chanActShp = sg.box(Ccc[0]-Bc/2, Ccc[1]-Hnbf/2, Ccc[0]+Bc/2, Ccc[1]+Hnbf/2)
-        # chanList = np.vstack((chanList, chanAct))
 
-    # update position of channels
-    # chanList['coords'][...,1] = chanList['coords'][...,1] - (sig*dt)
+    # remove outdated channels
+    stratMax = Bast - yView
+    chanListOutdatedIdx = geom.outdatedIndex(chanList, stratMax)
+    chanList = chanList[ ~chanListOutdatedIdx ]
+    chanListPoly = [i for (i, v) in 
+                    zip(chanListPoly, chanListOutdatedIdx) if not v]
 
 
-
-    plt.pause(0.0000001)
+    plt.pause(0.000001)
     avulcnt += dt
     loopcnt += dt

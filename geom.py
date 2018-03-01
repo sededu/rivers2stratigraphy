@@ -48,6 +48,13 @@ def Ccc2coordsfun(Ccc, Bc, Hnbf):
         [Ccc[1]+(Hnbf/2)], [Ccc[1]+(Hnbf/2)]])
     return np.hstack((xs, ys))
 
+
+def outdatedIndex(chanList0, stratMax):
+    chanListIdx = [ all( x['coords'][0][:,1] < stratMax ) 
+                   for x in chanList0 ]
+    return np.array(chanListIdx)
+
+
 def concave_hull(chanActShp, newActShp, dx):
     old_coords = np.array(chanActShp['coordinates'][0])
     new_coords = np.array(newActShp['coordinates'][0])
