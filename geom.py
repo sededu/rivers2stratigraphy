@@ -53,32 +53,3 @@ def outdatedIndex(chanList0, stratMax):
     chanListIdx = [ all( x['coords'][0][:,1] < stratMax ) 
                    for x in chanList0 ]
     return np.array(chanListIdx)
-
-
-def concave_hull(chanActShp, newActShp, dx):
-    old_coords = np.array(chanActShp['coordinates'][0])
-    new_coords = np.array(newActShp['coordinates'][0])
-
-    distmat = distance.cdist(old_coords, new_coords)
-    print("DISTMAT = ", distmat)
-    old_minidx = distmat.min(1).argsort()[:2]
-    new_maxidx = distmat.max(0).argsort()[-2:]
-    print("IDXS = ", old_minidx, new_maxidx)
-
-    print("DX = ", dx)
-    print("OLD = \n", old_coords)
-    print("NEW = \n", new_coords)
-    
-    front = old_coords[:old_minidx.min()]
-    # print("FRONT = ", front)
-    center = new_coords[new_maxidx]
-    back = old_coords[old_minidx.max():]
-    # print("BACK = ", back)
-    cated = np.vstack((front, center, back))
-    # cated = 1
-    return cated
-
-def concave_hull2(chanList, chanAct):
-    print("chanList = ", chanList['coords'])
-    print("chanAct = ", chanAct['coords'])
-    return 1

@@ -1,17 +1,21 @@
 # rivers2stratigraphy GUI -- build river stratigraphy interactively
-#   Stratigraphic model based on LAB models, i.e., geometric channel body is  is deposited in "matrix" of floodplain mud.
-#   The channel is always fixed to the basin surface and subsidence is only control on vertical stratigraphy.
-#   Horizontal stratigraphy is set by 1) lateral migration (drawn from a pdf) and dampened for realism, and 2) avulsion that is parameterized by sediment input.
-#   Default parameters are based on measurements for Piceance and Big Horn basins from Foreman et al., 2012 and Foreman, 2014
+#   Stratigraphic model based on LAB models, i.e., geometric channel body is  
+#   deposited in "matrix" of floodplain mud. The channel is always fixed to the 
+#   basin surface and subsidence is only control on vertical stratigraphy.
+#   Horizontal stratigraphy is set by 1) lateral migration (drawn from a pdf) 
+#   and dampened for realism, and 2) avulsion that is set to a fixed value.
+#   Default parameters are based on measurements for Piceance and Big Horn 
+#   basins from Foreman et al., 2012 and Foreman, 2014
 #
 #   written by Andrew J. Moodie
 #   amoodie@rice.edu
-#   May 2017
+#   Feb 2018
 #
 #   TODO:
-#    - lateral migration as a function of sediment input
-#    - aggradation as a function of sediment input
-#    - avulsion as a function of superelevation
+#    - control for "natural" ad default where lateral migration 
+#       and Ta are a function of sediment transport (Qw)
+#    - support for coloring by subsidence
+#    - fix runtime warnings on startup
 
 import numpy as np
 import matplotlib.pyplot as plt
