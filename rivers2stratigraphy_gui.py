@@ -85,12 +85,12 @@ valinit=QwInit, valstep=Qwstep, valfmt="%0.0f", transform=ax.transAxes)
 QwCmapIdx = np.linspace(Qwmin, Qwmax, (Qwmax-Qwmin)/Qwstep+1)
 QwCmap = plt.cm.viridis(QwCmapIdx)
 
-sigInit = 0.002
-sigmin = 0.0001
-sigmax = 0.01
+sigInit = 2
+sigmin = 0
+sigmax = 5
 slide_sig_ax = plt.axes([0.575, 0.7, 0.36, 0.05], facecolor=slide_color)
-slide_sig = utils.MinMaxSlider(slide_sig_ax, 'subsidence (m/yr)', sigmin, sigmax, 
-valinit=sigInit, valstep=0.0005, valfmt="%g", transform=ax.transAxes)
+slide_sig = utils.MinMaxSlider(slide_sig_ax, 'subsidence (mm/yr)', sigmin, sigmax, 
+valinit=sigInit, valstep=0.2, valfmt="%g", transform=ax.transAxes)
 
 TaInit = 500
 Tamin = dt
@@ -137,7 +137,7 @@ while plt.fignum_exists(1):
     
     # get new values from sliders -- do this only if changed?
     Qw = slide_Qw.val
-    sig = slide_sig.val
+    sig = slide_sig.val / 1000
     Ta = slide_Ta.val
     yView = slide_yView.val
     colFlag = col_dict[rad_col.value_selected]
