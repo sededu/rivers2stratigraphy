@@ -85,7 +85,7 @@ valinit=QwInit, valstep=Qwstep, valfmt="%0.0f", transform=ax.transAxes)
 QwCmapIdx = np.linspace(Qwmin, Qwmax, (Qwmax-Qwmin)/Qwstep+1)
 QwCmap = plt.cm.viridis(QwCmapIdx)
 
-sigInit = 0.005
+sigInit = 0.002
 sigmin = 0.0001
 sigmax = 0.01
 slide_sig_ax = plt.axes([0.575, 0.7, 0.36, 0.05], facecolor=slide_color)
