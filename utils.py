@@ -4,7 +4,6 @@ from matplotlib.widgets import AxesWidget
 import six
 
 
-
 def format_number(number):
     integer = int(round(number, -1))
     string = "{:,}".format(integer)

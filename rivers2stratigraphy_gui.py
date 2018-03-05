@@ -72,14 +72,28 @@ plt.xlim(0, Bb)
 # add plot elements
 BastLine, = plt.plot([0, Bb*2], [Bast, Bast], 'k--') # plot basin top
 
+# define reset functions, must operate on global vars
+def slide_reset(event):
+    slide_Qw.reset()
+    slide_sig.reset()
+    slide_Ta.reset()
+    rad_col.set_active(0)
+    # slide_yView.reset()
+
+
+def axis_reset(event):
+    chanList = []
+    chanListPoly = []
+
+
 # add sliders
-slide_color = 'lightgoldenrodyellow'
+widget_color = 'lightgoldenrodyellow'
 
 QwInit = QwInit
 Qwmin = 200
 Qwmax = 4000
 Qwstep = 100
-slide_Qw_ax = plt.axes([0.575, 0.85, 0.36, 0.05], facecolor=slide_color)
+slide_Qw_ax = plt.axes([0.565, 0.875, 0.36, 0.05], facecolor=widget_color)
 slide_Qw = utils.MinMaxSlider(slide_Qw_ax, 'water discharge (m$^3$/s)', Qwmin, Qwmax, 
 valinit=QwInit, valstep=Qwstep, valfmt="%0.0f", transform=ax.transAxes)
 QwCmapIdx = np.linspace(Qwmin, Qwmax, (Qwmax-Qwmin)/Qwstep+1)
@@ -88,33 +102,41 @@ QwCmap = plt.cm.viridis(QwCmapIdx)
 sigInit = 2
 sigmin = 0
 sigmax = 5
-slide_sig_ax = plt.axes([0.575, 0.7, 0.36, 0.05], facecolor=slide_color)
+slide_sig_ax = plt.axes([0.565, 0.75, 0.36, 0.05], facecolor=widget_color)
 slide_sig = utils.MinMaxSlider(slide_sig_ax, 'subsidence (mm/yr)', sigmin, sigmax, 
 valinit=sigInit, valstep=0.2, valfmt="%g", transform=ax.transAxes)
 
 TaInit = 500
 Tamin = dt
 Tamax = 1500
-slide_Ta_ax = plt.axes([0.575, 0.55, 0.36, 0.05], facecolor=slide_color)
+slide_Ta_ax = plt.axes([0.565, 0.625, 0.36, 0.05], facecolor=widget_color)
 slide_Ta = utils.MinMaxSlider(slide_Ta_ax, 'avulsion timescale (yr)', Tamin, Tamax, 
 valinit=TaInit, valstep=10, valfmt="%i", transform=ax.transAxes)
+avulCmap = plt.cm.Set1(range(9))
 
-rad_col_ax = plt.axes([0.575, 0.3, 0.3, 0.15], facecolor=slide_color)
+rad_col_ax = plt.axes([0.565, 0.4, 0.225, 0.15], facecolor=widget_color)
 rad_col = widget.RadioButtons(rad_col_ax, ('Deposit age', 'Water discharge', 'Avulsion number'))
 
 yViewInit = yViewInit
 yViewmin = 25
 yViewmax = 250
-slide_yView_ax = plt.axes([0.575, 0.1, 0.36, 0.05], facecolor=slide_color)
+slide_yView_ax = plt.axes([0.565, 0.275, 0.36, 0.05], facecolor=widget_color)
 slide_yView = utils.MinMaxSlider(slide_yView_ax, 'stratigraphic view (m)', yViewmin, yViewmax, 
 valinit=yViewInit, valstep=25, valfmt="%i", transform=ax.transAxes)
+
+btn_slidereset_ax = plt.axes([0.75, 0.03, 0.2, 0.04])
+btn_slidereset = widget.Button(btn_slidereset_ax, 'Reset sliders', color=widget_color, hovercolor='0.975')
+btn_slidereset.on_clicked(slide_reset)
+
+btn_axisreset_ax = plt.axes([0.75, 0.08, 0.2, 0.04])
+btn_axisreset = widget.Button(btn_axisreset_ax, 'Reset stratigraphy', color=widget_color, hovercolor='0.975')
+btn_axisreset.on_clicked(axis_reset)
 
 
 # initialize a few more things
 loopcnt = 0 # loop counter
 avulcnt = 0 # avulsion timer 
 avulrec = 0 # number avulsion
-avulCmap = plt.cm.Set1(range(9))
     
 chanAct = np.zeros(1, dtype=[('coords', float, (4,2)),
                              ('sig',    float,  1),
@@ -178,6 +200,8 @@ while plt.fignum_exists(1):
         chanActPoly = Polygon(newCoords, facecolor='0.5', edgecolor='black')
         
         # method 2 -- unions
+        # do somethign with if dx is too large, then splice a couple more
+        # channels in between to ensure it is a single polygon?!
         # chanActShp_un = so.unary_union([chanActShp, newActShp])
         # if chanActShp_un.type == 'Polygon':
         #     chanActShp = chanActShp_un
@@ -220,7 +244,6 @@ while plt.fignum_exists(1):
     chanList = chanList[ ~chanListOutdatedIdx ]
     chanListPoly = [i for (i, v) in 
                     zip(chanListPoly, chanListOutdatedIdx) if not v]
-
 
     plt.pause(0.000001)
     avulcnt += dt
