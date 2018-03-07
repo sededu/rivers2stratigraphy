@@ -65,7 +65,7 @@ plt.rcParams['toolbar'] = 'None'
 plt.rcParams['figure.figsize'] = 8, 6
 plt.ion()
 fig, ax = plt.subplots()
-plt.subplots_adjust(left=0.075, bottom=0.1, top=0.95, right=0.5)
+plt.subplots_adjust(left=0.085, bottom=0.1, top=0.95, right=0.5)
 ax.set_xlabel("channel belt (m)")
 ax.set_ylabel("stratigraphy (m)")
 plt.ylim(-yViewInit, 0.1*yViewInit)
@@ -98,15 +98,14 @@ Qwstep = 100
 slide_Qw_ax = plt.axes([0.565, 0.875, 0.36, 0.05], facecolor=widget_color)
 slide_Qw = utils.MinMaxSlider(slide_Qw_ax, 'water discharge (m$^3$/s)', Qwmin, Qwmax, 
 valinit=QwInit, valstep=Qwstep, valfmt="%0.0f", transform=ax.transAxes)
-QwCmapIdx = np.linspace(Qwmin, Qwmax, (Qwmax-Qwmin)/Qwstep+1)
-QwCmap = plt.cm.viridis(QwCmapIdx)
 
 sigInit = 2
 sigmin = 0
 sigmax = 5
+sigstep = 0.2
 slide_sig_ax = plt.axes([0.565, 0.75, 0.36, 0.05], facecolor=widget_color)
 slide_sig = utils.MinMaxSlider(slide_sig_ax, 'subsidence (mm/yr)', sigmin, sigmax, 
-valinit=sigInit, valstep=0.2, valfmt="%g", transform=ax.transAxes)
+valinit=sigInit, valstep=sigstep, valfmt="%g", transform=ax.transAxes)
 
 TaInit = 500
 Tamin = dt
@@ -117,7 +116,7 @@ valinit=TaInit, valstep=10, valfmt="%i", transform=ax.transAxes)
 avulCmap = plt.cm.Set1(range(9))
 
 rad_col_ax = plt.axes([0.565, 0.4, 0.225, 0.15], facecolor=widget_color)
-rad_col = widget.RadioButtons(rad_col_ax, ('Deposit age', 'Water discharge', 'Avulsion number'))
+rad_col = widget.RadioButtons(rad_col_ax, ('Deposit age', 'Water discharge', 'Subsidence rate', 'Avulsion number'))
 
 yViewInit = yViewInit
 yViewmin = 25
@@ -141,7 +140,7 @@ avulcnt = 0 # avulsion timer
 avulrec = 0 # number avulsion
     
 chanAct = np.zeros(1, dtype=[('coords', float, (4,2)),
-                             ('sig',    float,  1),
+                             ('sig',    float,  4),
                              ('avul',   float,  4),
                              ('Qw',     float,  4),
                              ('age',    int,    1)])
@@ -154,10 +153,10 @@ chanActShp = sg.box(Ccc[0], Ccc[1], Ccc[0], Ccc[1])
 
 col_dict = {'Water discharge': 'Qw', 
             'Avulsion number': 'avul',
-            'Deposit age': 'age'}
+            'Deposit age': 'age',
+            'Subsidence rate':'sig'}
 
 # time looping
-tlast = time.time()
 while plt.fignum_exists(1):
     
     # get new values from sliders -- do this only if changed?
@@ -194,7 +193,7 @@ while plt.fignum_exists(1):
         newCoords = geom.Ccc2coordsfun(Ccc, Bc, Hnbf)
         newActShp = sg.box(Ccc[0]-Bc/2, Ccc[1]-Hnbf/2, Ccc[0]+Bc/2, Ccc[1]+Hnbf/2)
         chanAct['coords'] = newCoords
-        chanAct['sig'] = sig
+        chanAct['sig'] = plt.cm.viridis(utils.normalizeColor(sig*1000, sigmin, sigmax))
         chanAct['avul'] = avulCmap[avulrec % 9]
         chanAct['Qw'] = plt.cm.viridis(utils.normalizeColor(Qw, Qwmin, Qwmax))
         chanAct['age'] = loopcnt
@@ -227,6 +226,8 @@ while plt.fignum_exists(1):
             ageCmap = plt.cm.viridis( utils.normalizeColor(
                 chanList['age'], chanList['age'].min(), loopcnt).flatten() )
             chanColl.set_facecolor( ageCmap )
+        elif colFlag == 'sig':
+            chanColl.set_facecolor( np.vstack(chanList['sig']) )
         ax.add_collection(chanColl)
 
         # scroll the view
@@ -235,8 +236,6 @@ while plt.fignum_exists(1):
     # avulsion handler
     avulcnt += 1 # increase since avul count
     if avulcnt > Ta: # if time since is more than Ta: due for one
-        print('fps:' , avulcnt/(time.time()-tlast))
-        tlast = time.time()
         Ccc = np.hstack([np.random.uniform(Bc/2, Bb-Bc/2, 1), Ccc[1]])
         dx = 0 # reset dampening to 0 for new channel
         avulcnt = 0 # reset count
@@ -250,7 +249,7 @@ while plt.fignum_exists(1):
     chanListPoly = [i for (i, v) in 
                     zip(chanListPoly, chanListOutdatedIdx) if not v]
 
-    
+    # draw and update counts
     plt.pause(0.000001)
     avulcnt += dt
     loopcnt += dt
