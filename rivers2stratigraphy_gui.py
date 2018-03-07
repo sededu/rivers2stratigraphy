@@ -26,7 +26,9 @@ import shapely.geometry as sg
 import shapely.ops as so
 from itertools import compress
 import geom, sedtrans, utils
-# from concave_hull import alpha_shape
+
+import time # DELETE FOR RELEASE
+
 
 # model run params
 dt = 50 # timestep in yrs
@@ -155,6 +157,7 @@ col_dict = {'Water discharge': 'Qw',
             'Deposit age': 'age'}
 
 # time looping
+tlast = time.time()
 while plt.fignum_exists(1):
     
     # get new values from sliders -- do this only if changed?
@@ -232,6 +235,8 @@ while plt.fignum_exists(1):
     # avulsion handler
     avulcnt += 1 # increase since avul count
     if avulcnt > Ta: # if time since is more than Ta: due for one
+        print('fps:' , avulcnt/(time.time()-tlast))
+        tlast = time.time()
         Ccc = np.hstack([np.random.uniform(Bc/2, Bb-Bc/2, 1), Ccc[1]])
         dx = 0 # reset dampening to 0 for new channel
         avulcnt = 0 # reset count
@@ -245,6 +250,8 @@ while plt.fignum_exists(1):
     chanListPoly = [i for (i, v) in 
                     zip(chanListPoly, chanListOutdatedIdx) if not v]
 
+    
     plt.pause(0.000001)
     avulcnt += dt
     loopcnt += dt
+
