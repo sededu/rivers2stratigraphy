@@ -203,9 +203,16 @@ while plt.fignum_exists(1):
         chanActPoly = Polygon(newCoords, facecolor='0.5', edgecolor='black')
         
         # method 2 -- unions
-        # do somethign with if dx is too large, then splice a couple more
-        # channels in between to ensure it is a single polygon?!
+        # # do somethign with if dx is too large, then splice a couple more
+        # # channels in between to ensure it is a single polygon?!
         # chanActShp_un = so.unary_union([chanActShp, newActShp])
+        # n_split = 0 # number of times the distance has been spaced
+        
+        # # while chanActShp_un.type == 'MultiPolygon':
+        # #     print("is multi")
+
+        # #     n_split += 1
+
         # if chanActShp_un.type == 'Polygon':
         #     chanActShp = chanActShp_un
         # elif chanActShp_un.type == 'MultiPolygon':
@@ -244,7 +251,7 @@ while plt.fignum_exists(1):
         chanActShp = sg.box(Ccc[0]-Bc/2, Ccc[1]-Hnbf/2, Ccc[0]+Bc/2, Ccc[1]+Hnbf/2)
 
     # remove outdated channels
-    stratMax = Bast - yView
+    stratMax = Bast - yViewmax
     chanListOutdatedIdx = geom.outdatedIndex(chanList, stratMax)
     chanList = chanList[ ~chanListOutdatedIdx ]
     chanListPoly = [i for (i, v) in 
