@@ -63,8 +63,8 @@ dx = dt * (dxstd * np.random.randn()) # lateral migration per timestep [m/yr]
 # setup the figure
 plt.rcParams['toolbar'] = 'None'
 plt.rcParams['figure.figsize'] = 8, 6
-plt.ion()
 fig, ax = plt.subplots()
+fig.canvas.set_window_title('SedEdu -- Rivers to Stratigraphy')
 plt.subplots_adjust(left=0.085, bottom=0.1, top=0.95, right=0.5)
 ax.set_xlabel("channel belt (m)")
 ax.set_ylabel("stratigraphy (m)")
@@ -84,8 +84,13 @@ def slide_reset(event):
 
 
 def axis_reset(event):
-    chanList = []
+    global chanList, chanListPoly, Bast
+    Bast = 0
+    chanList = chanList[-1]
     chanListPoly = []
+    # chanListPoly.append(chanListPoly)
+    # for i in chanListPoly:
+    #     print(i)
 
 
 # add sliders
