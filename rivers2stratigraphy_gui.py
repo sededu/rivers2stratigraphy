@@ -80,7 +80,7 @@ def slide_reset(event):
     slide_sig.reset()
     slide_Ta.reset()
     rad_col.set_active(0)
-    # slide_yView.reset()
+    slide_yView.reset()
 
 
 def axis_reset(event):
@@ -180,7 +180,6 @@ while plt.fignum_exists(1):
                          sedtrans.taubfun(Hnbf, S, cong, conrhof), 
                          conR, cong, conrhof)  # sedment transport rate based on new geom
     dx = (dt * dxstd * np.random.randn()) + ((1-Df)*dx) # lateral migration for dt
-    # print(dx)
     Bast = Bast + (sig * dt)
     while Ccc[0] + dx > Bb-(Bc/2) or Ccc[0] + dx < 0+(Bc/2): # keep channel within belt
         dx = (dt * dxstd * np.random.randn()) + ((1-Df)*dx)
