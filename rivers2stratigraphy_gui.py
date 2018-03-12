@@ -47,7 +47,7 @@ conrhof = 1000
 connu = 1.004e-6
     
 # initial conditions
-Bb = BbInit = 2000 # width of belt (m)
+Bb = BbInit = 4000 # width of belt (m)
 yView = yViewInit = 100
 Qw = QwInit = 1000
 Qhat = geom.Qhatfun(Qw, D50, cong) # dimensionless Qw
@@ -80,6 +80,7 @@ def slide_reset(event):
     slide_Ta.reset()
     rad_col.set_active(0)
     slide_yView.reset()
+    slide_Bb.reset()
 
 
 def axis_reset(event):
@@ -132,6 +133,10 @@ Bbmax = 10
 slide_Bb_ax = plt.axes([0.565, 0.24, 0.36, 0.05], facecolor=widget_color)
 slide_Bb = utils.MinMaxSlider(slide_Bb_ax, 'Channel belt width (km)', Bbmin, Bbmax, 
 valinit=BbInit/1000, valstep=0.5, valfmt="%g", transform=ax.transAxes)
+
+VE_val = plt.text(0.675, 0.025, 'VE = ' + str(round(Bb/yView, 1)),
+                  fontsize=12, transform=ax.transAxes, 
+                  backgroundcolor='white')
 
 btn_slidereset_ax = plt.axes([0.565, 0.14, 0.2, 0.04])
 btn_slidereset = widget.Button(btn_slidereset_ax, 'Reset sliders', color=widget_color, hovercolor='0.975')
@@ -255,6 +260,7 @@ while plt.fignum_exists(1):
         # scroll the view
         ax.set_ylim(utils.new_ylims(yView, Bast))
         ax.set_xlim(-Bb/2, Bb/2)
+        VE_val.set_text('VE = ' + str(round(Bb/yView, 1)))
 
     # avulsion handler
     avulcnt += 1 # increase since avul count
