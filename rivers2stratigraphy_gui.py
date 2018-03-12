@@ -32,14 +32,13 @@ import time # DELETE FOR RELEASE
 
 # model run params
 dt = 50 # timestep in yrs
-Bb = 2000 # width of belt
 
 # setup params
 Cf = 0.004 # friction coeff
 D50 = 300*1e-6
 Beta = 1.5 # exponent to avulsion function
 Gamma = 1e-2 # factor for avulsion timing
-Df = 0.001 # dampening factor to lateral migration rate change
+Df = 0.0005 # dampening factor to lateral migration rate change
 dxstd = 0.5 # stdev of lateral migration dist, [m/yr]?
 
 conR = 1.65 
@@ -48,31 +47,31 @@ conrhof = 1000
 connu = 1.004e-6
     
 # initial conditions
-yViewInit = 100
-QwInit = 1000
-Qhat = geom.Qhatfun(QwInit, D50, cong) # dimensionless Qw
+Bb = BbInit = 4000 # width of belt (m)
+yView = yViewInit = 100
+Qw = QwInit = 1000
+Qhat = geom.Qhatfun(Qw, D50, cong) # dimensionless Qw
 Rep = geom.Repfun(D50, conR, cong, connu) # particle Reynolds num
 Hbar = geom.Hbarfun(Qhat, Rep) # dimensionless depth
-Hnbf = geom.dimless2dimfun(Hbar, QwInit, cong) # depth
-Bast = -yViewInit + Hnbf # Basin top level
+Hnbf = geom.dimless2dimfun(Hbar, Qw, cong) # depth
+Bast = -yView + Hnbf # Basin top level
 Bast = 0 # Basin top level
-Ccc = np.array([ (Bb / 2), (0 - (Hnbf / 2)) ]) # Channel center center
+Ccc = np.array([ 0, (0 - (Hnbf / 2)) ]) # Channel center center
 avulct = 0 # count time since last avul (for triggering)
 dx = dt * (dxstd * np.random.randn()) # lateral migration per timestep [m/yr]
 
 # setup the figure
 plt.rcParams['toolbar'] = 'None'
 plt.rcParams['figure.figsize'] = 8, 6
-plt.ion()
 fig, ax = plt.subplots()
+fig.canvas.set_window_title('SedEdu -- Rivers to Stratigraphy')
 plt.subplots_adjust(left=0.085, bottom=0.1, top=0.95, right=0.5)
-ax.set_xlabel("channel belt (m)")
+ax.set_xlabel("channel belt (km)")
 ax.set_ylabel("stratigraphy (m)")
 plt.ylim(-yViewInit, 0.1*yViewInit)
-plt.xlim(0, Bb)
-
-# add plot elements
-BastLine, = plt.plot([0, Bb*2], [Bast, Bast], 'k--') # plot basin top
+plt.xlim(-Bb/2, Bb/2)
+ax.xaxis.set_major_formatter( plt.FuncFormatter(
+                             lambda v, x: str(v / 1000).format('%0.0f')) )
 
 # define reset functions, must operate on global vars
 def slide_reset(event):
@@ -81,10 +80,13 @@ def slide_reset(event):
     slide_Ta.reset()
     rad_col.set_active(0)
     slide_yView.reset()
+    slide_Bb.reset()
 
 
 def axis_reset(event):
-    chanList = []
+    global chanList, chanListPoly, Bast
+    Bast = 0
+    chanList = chanList[-1]
     chanListPoly = []
 
 
@@ -103,36 +105,51 @@ sigInit = 2
 sigmin = 0
 sigmax = 5
 sigstep = 0.2
-slide_sig_ax = plt.axes([0.565, 0.75, 0.36, 0.05], facecolor=widget_color)
+slide_sig_ax = plt.axes([0.565, 0.770, 0.36, 0.05], facecolor=widget_color)
 slide_sig = utils.MinMaxSlider(slide_sig_ax, 'subsidence (mm/yr)', sigmin, sigmax, 
 valinit=sigInit, valstep=sigstep, valfmt="%g", transform=ax.transAxes)
 
 TaInit = 500
 Tamin = dt
 Tamax = 1500
-slide_Ta_ax = plt.axes([0.565, 0.625, 0.36, 0.05], facecolor=widget_color)
+slide_Ta_ax = plt.axes([0.565, 0.665, 0.36, 0.05], facecolor=widget_color)
 slide_Ta = utils.MinMaxSlider(slide_Ta_ax, 'avulsion timescale (yr)', Tamin, Tamax, 
 valinit=TaInit, valstep=10, valfmt="%i", transform=ax.transAxes)
 avulCmap = plt.cm.Set1(range(9))
 
-rad_col_ax = plt.axes([0.565, 0.4, 0.225, 0.15], facecolor=widget_color)
+rad_col_ax = plt.axes([0.565, 0.45, 0.225, 0.15], facecolor=widget_color)
 rad_col = widget.RadioButtons(rad_col_ax, ('Deposit age', 'Water discharge', 'Subsidence rate', 'Avulsion number'))
 
 yViewInit = yViewInit
 yViewmin = 25
 yViewmax = 250
-slide_yView_ax = plt.axes([0.565, 0.275, 0.36, 0.05], facecolor=widget_color)
+slide_yView_ax = plt.axes([0.565, 0.345, 0.36, 0.05], facecolor=widget_color)
 slide_yView = utils.MinMaxSlider(slide_yView_ax, 'stratigraphic view (m)', yViewmin, yViewmax, 
 valinit=yViewInit, valstep=25, valfmt="%i", transform=ax.transAxes)
 
-btn_slidereset_ax = plt.axes([0.75, 0.03, 0.2, 0.04])
+BbInit = BbInit # width of belt
+Bbmin = 1
+Bbmax = 10
+slide_Bb_ax = plt.axes([0.565, 0.24, 0.36, 0.05], facecolor=widget_color)
+slide_Bb = utils.MinMaxSlider(slide_Bb_ax, 'Channel belt width (km)', Bbmin, Bbmax, 
+valinit=BbInit/1000, valstep=0.5, valfmt="%g", transform=ax.transAxes)
+
+VE_val = plt.text(0.675, 0.025, 'VE = ' + str(round(Bb/yView, 1)),
+                  fontsize=12, transform=ax.transAxes, 
+                  backgroundcolor='white')
+
+btn_slidereset_ax = plt.axes([0.565, 0.14, 0.2, 0.04])
 btn_slidereset = widget.Button(btn_slidereset_ax, 'Reset sliders', color=widget_color, hovercolor='0.975')
 btn_slidereset.on_clicked(slide_reset)
 
-btn_axisreset_ax = plt.axes([0.75, 0.08, 0.2, 0.04])
+btn_axisreset_ax = plt.axes([0.565, 0.09, 0.2, 0.04])
 btn_axisreset = widget.Button(btn_axisreset_ax, 'Reset stratigraphy', color=widget_color, hovercolor='0.975')
 btn_axisreset.on_clicked(axis_reset)
 
+# add plot elements
+print(-Bbmax*1000/2)
+BastLine, = ax.plot([-Bbmax*1000/2, Bbmax*1000/2], 
+                     [Bast, Bast], 'k--') # plot basin top
 
 # initialize a few more things
 loopcnt = 0 # loop counter
@@ -160,6 +177,7 @@ col_dict = {'Water discharge': 'Qw',
 while plt.fignum_exists(1):
     
     # get new values from sliders -- do this only if changed?
+    Bb = slide_Bb.val * 1000
     Qw = slide_Qw.val
     sig = slide_sig.val / 1000
     Ta = slide_Ta.val
@@ -176,12 +194,15 @@ while plt.fignum_exists(1):
     S = Sbar
     
     # update model configurations
+    if abs(Ccc[0]) + Bc/2 > Bb/2: # this validates channel position with basin resizing
+        Ccc = np.hstack([np.random.uniform(-Bb/2+(Bc/2), Bb/2-(Bc/2), 1),
+                         Ccc[1]])
     qsin = sedtrans.qsEH(D50, Cf, 
                          sedtrans.taubfun(Hnbf, S, cong, conrhof), 
                          conR, cong, conrhof)  # sedment transport rate based on new geom
     dx = (dt * dxstd * np.random.randn()) + ((1-Df)*dx) # lateral migration for dt
     Bast = Bast + (sig * dt)
-    while Ccc[0] + dx > Bb-(Bc/2) or Ccc[0] + dx < 0+(Bc/2): # keep channel within belt
+    while abs(Ccc[0] + dx) > Bb/2-(Bc/2): # keep channel within belt
         dx = (dt * dxstd * np.random.randn()) + ((1-Df)*dx)
     Ccc = [Ccc[0] + dx, Bast - (Hnbf/2)] # new channel center
     
@@ -238,11 +259,15 @@ while plt.fignum_exists(1):
 
         # scroll the view
         ax.set_ylim(utils.new_ylims(yView, Bast))
+        ax.set_xlim(-Bb/2, Bb/2)
+        VE_val.set_text('VE = ' + str(round(Bb/yView, 1)))
 
     # avulsion handler
     avulcnt += 1 # increase since avul count
     if avulcnt > Ta: # if time since is more than Ta: due for one
-        Ccc = np.hstack([np.random.uniform(Bc/2, Bb-Bc/2, 1), Ccc[1]])
+    # abs(Ccc[0] + dx) > Bb/2-(Bc/2)
+        Ccc = np.hstack([np.random.uniform(-Bb/2+(Bc/2), Bb/2-(Bc/2), 1),
+                         Ccc[1]])
         dx = 0 # reset dampening to 0 for new channel
         avulcnt = 0 # reset count
         avulrec += 1 # increment avulsion number
