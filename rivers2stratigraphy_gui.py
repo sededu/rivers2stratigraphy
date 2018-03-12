@@ -39,7 +39,7 @@ D50 = 300*1e-6
 Beta = 1.5 # exponent to avulsion function
 Gamma = 1e-2 # factor for avulsion timing
 Df = 0.0005 # dampening factor to lateral migration rate change
-dxstd = 0.1 # stdev of lateral migration dist, [m/yr]?
+dxstd = 0.5 # stdev of lateral migration dist, [m/yr]?
 
 conR = 1.65 
 cong = 9.81
