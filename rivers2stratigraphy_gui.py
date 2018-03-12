@@ -133,6 +133,10 @@ slide_Bb_ax = plt.axes([0.565, 0.24, 0.36, 0.05], facecolor=widget_color)
 slide_Bb = utils.MinMaxSlider(slide_Bb_ax, 'Channel belt width (km)', Bbmin, Bbmax, 
 valinit=BbInit/1000, valstep=0.5, valfmt="%g", transform=ax.transAxes)
 
+VE_val = plt.text(0.1, 0.35, "VE = " + str(BbInit/yViewInit).format('%0.0f'),
+                  fontsize=16, transform=ax.transAxes, 
+                  backgroundcolor='white')
+
 btn_slidereset_ax = plt.axes([0.565, 0.14, 0.2, 0.04])
 btn_slidereset = widget.Button(btn_slidereset_ax, 'Reset sliders', color=widget_color, hovercolor='0.975')
 btn_slidereset.on_clicked(slide_reset)
@@ -255,6 +259,7 @@ while plt.fignum_exists(1):
         # scroll the view
         ax.set_ylim(utils.new_ylims(yView, Bast))
         ax.set_xlim(-Bb/2, Bb/2)
+        VE_val.set_text('VE = ' + str(round(Bb/yView, 1)))
 
     # avulsion handler
     avulcnt += 1 # increase since avul count
