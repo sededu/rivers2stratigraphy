@@ -47,7 +47,7 @@ conrhof = 1000
 connu = 1.004e-6
     
 # initial conditions
-Bb = BbInit = 2000 # width of belt (m)
+Bb = BbInit = 4000 # width of belt (m)
 yView = yViewInit = 100
 Qw = QwInit = 1000
 Qhat = geom.Qhatfun(Qw, D50, cong) # dimensionless Qw
@@ -134,7 +134,7 @@ slide_Bb_ax = plt.axes([0.565, 0.24, 0.36, 0.05], facecolor=widget_color)
 slide_Bb = utils.MinMaxSlider(slide_Bb_ax, 'Channel belt width (km)', Bbmin, Bbmax, 
 valinit=BbInit/1000, valstep=0.5, valfmt="%g", transform=ax.transAxes)
 
-VE_val = plt.text(0.65, 0.025, "VE = " + str(BbInit/yViewInit).format('%0.0f'),
+VE_val = plt.text(0.675, 0.025, 'VE = ' + str(round(Bb/yView, 1)),
                   fontsize=12, transform=ax.transAxes, 
                   backgroundcolor='white')
 
