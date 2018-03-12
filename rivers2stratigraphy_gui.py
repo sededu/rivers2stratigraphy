@@ -134,8 +134,8 @@ slide_Bb_ax = plt.axes([0.565, 0.24, 0.36, 0.05], facecolor=widget_color)
 slide_Bb = utils.MinMaxSlider(slide_Bb_ax, 'Channel belt width (km)', Bbmin, Bbmax, 
 valinit=BbInit/1000, valstep=0.5, valfmt="%g", transform=ax.transAxes)
 
-VE_val = plt.text(0.1, 0.35, "VE = " + str(BbInit/yViewInit).format('%0.0f'),
-                  fontsize=16, transform=ax.transAxes, 
+VE_val = plt.text(0.65, 0.025, "VE = " + str(BbInit/yViewInit).format('%0.0f'),
+                  fontsize=12, transform=ax.transAxes, 
                   backgroundcolor='white')
 
 btn_slidereset_ax = plt.axes([0.565, 0.14, 0.2, 0.04])
