@@ -80,6 +80,7 @@ def slide_reset(event):
     slide_Ta.reset()
     rad_col.set_active(0)
     slide_yView.reset()
+    slide_Bb.reset()
 
 
 def axis_reset(event):
