@@ -50,6 +50,6 @@ def Ccc2coordsfun(Ccc, Bc, Hnbf):
 
 
 def outdatedIndex(chanList0, stratMax):
-    chanListIdx = [ all( x['coords'][0][:,1] < stratMax ) 
-                   for x in chanList0 ]
+    chanListIdx = [ all( c['coords'][0][:,1] < stratMax ) 
+                   for c in chanList0 ]
     return np.array(chanListIdx)
