@@ -250,8 +250,14 @@ while plt.fignum_exists(1):
         elif colFlag == 'avul':
             chanColl.set_facecolor( np.vstack(chanList['avul']) )
         elif colFlag == 'age':
+            inViewIdx = [ all( c['coords'][0][:,1] > (Bast - yView) ) 
+                          for c in chanList ]
+            # color age to visible strat:
             ageCmap = plt.cm.viridis( utils.normalizeColor(
-                chanList['age'], chanList['age'].min(), loopcnt).flatten() )
+                chanList['age'], chanList['age'][inViewIdx].min(), loopcnt).flatten() )
+            # color age to all strat in memory:
+            # ageCmap = plt.cm.viridis( utils.normalizeColor(
+            #     chanList['age'], chanList['age'].min(), loopcnt).flatten() )
             chanColl.set_facecolor( ageCmap )
         elif colFlag == 'sig':
             chanColl.set_facecolor( np.vstack(chanList['sig']) )
