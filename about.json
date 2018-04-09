@@ -4,6 +4,7 @@
     "version": "1.0",
     "shortdesc": "Explore how a migrating river becomes stratigraphy",
     "difficulty": 7,
+    "license": "MIT",
     "projurl": "[hosted on GitHub](https://github.com/amoodie/rivers2stratigraphy)",
     "projreadme": ["README.md"],
     "preview": ["private", "demo.png"],
