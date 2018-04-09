@@ -1,10 +1,10 @@
 {
     "title": "Rivers to Stratigraphy",
     "author": "Andrew J. Moodie",
-    "version": "0.5",
+    "version": "1.0",
     "shortdesc": "Explore how a migrating river becomes stratigraphy",
     "difficulty": 7,
-    "projurl": "[github.com/.../rivers2stratigraphy](https://github.com/amoodie/rivers2stratigraphy)",
+    "projurl": "[hosted on GitHub](https://github.com/amoodie/rivers2stratigraphy)",
     "projreadme": ["README.md"],
     "preview": ["private", "demo.png"],
     "exec": ["src", "rivers2stratigraphy_gui.py"],
