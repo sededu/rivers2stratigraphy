@@ -1,0 +1,1 @@
+Explore the construction of stratigraphy through the interaction of channel geometry, lateral migration rate, subsidence rate, and avulsion frequency --- interactively!  https://github.com/amoodie/rivers2stratigraphy

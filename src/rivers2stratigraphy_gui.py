@@ -30,32 +30,69 @@ import geom, sedtrans, utils
 
 import time # DELETE FOR RELEASE
 
+class Channel(object):
+    def __init__(self, Ccc, parent=None):
+        
+        # self.read_sliders()
+        self.val = SliderManager()
 
-class Strat(object):
+        self.Ccc = Ccc
+        self.geometry = self.calculate_geometry(self.val)
+        self.ll = self.Ccc - self.geometry.Bc
+        self.ur = 1
 
+    def calculate_geometry(self, val):
+        Qhat = geom.Qhatfun(val.Qw, D50, cong)
+        Hbar = geom.Hbarfun(Qhat, Rep)
+        Bbar = geom.Bbarfun(Qhat, Rep)
+        Sbar = geom.Sbarfun(Qhat, Rep)
+        H = geom.dimless2dimfun(Hbar, Qw, cong) # new depth
+        Bc = geom.dimless2dimfun(Bbar, Qw, cong) # new width
+        S = Sbar
+        # self.geometry = {'Qhat': Qhat, 'Hbar': Hbar, 'Bbar': Bbar,
+        #             'Sbar': Sbar, 'H': H, 'Bc': Bc, 'S': S}
+        self.geometry.Bc = Bc
+        self.geometry.H = H
+        # return geometry 
 
-    def read_sliders(self):
+    # def read_sliders(self):
+    #     # read the sliders for values
+    #     self.Bb = slide_Bb.val * 1000
+    #     self.Qw = slide_Qw.val
+    #     self.sig = slide_sig.val / 1000
+    #     self.Ta = slide_Ta.val
+    #     self.yView = slide_yView.val
+    #     self.colFlag = col_dict[rad_col.value_selected]
+
+class SliderManager(object):
+    def __init__(self):
         # read the sliders for values
+        self.get_basin()
+        self.get_channel()
+
+    def get_basin(self):
+        self.yView = slide_yView.val
         self.Bb = slide_Bb.val * 1000
+        self.colFlag = col_dict[rad_col.value_selected]
+
+    def get_channel(self):
         self.Qw = slide_Qw.val
         self.sig = slide_sig.val / 1000
         self.Ta = slide_Ta.val
-        self.yView = slide_yView.val
-        self.colFlag = col_dict[rad_col.value_selected]
 
-    class Channel(object):
-        def __init__(self, Ccc, parent=None):
-            self.x = Ccc[0]
 
+class Strat(object):
 
     def __init__(self, ax, Ccc=0):
-        self.read_sliders()
+        # self.read_sliders()
         self.ax = ax
         self.a = 1
         self.Bast = 0
         self.Ccc = Ccc
-        self.dx = 0
+        self.dxdt = 0
+        self.val = SliderManager()
 
+        self.newChannel = Channel(self.Ccc, parent=self)
         self.chanAct = np.zeros(1, dtype=[('coords', float, (4,2)),
                              ('sig',    float,  4),
                              ('avul',   float,  4),
@@ -67,7 +104,7 @@ class Strat(object):
 
         self.BastLine, = ax.plot([-Bbmax*1000/2, Bbmax*1000/2], 
                                  [Bast, Bast], 'k--') # plot basin top
-        self.VE_val = plt.text(0.675, 0.025, 'VE = ' + str(round(self.Bb/self.yView, 1)),
+        self.VE_val = plt.text(0.675, 0.025, 'VE = ' + str(round(self.val.Bb/self.val.yView, 1)),
                                fontsize=12, transform=ax.transAxes, 
                                backgroundcolor='white')
 
@@ -83,16 +120,11 @@ class Strat(object):
         print(i)
 
         # get new values from sliders
-        self.read_sliders()
+        # self.read_sliders()
 
         # find new geom
-        Qhat = geom.Qhatfun(Qw, D50, cong)
-        Hbar = geom.Hbarfun(Qhat, Rep)
-        Bcbar = geom.Bbarfun(Qhat, Rep)
-        Sbar = geom.Sbarfun(Qhat, Rep)
-        Hnbf = geom.dimless2dimfun(Hbar, Qw, cong) # new depth
-        Bc = geom.dimless2dimfun(Bcbar, Qw, cong) # new width
-        S = Sbar
+        newChannel = Channel(self.Ccc)
+
         
         # update model configurations
         if abs(self.Ccc[0]) + Bc/2 > self.Bb/2: # this validates channel position with basin resizing
