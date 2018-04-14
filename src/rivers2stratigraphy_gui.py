@@ -31,29 +31,33 @@ import geom, sedtrans, utils
 import time # DELETE FOR RELEASE
 
 class Channel(object):
-    def __init__(self, Ccc, parent=None):
+    def __init__(self, Ccc, dxdt=0, parent=None):
         
         # self.read_sliders()
         self.val = SliderManager()
 
         self.Ccc = Ccc
-        self.geometry = self.calculate_geometry(self.val)
+        self.geometry = self.Geometry()
+        print(self.geometry.H)
         self.ll = self.Ccc - self.geometry.Bc
         self.ur = 1
+        self.dxdt = dxdt
 
-    def calculate_geometry(self, val):
-        Qhat = geom.Qhatfun(val.Qw, D50, cong)
-        Hbar = geom.Hbarfun(Qhat, Rep)
-        Bbar = geom.Bbarfun(Qhat, Rep)
-        Sbar = geom.Sbarfun(Qhat, Rep)
-        H = geom.dimless2dimfun(Hbar, Qw, cong) # new depth
-        Bc = geom.dimless2dimfun(Bbar, Qw, cong) # new width
-        S = Sbar
-        # self.geometry = {'Qhat': Qhat, 'Hbar': Hbar, 'Bbar': Bbar,
-        #             'Sbar': Sbar, 'H': H, 'Bc': Bc, 'S': S}
-        self.geometry.Bc = Bc
-        self.geometry.H = H
-        # return geometry 
+    class Geometry(object):
+        def __init__(self):
+            Qhat = geom.Qhatfun(Qw, D50, cong)
+            Hbar = geom.Hbarfun(Qhat, Rep)
+            Bbar = geom.Bbarfun(Qhat, Rep)
+            Sbar = geom.Sbarfun(Qhat, Rep)
+            H = geom.dimless2dimfun(Hbar, Qw, cong) # new depth
+            Bc = geom.dimless2dimfun(Bbar, Qw, cong) # new width
+            S = Sbar
+            # self.geometry = {'Qhat': Qhat, 'Hbar': Hbar, 'Bbar': Bbar,
+            #             'Sbar': Sbar, 'H': H, 'Bc': Bc, 'S': S}
+            self.Bc = Bc
+            self.H = H
+            # print(self.H)
+            # return geometry 
 
     # def read_sliders(self):
     #     # read the sliders for values
@@ -67,8 +71,7 @@ class Channel(object):
 class SliderManager(object):
     def __init__(self):
         # read the sliders for values
-        self.get_basin()
-        self.get_channel()
+        self.get_all()
 
     def get_basin(self):
         self.yView = slide_yView.val
@@ -80,17 +83,19 @@ class SliderManager(object):
         self.sig = slide_sig.val / 1000
         self.Ta = slide_Ta.val
 
+    def get_all(self):
+        self.get_basin()
+        self.get_channel()
+
 
 class Strat(object):
 
     def __init__(self, ax, Ccc=0):
         # self.read_sliders()
         self.ax = ax
-        self.a = 1
         self.Bast = 0
         self.Ccc = Ccc
-        self.dxdt = 0
-        self.val = SliderManager()
+        self.sm = SliderManager()
 
         self.newChannel = Channel(self.Ccc, parent=self)
         self.chanAct = np.zeros(1, dtype=[('coords', float, (4,2)),
@@ -104,7 +109,7 @@ class Strat(object):
 
         self.BastLine, = ax.plot([-Bbmax*1000/2, Bbmax*1000/2], 
                                  [Bast, Bast], 'k--') # plot basin top
-        self.VE_val = plt.text(0.675, 0.025, 'VE = ' + str(round(self.val.Bb/self.val.yView, 1)),
+        self.VE_val = plt.text(0.675, 0.025, 'VE = ' + str(round(self.sm.Bb/self.sm.yView, 1)),
                                fontsize=12, transform=ax.transAxes, 
                                backgroundcolor='white')
 
@@ -123,18 +128,19 @@ class Strat(object):
         # self.read_sliders()
 
         # find new geom
-        newChannel = Channel(self.Ccc)
+        channel = Channel(self.Ccc)
+        self.sm.get_all()
 
         
         # update model configurations
-        if abs(self.Ccc[0]) + Bc/2 > self.Bb/2: # this validates channel position with basin resizing
+        if abs(channel.Ccc[0]) + channel.geometry.Bc/2 > self.sm.Bb/2: # this validates channel position with basin resizing
             self.Ccc = np.hstack([np.random.uniform(-self.Bb/2+(Bc/2), self.Bb/2-(Bc/2), 1),
                              self.Ccc[1]])
-        qsin = sedtrans.qsEH(D50, Cf, 
-                             sedtrans.taubfun(Hnbf, S, cong, conrhof), 
-                             conR, cong, conrhof)  # sedment transport rate based on new geom
-        dx = (dt * dxstd * np.random.randn()) + ((1-Df)*self.dx) # lateral migration for dt
-        self.Bast = self.Bast + (self.sig * dt)
+        # qsin = sedtrans.qsEH(D50, Cf, 
+                             # sedtrans.taubfun(Hnbf, S, cong, conrhof), 
+                             # conR, cong, conrhof)  # sedment transport rate based on new geom
+        channel.dx = (dt * dxstd * np.random.randn()) + ((1-Df) * channel.dxdt) # lateral migration for dt
+        self.Bast = self.Bast + (self.sm.sig * dt)
         while abs(self.Ccc[0] + dx) > self.Bb/2-(Bc/2): # keep channel within belt
             dx = (dt * dxstd * np.random.randn()) + ((1-Df)*dx)
         self.Ccc = [self.Ccc[0] + dx, self.Bast - (Hnbf/2)] # new channel center
