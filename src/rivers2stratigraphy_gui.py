@@ -34,14 +34,13 @@ class Channel(object):
     def __init__(self, Ccc, dxdt=0, parent=None):
         
         # self.read_sliders()
-        self.val = SliderManager()
+        self.char = SliderManager()
 
         self.Ccc = Ccc
         self.geometry = self.Geometry()
-        print(self.geometry.H)
         self.ll = self.Ccc - self.geometry.Bc
         self.ur = 1
-        self.dxdt = dxdt
+        self.dxdt = np.random.uniform(-self.Bb/2+(Bc/2), self.Bb/2-(Bc/2), 1)
 
     class Geometry(object):
         def __init__(self):
@@ -56,17 +55,10 @@ class Channel(object):
             #             'Sbar': Sbar, 'H': H, 'Bc': Bc, 'S': S}
             self.Bc = Bc
             self.H = H
-            # print(self.H)
-            # return geometry 
 
-    # def read_sliders(self):
-    #     # read the sliders for values
-    #     self.Bb = slide_Bb.val * 1000
-    #     self.Qw = slide_Qw.val
-    #     self.sig = slide_sig.val / 1000
-    #     self.Ta = slide_Ta.val
-    #     self.yView = slide_yView.val
-    #     self.colFlag = col_dict[rad_col.value_selected]
+    # class Characteristics(object):
+    #     def __init__(self):
+    #         self.sig = sig
 
 class SliderManager(object):
     def __init__(self):
@@ -90,14 +82,15 @@ class SliderManager(object):
 
 class Strat(object):
 
-    def __init__(self, ax, Ccc=0):
+    def __init__(self, ax):
         # self.read_sliders()
         self.ax = ax
         self.Bast = 0
-        self.Ccc = Ccc
+        # self.Ccc = Ccc
         self.sm = SliderManager()
 
-        self.newChannel = Channel(self.Ccc, parent=self)
+        self.Ccc0 = 0
+        self.channel = Channel(self.Ccc0, parent=self)
         self.chanAct = np.zeros(1, dtype=[('coords', float, (4,2)),
                              ('sig',    float,  4),
                              ('avul',   float,  4),
@@ -126,9 +119,10 @@ class Strat(object):
 
         # get new values from sliders
         # self.read_sliders()
+        self.channel0 = self.channel
 
         # find new geom
-        channel = Channel(self.Ccc)
+        channel = Channel(Ccc=self.channel0.Ccc+self.channel0.Ccc)
         self.sm.get_all()
 
         
@@ -358,7 +352,7 @@ col_dict = {'Water discharge': 'Qw',
 
 # time looping
 # while plt.fignum_exists(1):
-strat = Strat(ax, Ccc)
+strat = Strat(ax)
 anim = FuncAnimation(fig, strat, init_func=strat.func_init,
                      interval=100, blit=False)
 
