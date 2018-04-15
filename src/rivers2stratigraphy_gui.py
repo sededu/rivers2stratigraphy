@@ -139,13 +139,14 @@ class Strat(object):
         self.channel = Channel(cent_x0 = 0, dxdt0 = 0,
                                Bast = self.Bast,
                                sm = self.sm)
-        self.chanAct = np.zeros(1, dtype=[('coords', float, (4,2)),
-                             ('sig',    float,  4),
-                             ('avul',   float,  4),
-                             ('Qw',     float,  4),
-                             ('age',    int,    1)])
-        self.chanList = self.chanAct # all channels in memory
+        # self.chanAct = np.zeros(1, dtype=[('coords', float, (4,2)),
+        #                      ('sig',    float,  4),
+        #                      ('avul',   float,  4),
+        #                      ('Qw',     float,  4),
+        #                      ('age',    int,    1)])
+        # self.chanList = self.chanAct # all channels in memory
         # chanListPoly = []
+        self.channelRectangleList = []
         # chanColl = PatchCollection(chanListPoly)
 
         self.BastLine, = ax.plot([-Bbmax*1000/2, Bbmax*1000/2], 
@@ -208,14 +209,14 @@ class Strat(object):
         # chanAct['Qw'] = plt.cm.viridis(utils.normalizeColor(Qw, Qwmin, Qwmax))
         # chanAct['age'] = loopcnt
 
-        chanActPoly = Rectangle(self.channel.ll, self.channel.geometry.Bc, 
+        self.channelRectangle = Rectangle(self.channel.ll, self.channel.geometry.Bc, 
                                 self.channel.geometry.H)
-        # chanActPoly = Polygon(newCoords, facecolor='0.5', edgecolor='black')
-        self.chanList = np.vstack((self.chanList, self.chanAct))
-        chanListPoly.append(chanActPoly)
+        # channelRectangle = Polygon(newCoords, facecolor='0.5', edgecolor='black')
+        # self.chanList = np.vstack((self.chanList, self.chanAct))
+        self.channelRectangleList.append(self.channelRectangle)
 
         # chanColl.remove()
-        chanColl = PatchCollection(chanListPoly)
+        chanColl = PatchCollection(self.channelRectangleList)
         chanColl.set_edgecolor('0')
         # if colFlag == 'Qw':
         #     chanColl.set_facecolor( np.vstack(chanList['Qw']) )
@@ -263,7 +264,7 @@ class Strat(object):
         # avulcnt += dt
         # loopcnt += dt
 
-        return self.BastLine, 
+        return self.BastLine, chanColl
 
 
 
@@ -384,6 +385,6 @@ col_dict = {'Water discharge': 'Qw',
 # while plt.fignum_exists(1):
 strat = Strat(ax)
 anim = FuncAnimation(fig, strat, init_func=strat.func_init,
-                     interval=100, blit=False)
+                     interval=100, blit=True)
 
 plt.show()
