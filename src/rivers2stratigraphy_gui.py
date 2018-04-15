@@ -39,7 +39,7 @@ D50 = 300*1e-6
 Beta = 1.5 # exponent to avulsion function
 Gamma = 1e-2 # factor for avulsion timing
 Df = 0.0005 # dampening factor to lateral migration rate change
-dxstd = 0.5 # stdev of lateral migration dist, [m/yr]?
+dxdtstd = 0.5 # stdev of lateral migration dist, [m/yr]?
 
 conR = 1.65 
 cong = 9.81
@@ -58,24 +58,34 @@ Bast = -yView + Hnbf # Basin top level
 Bast = 0 # Basin top level
 Ccc = np.array([ 0, (0 - (Hnbf / 2)) ]) # Channel center center
 avulct = 0 # count time since last avul (for triggering)
-dx = dt * (dxstd * np.random.randn()) # lateral migration per timestep [m/yr]
+dx = dt * (dxdtstd * np.random.randn()) # lateral migration per timestep [m/yr]
 
 class Channel(object):
-    # rand_dxdt = (dxstd * np.random.randn()) 
+    # rand_dxdt = (dxdtstd * np.random.randn()) 
 
-    def __init__(self, cent_x0=0, dxdt0=0, Bast=0, parent=None):
+    def __init__(self, cent_x0=0, dxdt0=0, Bast=0, sm=None):
         # self.read_sliders()
-        self.char = SliderManager()
+        # self.char = SliderManager()s
+        self.Qw = sm.Qw
 
         self.geometry = self.Geometry()
-        self.dxdt = (dxstd * np.random.randn()) + ((1-Df) * dxdt0)
-        self.dx = self.dxdt * dt
+        self.max_x_abs = np.inf
+        while self.max_x_abs > sm.Bb/2: # keep channel within belt
+            print("lim = ", self.max_x_abs > sm.Bb/2-(self.geometry.Bc/2))
+            self.dxdt = (dxdtstd * np.random.randn())
+            self.dx = (self.dxdt * dt) + ((1-Df) * dxdt0)
+            self.cent_x = cent_x0 + self.dx
+            self.max_x_abs = abs(self.cent_x + self.geometry.Bc/2)
+            print("lim = ", self.max_x_abs > sm.Bb/2)
 
-        self.cent_x = cent_x0 + self.dx
+    # dx = (dt * dxstd * np.random.randn()) + ((1-Df)*dx) # lateral migration for dt
+    # Bast = Bast + (sig * dt)
+    # while abs(Ccc[0] + dx) > Bb/2-(Bc/2): # keep channel within belt
+    #     dx = (dt * dxstd * np.random.randn()) + ((1-Df)*dx)
+
+
         self.cent_y = Bast - self.geometry.H
-        self.ll = np.array([(self.cent_x - self.geometry.Bc), (Bast - (self.geometry.H / 2))])
-        self.max_x_abs = abs(self.cent_x + self.geometry.Bc)
-        # self.ur = 1
+        self.ll = np.array([(self.cent_x - self.geometry.Bc), (Bast - (self.geometry.H))])
 
 
     class Geometry(object):
@@ -128,7 +138,7 @@ class Strat(object):
 
         self.channel = Channel(cent_x0 = 0, dxdt0 = 0,
                                Bast = self.Bast,
-                               parent=self)
+                               sm = self.sm)
         self.chanAct = np.zeros(1, dtype=[('coords', float, (4,2)),
                              ('sig',    float,  4),
                              ('avul',   float,  4),
@@ -160,9 +170,12 @@ class Strat(object):
         self.channel0 = self.channel
 
         # find new geom
-        self.channel = Channel(cent_x0 = self.channel0.cent_x,
-                               dxdt0 = self.channel0.dxdt)
         self.sm.get_all()
+        self.channel = Channel(cent_x0 = self.channel0.cent_x,
+                               dxdt0 = self.channel0.dxdt,
+                               Bast = self.Bast,
+                               sm = self.sm)
+        
 
         
         # update model configurations
@@ -176,10 +189,9 @@ class Strat(object):
                              # sedtrans.taubfun(Hnbf, S, cong, conrhof), 
                              # conR, cong, conrhof)  # sedment transport rate based on new geom
 
-        # channel.dx = (dt * dxstd * np.random.randn()) + ((1-Df) * channel.dxdt) # lateral migration for dt
+        # channel.dx = (dt * dxdtstd * np.random.randn()) + ((1-Df) * channel.dxdt) # lateral migration for dt
         self.Bast = self.Bast + (self.sm.sig * dt)
-        while self.channel.max_x_abs > self.sm.Bb/2-(self.channel.geometry.Bc/2): # keep channel within belt
-            dx = (dt * dxstd * np.random.randn()) + ((1-Df)*dx)
+        
 
         # self.Ccc = [self.Ccc[0] + dx, self.Bast - (Hnbf/2)] # new channel center
         
