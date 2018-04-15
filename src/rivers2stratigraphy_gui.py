@@ -68,15 +68,13 @@ class Channel(object):
         # self.char = SliderManager()s
         self.Qw = sm.Qw
 
-        self.geometry = self.Geometry()
+        self.geometry = self.Geometry(sm)
         self.max_x_abs = np.inf
         while self.max_x_abs > sm.Bb/2: # keep channel within belt
-            print("lim = ", self.max_x_abs > sm.Bb/2-(self.geometry.Bc/2))
             self.dxdt = (dxdtstd * np.random.randn())
             self.dx = (self.dxdt * dt) + ((1-Df) * dxdt0)
             self.cent_x = cent_x0 + self.dx
             self.max_x_abs = abs(self.cent_x + self.geometry.Bc/2)
-            print("lim = ", self.max_x_abs > sm.Bb/2)
 
     # dx = (dt * dxstd * np.random.randn()) + ((1-Df)*dx) # lateral migration for dt
     # Bast = Bast + (sig * dt)
@@ -89,13 +87,13 @@ class Channel(object):
 
 
     class Geometry(object):
-        def __init__(self):
-            Qhat = geom.Qhatfun(Qw, D50, cong)
+        def __init__(self, sm):
+            Qhat = geom.Qhatfun(sm.Qw, D50, cong)
             Hbar = geom.Hbarfun(Qhat, Rep)
             Bbar = geom.Bbarfun(Qhat, Rep)
             Sbar = geom.Sbarfun(Qhat, Rep)
-            H = geom.dimless2dimfun(Hbar, Qw, cong) # new depth
-            Bc = geom.dimless2dimfun(Bbar, Qw, cong) # new width
+            H = geom.dimless2dimfun(Hbar, sm.Qw, cong) # new depth
+            Bc = geom.dimless2dimfun(Bbar, sm.Qw, cong) # new width
             S = Sbar
             # self.geometry = {'Qhat': Qhat, 'Hbar': Hbar, 'Bbar': Bbar,
             #             'Sbar': Sbar, 'H': H, 'Bc': Bc, 'S': S}
@@ -172,6 +170,7 @@ class Strat(object):
 
         # find new geom
         self.sm.get_all()
+        self.Bast = self.Bast + (self.sm.sig * dt)
         self.channel = Channel(cent_x0 = self.channel0.cent_x,
                                dxdt0 = self.channel0.dxdt,
                                Bast = self.Bast,
@@ -191,7 +190,7 @@ class Strat(object):
                              # conR, cong, conrhof)  # sedment transport rate based on new geom
 
         # channel.dx = (dt * dxdtstd * np.random.randn()) + ((1-Df) * channel.dxdt) # lateral migration for dt
-        self.Bast = self.Bast + (self.sm.sig * dt)
+        
         
 
         # self.Ccc = [self.Ccc[0] + dx, self.Bast - (Hnbf/2)] # new channel center
@@ -216,8 +215,8 @@ class Strat(object):
         self.channelRectangleList.append(self.channelRectangle)
 
         # chanColl.remove()
-        chanColl = PatchCollection(self.channelRectangleList)
-        chanColl.set_edgecolor('0')
+        self.chanColl = PatchCollection(self.channelRectangleList)
+        self.chanColl.set_edgecolor('0')
         # if colFlag == 'Qw':
         #     chanColl.set_facecolor( np.vstack(chanList['Qw']) )
         # elif colFlag == 'avul':
@@ -234,7 +233,7 @@ class Strat(object):
         #     chanColl.set_facecolor( ageCmap )
         # elif colFlag == 'sig':
         #     chanColl.set_facecolor( np.vstack(chanList['sig']) )
-        self.ax.add_collection(chanColl)
+        self.ax.add_collection(self.chanColl)
 
         # # scroll the view
         self.ax.set_ylim(utils.new_ylims(self.sm.yView, self.Bast))
@@ -264,7 +263,7 @@ class Strat(object):
         # avulcnt += dt
         # loopcnt += dt
 
-        return self.BastLine, chanColl
+        return self.BastLine, self.chanColl, self.VE_val
 
 
 
