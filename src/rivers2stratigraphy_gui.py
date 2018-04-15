@@ -20,7 +20,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.widgets as widget
-from matplotlib.patches import Polygon
+from matplotlib.patches import Polygon, Rectangle
 from matplotlib.collections import PatchCollection, LineCollection
 from matplotlib.animation import FuncAnimation
 import shapely.geometry as sg
@@ -30,17 +30,53 @@ import geom, sedtrans, utils
 
 import time # DELETE FOR RELEASE
 
+# model run params
+dt = 50 # timestep in yrs
+
+# setup params
+Cf = 0.004 # friction coeff
+D50 = 300*1e-6
+Beta = 1.5 # exponent to avulsion function
+Gamma = 1e-2 # factor for avulsion timing
+Df = 0.0005 # dampening factor to lateral migration rate change
+dxstd = 0.5 # stdev of lateral migration dist, [m/yr]?
+
+conR = 1.65 
+cong = 9.81
+conrhof = 1000
+connu = 1.004e-6
+    
+# initial conditions
+Bb = BbInit = 4000 # width of belt (m)
+yView = yViewInit = 100
+Qw = QwInit = 1000
+Qhat = geom.Qhatfun(Qw, D50, cong) # dimensionless Qw
+Rep = geom.Repfun(D50, conR, cong, connu) # particle Reynolds num
+Hbar = geom.Hbarfun(Qhat, Rep) # dimensionless depth
+Hnbf = geom.dimless2dimfun(Hbar, Qw, cong) # depth
+Bast = -yView + Hnbf # Basin top level
+Bast = 0 # Basin top level
+Ccc = np.array([ 0, (0 - (Hnbf / 2)) ]) # Channel center center
+avulct = 0 # count time since last avul (for triggering)
+dx = dt * (dxstd * np.random.randn()) # lateral migration per timestep [m/yr]
+
 class Channel(object):
-    def __init__(self, Ccc, dxdt=0, parent=None):
-        
+    # rand_dxdt = (dxstd * np.random.randn()) 
+
+    def __init__(self, cent_x0=0, dxdt0=0, Bast=0, parent=None):
         # self.read_sliders()
         self.char = SliderManager()
 
-        self.Ccc = Ccc
         self.geometry = self.Geometry()
-        self.ll = self.Ccc - self.geometry.Bc
-        self.ur = 1
-        self.dxdt = np.random.uniform(-self.Bb/2+(Bc/2), self.Bb/2-(Bc/2), 1)
+        self.dxdt = (dxstd * np.random.randn()) + ((1-Df) * dxdt0)
+        self.dx = self.dxdt * dt
+
+        self.cent_x = cent_x0 + self.dx
+        self.cent_y = Bast - self.geometry.H
+        self.ll = np.array([(self.cent_x - self.geometry.Bc), (Bast - (self.geometry.H / 2))])
+        self.max_x_abs = abs(self.cent_x + self.geometry.Bc)
+        # self.ur = 1
+
 
     class Geometry(object):
         def __init__(self):
@@ -59,6 +95,7 @@ class Channel(object):
     # class Characteristics(object):
     #     def __init__(self):
     #         self.sig = sig
+
 
 class SliderManager(object):
     def __init__(self):
@@ -89,8 +126,9 @@ class Strat(object):
         # self.Ccc = Ccc
         self.sm = SliderManager()
 
-        self.Ccc0 = 0
-        self.channel = Channel(self.Ccc0, parent=self)
+        self.channel = Channel(cent_x0 = 0, dxdt0 = 0,
+                               Bast = self.Bast,
+                               parent=self)
         self.chanAct = np.zeros(1, dtype=[('coords', float, (4,2)),
                              ('sig',    float,  4),
                              ('avul',   float,  4),
@@ -122,37 +160,45 @@ class Strat(object):
         self.channel0 = self.channel
 
         # find new geom
-        channel = Channel(Ccc=self.channel0.Ccc+self.channel0.Ccc)
+        self.channel = Channel(cent_x0 = self.channel0.cent_x,
+                               dxdt0 = self.channel0.dxdt)
         self.sm.get_all()
 
         
         # update model configurations
-        if abs(channel.Ccc[0]) + channel.geometry.Bc/2 > self.sm.Bb/2: # this validates channel position with basin resizing
-            self.Ccc = np.hstack([np.random.uniform(-self.Bb/2+(Bc/2), self.Bb/2-(Bc/2), 1),
-                             self.Ccc[1]])
+
+        # this validates channel position with basin resizing
+        # if abs(channel.Ccc[0]) + channel.geometry.Bc/2 > self.sm.Bb/2: 
+            # self.Ccc = np.hstack([np.random.uniform(-self.Bb/2+(Bc/2), self.Bb/2-(Bc/2), 1),
+                             # self.Ccc[1]])
+
         # qsin = sedtrans.qsEH(D50, Cf, 
                              # sedtrans.taubfun(Hnbf, S, cong, conrhof), 
                              # conR, cong, conrhof)  # sedment transport rate based on new geom
-        channel.dx = (dt * dxstd * np.random.randn()) + ((1-Df) * channel.dxdt) # lateral migration for dt
+
+        # channel.dx = (dt * dxstd * np.random.randn()) + ((1-Df) * channel.dxdt) # lateral migration for dt
         self.Bast = self.Bast + (self.sm.sig * dt)
-        while abs(self.Ccc[0] + dx) > self.Bb/2-(Bc/2): # keep channel within belt
+        while self.channel.max_x_abs > self.sm.Bb/2-(self.channel.geometry.Bc/2): # keep channel within belt
             dx = (dt * dxstd * np.random.randn()) + ((1-Df)*dx)
-        self.Ccc = [self.Ccc[0] + dx, self.Bast - (Hnbf/2)] # new channel center
+
+        # self.Ccc = [self.Ccc[0] + dx, self.Bast - (Hnbf/2)] # new channel center
         
         # # update plot
         # if loopcnt % 10 == 0 or avulcnt == 0:
         self.BastLine.set_ydata([self.Bast, self.Bast])
 
-        newCoords = geom.Ccc2coordsfun(Ccc, Bc, Hnbf)
-        newActShp = sg.box(self.Ccc[0]-Bc/2, self.Ccc[1]-Hnbf/2, 
-                           self.Ccc[0]+Bc/2, self.Ccc[1]+Hnbf/2)
+        # newCoords = geom.Ccc2coordsfun(Ccc, Bc, Hnbf)
+        # newActShp = sg.box(self.Ccc[0]-Bc/2, self.Ccc[1]-Hnbf/2, 
+                           # self.Ccc[0]+Bc/2, self.Ccc[1]+Hnbf/2)
         # chanAct['coords'] = newCoords
         # chanAct['sig'] = plt.cm.viridis(utils.normalizeColor(sig*1000, sigmin, sigmax))
         # chanAct['avul'] = avulCmap[avulrec % 9]
         # chanAct['Qw'] = plt.cm.viridis(utils.normalizeColor(Qw, Qwmin, Qwmax))
         # chanAct['age'] = loopcnt
 
-        chanActPoly = Polygon(newCoords, facecolor='0.5', edgecolor='black')
+        chanActPoly = Rectangle(self.channel.ll, self.channel.geometry.Bc, 
+                                self.channel.geometry.H)
+        # chanActPoly = Polygon(newCoords, facecolor='0.5', edgecolor='black')
         self.chanList = np.vstack((self.chanList, self.chanAct))
         chanListPoly.append(chanActPoly)
 
@@ -178,9 +224,9 @@ class Strat(object):
         self.ax.add_collection(chanColl)
 
         # # scroll the view
-        self.ax.set_ylim(utils.new_ylims(self.yView, self.Bast))
-        self.ax.set_xlim(-self.Bb/2, self.Bb/2)
-        self.VE_val.set_text('VE = ' + str(round(self.Bb/self.yView, 1)))
+        self.ax.set_ylim(utils.new_ylims(self.sm.yView, self.Bast))
+        self.ax.set_xlim(-self.sm.Bb/2, self.sm.Bb/2)
+        self.VE_val.set_text('VE = ' + str(round(self.sm.Bb/self.sm.yView, 1)))
 
         # # avulsion handler
         # avulcnt += 1 # increase since avul count
@@ -208,35 +254,7 @@ class Strat(object):
         return self.BastLine, 
 
 
-# model run params
-dt = 50 # timestep in yrs
 
-# setup params
-Cf = 0.004 # friction coeff
-D50 = 300*1e-6
-Beta = 1.5 # exponent to avulsion function
-Gamma = 1e-2 # factor for avulsion timing
-Df = 0.0005 # dampening factor to lateral migration rate change
-dxstd = 0.5 # stdev of lateral migration dist, [m/yr]?
-
-conR = 1.65 
-cong = 9.81
-conrhof = 1000
-connu = 1.004e-6
-    
-# initial conditions
-Bb = BbInit = 4000 # width of belt (m)
-yView = yViewInit = 100
-Qw = QwInit = 1000
-Qhat = geom.Qhatfun(Qw, D50, cong) # dimensionless Qw
-Rep = geom.Repfun(D50, conR, cong, connu) # particle Reynolds num
-Hbar = geom.Hbarfun(Qhat, Rep) # dimensionless depth
-Hnbf = geom.dimless2dimfun(Hbar, Qw, cong) # depth
-Bast = -yView + Hnbf # Basin top level
-Bast = 0 # Basin top level
-Ccc = np.array([ 0, (0 - (Hnbf / 2)) ]) # Channel center center
-avulct = 0 # count time since last avul (for triggering)
-dx = dt * (dxstd * np.random.randn()) # lateral migration per timestep [m/yr]
 
 # setup the figure
 plt.rcParams['toolbar'] = 'None'
