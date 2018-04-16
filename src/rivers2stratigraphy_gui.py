@@ -23,8 +23,8 @@ import matplotlib.widgets as widget
 from matplotlib.patches import Polygon, Rectangle
 from matplotlib.collections import PatchCollection, LineCollection
 from matplotlib.animation import FuncAnimation
-import shapely.geometry as sg
-import shapely.ops as so
+# import shapely.geometry as sg
+# import shapely.ops as so
 from itertools import compress
 import geom, sedtrans, utils
 
@@ -38,7 +38,7 @@ Cf = 0.004 # friction coeff
 D50 = 300*1e-6
 Beta = 1.5 # exponent to avulsion function
 Gamma = 1e-2 # factor for avulsion timing
-Df = 0.0005 # dampening factor to lateral migration rate change
+Df = 0.05 # dampening factor to lateral migration rate change
 dxdtstd = 0.5 # stdev of lateral migration dist, [m/yr]?
 
 conR = 1.65 
@@ -60,49 +60,68 @@ Ccc = np.array([ 0, (0 - (Hnbf / 2)) ]) # Channel center center
 avulct = 0 # count time since last avul (for triggering)
 dx = dt * (dxdtstd * np.random.randn()) # lateral migration per timestep [m/yr]
 
+# avul_num = 0 # the linear number of avulsion
+# avul_timer = 0 # counter for avulsion triggering
+
 class Channel(object):
     # rand_dxdt = (dxdtstd * np.random.randn()) 
 
-    def __init__(self, cent_x0=0, dxdt0=0, Bast=0, sm=None):
+    def __init__(self, x_cent0=0, dxdt0=0, Bast=0, 
+                 age=0, avul_num=0, avul_timer=0, sm=None):
         # self.read_sliders()
-        # self.char = SliderManager()s
+        # self.char = SliderManager()
+        self.x_cent0 = x_cent0
+        self.dxdt0 = dxdt0
         self.Qw = sm.Qw
+        self.sig = sm.sig
+        self.Ta = sm.Ta
+        self.Bb = sm.Bb
+        self.avul_timer = avul_timer
+        self.avul_num = avul_num
 
-        self.geometry = self.Geometry(sm)
+        if avul_timer > self.Ta:
+            self.avulsion()
+
+        self.Bast = Bast
+        self.get_geometry() # = self.Geometry()
         self.max_x_abs = np.inf
-        while self.max_x_abs > sm.Bb/2: # keep channel within belt
-            self.dxdt = (dxdtstd * np.random.randn())
-            self.dx = (self.dxdt * dt) + ((1-Df) * dxdt0)
-            self.cent_x = cent_x0 + self.dx
-            self.max_x_abs = abs(self.cent_x + self.geometry.Bc/2)
+        while self.max_x_abs > self.Bb/2: # keep channel within belt
+            self.dxdt = self.get_new_dxdt()
+            self.dx = dt * (((1-Df) * self.dxdt) + ((Df) * self.dxdt0))
+            self.x_cent = self.x_cent0 + self.dx
+            self.max_x_abs = abs(self.x_cent + self.Bc/2)
 
-    # dx = (dt * dxstd * np.random.randn()) + ((1-Df)*dx) # lateral migration for dt
-    # Bast = Bast + (sig * dt)
-    # while abs(Ccc[0] + dx) > Bb/2-(Bc/2): # keep channel within belt
-    #     dx = (dt * dxstd * np.random.randn()) + ((1-Df)*dx)
+        self.y_cent = Bast - self.H
+        self.ll = np.array([(self.x_cent - self.Bc), (Bast - (self.H))])
 
 
-        self.cent_y = Bast - self.geometry.H
-        self.ll = np.array([(self.cent_x - self.geometry.Bc), (Bast - (self.geometry.H))])
+    def get_geometry(self):
+        Qhat = geom.Qhatfun(self.Qw, D50, cong)
+        Hbar = geom.Hbarfun(Qhat, Rep)
+        Bbar = geom.Bbarfun(Qhat, Rep)
+        Sbar = geom.Sbarfun(Qhat, Rep)
+        self.H = geom.dimless2dimfun(Hbar, self.Qw, cong) # new depth
+        self.Bc = geom.dimless2dimfun(Bbar, self.Qw, cong) # new width
+        self.S = Sbar
 
 
-    class Geometry(object):
-        def __init__(self, sm):
-            Qhat = geom.Qhatfun(sm.Qw, D50, cong)
-            Hbar = geom.Hbarfun(Qhat, Rep)
-            Bbar = geom.Bbarfun(Qhat, Rep)
-            Sbar = geom.Sbarfun(Qhat, Rep)
-            H = geom.dimless2dimfun(Hbar, sm.Qw, cong) # new depth
-            Bc = geom.dimless2dimfun(Bbar, sm.Qw, cong) # new width
-            S = Sbar
-            # self.geometry = {'Qhat': Qhat, 'Hbar': Hbar, 'Bbar': Bbar,
-            #             'Sbar': Sbar, 'H': H, 'Bc': Bc, 'S': S}
-            self.Bc = Bc
-            self.H = H
+    def get_new_dxdt(self):
+        dxdt = (dxdtstd * (np.random.randn()) )
+        return dxdt
 
-    # class Characteristics(object):
-    #     def __init__(self):
-    #         self.sig = sig
+
+    def avulsion(self):
+        self.x_cent0 = self.get_new_xcent(self.Bb/2)
+        self.dxdt0 = self.get_new_dxdt()
+        self.avul_timer = 0
+        self.avul_num = self.avul_num + 1
+
+
+    def get_new_xcent(self, xlim):
+        self.get_geometry()
+        return np.random.uniform(-xlim + (self.Bc/2), 
+                                  xlim - (self.Bc/2), 1)
+
 
 
 class SliderManager(object):
@@ -110,19 +129,20 @@ class SliderManager(object):
         # read the sliders for values
         self.get_all()
 
-    def get_basin(self):
-        self.yView = slide_yView.val
-        self.Bb = slide_Bb.val * 1000
+    def get_display_options(self):
         self.colFlag = col_dict[rad_col.value_selected]
+        self.yView = slide_yView.val
 
-    def get_channel(self):
+    def get_calculation_options(self):
+        self.Bb = slide_Bb.val * 1000
         self.Qw = slide_Qw.val
         self.sig = slide_sig.val / 1000
         self.Ta = slide_Ta.val
 
     def get_all(self):
-        self.get_basin()
-        self.get_channel()
+        self.get_display_options()
+        self.get_calculation_options()
+
 
 
 class Strat(object):
@@ -131,10 +151,10 @@ class Strat(object):
         # self.read_sliders()
         self.ax = ax
         self.Bast = 0
-        # self.Ccc = Ccc
+        self.avul_num = 0
         self.sm = SliderManager()
 
-        self.channel = Channel(cent_x0 = 0, dxdt0 = 0,
+        self.channel = Channel(x_cent0 = 0, dxdt0 = 0,
                                Bast = self.Bast,
                                sm = self.sm)
         # self.chanAct = np.zeros(1, dtype=[('coords', float, (4,2)),
@@ -166,14 +186,18 @@ class Strat(object):
 
         # get new values from sliders
         # self.read_sliders()
+
         self.channel0 = self.channel
 
         # find new geom
         self.sm.get_all()
         self.Bast = self.Bast + (self.sm.sig * dt)
-        self.channel = Channel(cent_x0 = self.channel0.cent_x,
+        self.channel = Channel(x_cent0 = self.channel0.x_cent,
                                dxdt0 = self.channel0.dxdt,
                                Bast = self.Bast,
+                               age = i,
+                               avul_num = self.avul_num,
+                               avul_timer = self.channel0.avul_timer + dt,
                                sm = self.sm)
         
 
@@ -181,7 +205,7 @@ class Strat(object):
         # update model configurations
 
         # this validates channel position with basin resizing
-        # if abs(channel.Ccc[0]) + channel.geometry.Bc/2 > self.sm.Bb/2: 
+        # if abs(channel.Ccc[0]) + channel.Bc/2 > self.sm.Bb/2: 
             # self.Ccc = np.hstack([np.random.uniform(-self.Bb/2+(Bc/2), self.Bb/2-(Bc/2), 1),
                              # self.Ccc[1]])
 
@@ -208,8 +232,8 @@ class Strat(object):
         # chanAct['Qw'] = plt.cm.viridis(utils.normalizeColor(Qw, Qwmin, Qwmax))
         # chanAct['age'] = loopcnt
 
-        self.channelRectangle = Rectangle(self.channel.ll, self.channel.geometry.Bc, 
-                                self.channel.geometry.H)
+        self.channelRectangle = Rectangle(self.channel.ll, self.channel.Bc, 
+                                self.channel.H)
         # channelRectangle = Polygon(newCoords, facecolor='0.5', edgecolor='black')
         # self.chanList = np.vstack((self.chanList, self.chanAct))
         self.channelRectangleList.append(self.channelRectangle)
@@ -242,7 +266,9 @@ class Strat(object):
 
         # # avulsion handler
         # avulcnt += 1 # increase since avul count
-        # if avulcnt > Ta: # if time since is more than Ta: due for one
+        # print(self.avul_timer)
+        # if self.avul_timer > self.sm.Ta: # if time since is more than Ta: due for one
+            # self.avulsion()
         # # abs(Ccc[0] + dx) > Bb/2-(Bc/2)
         #     Ccc = np.hstack([np.random.uniform(-Bb/2+(Bc/2), Bb/2-(Bc/2), 1),
         #                      Ccc[1]])
@@ -373,7 +399,7 @@ chanListPoly = []
 chanColl = PatchCollection(chanListPoly)
 ax.add_collection(chanColl)
 
-chanActShp = sg.box(Ccc[0], Ccc[1], Ccc[0], Ccc[1])
+# chanActShp = sg.box(Ccc[0], Ccc[1], Ccc[0], Ccc[1])
 
 col_dict = {'Water discharge': 'Qw', 
             'Avulsion number': 'avul',
