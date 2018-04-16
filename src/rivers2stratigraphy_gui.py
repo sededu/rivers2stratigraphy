@@ -78,6 +78,7 @@ class Channel(object):
         self.Bb = sm.Bb
         self.avul_timer = avul_timer
         self.avul_num = avul_num
+        self.age = age
 
         if avul_timer > self.Ta:
             self.avulsion()
@@ -241,20 +242,24 @@ class Strat(object):
         # chanColl.remove()
         self.chanColl = PatchCollection(self.channelRectangleList)
         self.chanColl.set_edgecolor('0')
-        # if colFlag == 'Qw':
-        #     chanColl.set_facecolor( np.vstack(chanList['Qw']) )
+
+        self.chanColl.set_array(np.array([v.age for v in self.channelRectangleList]))
+        if self.sm.colFlag == 'Qw':
+            chanColl.set_facecolor( np.vstack(chanList['Qw']) )
         # elif colFlag == 'avul':
         #     chanColl.set_facecolor( np.vstack(chanList['avul']) )
-        # elif colFlag == 'age':
+        elif self.sm.colFlag == 'age':
         #     inViewIdx = [ all( c['coords'][0][:,1] > (Bast - yView) ) 
         #                   for c in chanList ]
         #     # color age to visible strat:
         #     ageCmap = plt.cm.viridis( utils.normalizeColor(
         #         chanList['age'], chanList['age'][inViewIdx].min(), loopcnt).flatten() )
         #     # color age to all strat in memory:
-        #     # ageCmap = plt.cm.viridis( utils.normalizeColor(
-        #     #     chanList['age'], chanList['age'].min(), loopcnt).flatten() )
-        #     chanColl.set_facecolor( ageCmap )
+            # ageCmap = plt.cm.viridis( utils.normalizeColor(
+            #     chanList['age'], chanList['age'].min(), loopcnt).flatten() )
+            ageCmap = plt.cm.viridis(np.linspace(0, 1, len(chanColl.get_children())))
+            print(ageCmap)
+            chanColl.set_facecolor( ageCmap )
         # elif colFlag == 'sig':
         #     chanColl.set_facecolor( np.vstack(chanList['sig']) )
         self.ax.add_collection(self.chanColl)
