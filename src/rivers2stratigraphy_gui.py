@@ -37,8 +37,8 @@ Cf = 0.004 # friction coeff
 D50 = 300*1e-6
 Beta = 1.5 # exponent to avulsion function
 Gamma = 1e-2 # factor for avulsion timing
-Df = 0.5 # dampening factor to lateral migration rate change
-dxdtstd = 0.5 # stdev of lateral migration dist, [m/yr]?
+Df = 0.8 # dampening factor to lateral migration rate change
+dxdtstd = 1 # stdev of lateral migration dist, [m/yr]?
 
 conR = 1.65 
 cong = 9.81
@@ -50,17 +50,9 @@ Rep = geom.Repfun(D50, conR, cong, connu) # particle Reynolds num
 Bb = BbInit = 4000 # width of belt (m)
 yView = yViewInit = 100
 Qw = QwInit = 1000
-# Qhat = geom.Qhatfun(Qw, D50, cong) # dimensionless Qw
-# Hbar = geom.Hbarfun(Qhat, Rep) # dimensionless depth
-# Hnbf = geom.dimless2dimfun(Hbar, Qw, cong) # depth
-# Bast = -yView + Hnbf # Basin top level
 Bast = 0 # Basin top level
-# Ccc = np.array([ 0, (0 - (Hnbf / 2)) ]) # Channel center center
-# avulct = 0 # count time since last avul (for triggering)
-# dx = dt * (dxdtstd * np.random.randn()) # lateral migration per timestep [m/yr]
 
-# avul_num = 0 # the linear number of avulsion
-# avul_timer = 0 # counter for avulsion triggering
+
 
 class Channel(object):
 
@@ -86,17 +78,15 @@ class Channel(object):
         self.x_outer = np.inf
         while self.x_outer >= (self.Bb / 2): # keep channel within belt
             self.dxdt = self.new_dxdt()
-            self.dx = dt * (   ((Df) * self.dxdt) + ((1-Df) * self.dxdt0)   )
+            self.dx = dt * (   ((1-Df) * self.dxdt) + ((Df) * self.dxdt0)   )
             self.x_cent = self.x_cent0 + self.dx
             self.x_side = np.array([[self.x_cent - (self.Bc/2)], 
                                     [self.x_cent + (self.Bc/2)]])
             self.x_outer = np.abs(self.x_side).max()
-            if self.x_outer >= self.Bb / 2:
-                print("x_cent = ", self.x_cent)
-                print("x_outer = ", self.x_outer)
-                print("xlim = ", self.Bb/2-(self.Bc/2))
-                # sys.exit(1)
-            # self.x_outer = abs(self.x_cent) + self.Bc/2
+            # if self.x_outer >= self.Bb / 2:
+            #     print("x_cent = ", self.x_cent)
+            #     print("x_outer = ", self.x_outer)
+            #     print("xlim = ", self.Bb/2-(self.Bc/2))
         
         self.y_cent = Bast - (self.H / 2)
         self.ll = np.array([(self.x_cent - (self.Bc / 2)), (self.y_cent - (self.H / 2))])
@@ -122,15 +112,14 @@ class Channel(object):
         self.dxdt0 = 0 # self.new_dxdt()
         self.avul_timer = 0
         self.avul_num = self.avul_num + 1
-        print("avulsion!", self.avul_num)
 
 
     def new_xcent(self, Bb):
         self.geometry()
         val = np.random.uniform(-Bb/2 + (self.Bc/2), 
-                                 Bb/2 - (self.Bc/2), 1)
+                                 Bb/2 - (self.Bc/2))
         # print(val)
-        return val[0]
+        return val
 
 
 
