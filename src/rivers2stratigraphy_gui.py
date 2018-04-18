@@ -246,9 +246,21 @@ class Strat(object):
             self.ax.add_collection(self.channelPatchCollection)
 
             # # scroll the view
-            self.ax.set_ylim(utils.new_ylims(self.sm.yView, self.Bast))
+            self.ax.set_ylim(utils.new_ylims(yView = self.sm.yView,
+                                             Bast = self.Bast))
+            # could try below to do things by shifting channels instead -- faster?
+            # self.channelList = [c for (c, i) in 
+            #                     zip(self.channelList, outdatedIdx) if not i]
+            # self.channelRectangleList = [c for (c, i) in 
+            #                              zip(self.channelRectangleList, outdatedIdx) if not i]
+
+
             self.ax.set_xlim(-self.sm.Bb/2, self.sm.Bb/2)
             self.VE_val.set_text('VE = ' + str(round(self.sm.Bb/self.sm.yView, 1)))
+
+
+
+
 
             # remove outdated channels
             stratMin = self.Bast - yViewmax
