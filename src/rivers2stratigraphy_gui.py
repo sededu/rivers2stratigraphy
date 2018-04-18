@@ -37,7 +37,7 @@ Cf = 0.004 # friction coeff
 D50 = 300*1e-6
 Beta = 1.5 # exponent to avulsion function
 Gamma = 1e-2 # factor for avulsion timing
-Df = 0.8 # dampening factor to lateral migration rate change
+Df = 0.6 # dampening factor to lateral migration rate change
 dxdtstd = 1 # stdev of lateral migration dist, [m/yr]?
 
 conR = 1.65 
@@ -75,16 +75,29 @@ class Channel(object):
 
         self.geometry()
 
-        self.x_outer = np.inf
-        while self.x_outer >= (self.Bb / 2): # keep channel within belt
-            self.dxdt = self.new_dxdt()
-            self.dx = dt * (   ((1-Df) * self.dxdt) + ((Df) * self.dxdt0)   )
-            self.x_cent = self.x_cent0 + self.dx
+        self.x_outer = self.Bb
+        # while self.x_outer >= (self.Bb / 2): # keep channel within belt
+        #     self.dxdt = self.new_dxdt()
+        #     self.dx = dt * (   ((1-Df) * self.dxdt) + ((Df) * self.dxdt0)   )
+        #     self.x_cent = self.x_cent0 + self.dx
+        #     self.x_side = np.array([[self.x_cent - (self.Bc/2)], 
+        #                             [self.x_cent + (self.Bc/2)]])
+        #     self.x_outer = np.max(np.abs(self.x_side))
+    
+        self.dxdt = self.new_dxdt()
+        self.dx = dt * (   ((1-Df) * self.dxdt) + ((Df) * self.dxdt0)   )
+        self.x_cent = self.x_cent0 + self.dx
+        self.x_side = np.array([[self.x_cent - (self.Bc/2)], 
+                                [self.x_cent + (self.Bc/2)]])
+        self.x_outer = np.max(np.abs(self.x_side))
+        if self.x_outer >= (self.Bb / 2): # keep channel within belt
+            self.x_cent = self.x_cent0 - self.dx
             self.x_side = np.array([[self.x_cent - (self.Bc/2)], 
                                     [self.x_cent + (self.Bc/2)]])
-            self.x_outer = np.abs(self.x_side).max()
-        
-        self.y_cent = Bast - (self.H / 2)
+            self.x_outer = np.max(np.abs(self.x_side))
+
+        self.y_cent = self.Bast - (self.H / 2)
+        self.y_upper = self.Bast
         self.ll = np.array([(self.x_cent - (self.Bc / 2)), (self.y_cent - (self.H / 2))])
 
 
@@ -142,7 +155,7 @@ class SliderManager(object):
 class Strat(object):
 
     def __init__(self, ax):
-        # self.read_sliders()
+        
         self.ax = ax
         self.Bast = 0
         self.avul_num = 0
@@ -169,11 +182,6 @@ class Strat(object):
 
     def __call__(self, i):
 
-        # print(i)
-
-        # get new values from sliders
-        # self.read_sliders()
-
         self.channel0 = self.channel
 
         # find new geom
@@ -186,29 +194,20 @@ class Strat(object):
                                avul_num = self.channel0.avul_num,
                                avul_timer = self.channel0.avul_timer + dt,
                                sm = self.sm)
-        
-
-        
-        # update model configurations
 
         # this validates channel position with basin resizing
         # if abs(self.channel.x_cent) + channel.Bc/2 > self.sm.Bb/2: 
             # self.Ccc = np.hstack([np.random.uniform(-self.Bb/2+(Bc/2), self.Bb/2-(Bc/2), 1),
                              # self.Ccc[1]])
 
-        # qsin = sedtrans.qsEH(D50, Cf, 
-                             # sedtrans.taubfun(Hnbf, S, cong, conrhof), 
-                             # conR, cong, conrhof)  # sedment transport rate based on new geom
+        self.qs = sedtrans.qsEH(D50, Cf, 
+                                sedtrans.taubfun(self.channel.H, self.channel.S, cong, conrhof), 
+                                conR, cong, conrhof)  # sedment transport rate based on new geom
 
         # # update plot
-        if i % 1 == 0 or self.channel.avul_timer == 0:
-            self.BastLine.set_ydata([self.Bast, self.Bast])
+        if i % 2 == 0 or self.channel.avul_timer == 0:
 
-            # chanAct['coords'] = newCoords
-            # chanAct['sig'] = plt.cm.viridis(utils.normalizeColor(sig*1000, sigmin, sigmax))
-            # chanAct['avul'] = avulCmap[avulrec % 9]
-            # chanAct['Qw'] = plt.cm.viridis(utils.normalizeColor(Qw, Qwmin, Qwmax))
-            # chanAct['age'] = loopcnt
+            self.BastLine.set_ydata([self.Bast, self.Bast])
 
             self.channelRectangle = Rectangle(self.channel.ll, self.channel.Bc, 
                                     self.channel.H)
@@ -220,12 +219,11 @@ class Strat(object):
 
             
             if self.sm.colFlag == 'Qw':
-                self.channelPatchCollection.set_array(np.array([v.Qw for v in self.channelList]))
+                self.channelPatchCollection.set_array(np.array([c.Qw for c in self.channelList]))
                 self.channelPatchCollection.set_clim(vmin=Qwmin, vmax=Qwmax)
                 self.channelPatchCollection.set_cmap(plt.cm.viridis)
             elif self.sm.colFlag == 'avul':
-                
-                self.channelPatchCollection.set_array(np.array([v.avul_num % 9 for v in self.channelList]))
+                self.channelPatchCollection.set_array(np.array([c.avul_num % 9 for c in self.channelList]))
                 self.channelPatchCollection.set_clim(vmin=0, vmax=9)
                 self.channelPatchCollection.set_cmap(plt.cm.Set1)
             elif self.sm.colFlag == 'age':
@@ -235,14 +233,14 @@ class Strat(object):
                 # ageCmap = plt.cm.viridis( utils.normalizeColor(
                     # chanList['age'], chanList['age'][inViewIdx].min(), loopcnt).flatten() )
                 # color age to all strat in memory:
-                age_array = np.array([v.age for v in self.channelList])
+                age_array = np.array([c.age for c in self.channelList])
                 self.channelPatchCollection.set_array(age_array)
                 self.channelPatchCollection.set_clim(vmin=age_array.min(), vmax=age_array.max())
                 self.channelPatchCollection.set_cmap(plt.cm.viridis)
             elif self.sm.colFlag == 'sig':
-                sig_array = np.array([v.sig for v in self.channelList])
+                sig_array = np.array([c.sig for c in self.channelList])
                 self.channelPatchCollection.set_array(sig_array)
-                self.channelPatchCollection.set_clim(vmin=sigmin, vmax=sigmax)
+                self.channelPatchCollection.set_clim(vmin=sigmin/1000, vmax=sigmax/1000)
                 self.channelPatchCollection.set_cmap(plt.cm.viridis)
 
             self.ax.add_collection(self.channelPatchCollection)
@@ -252,12 +250,20 @@ class Strat(object):
             self.ax.set_xlim(-self.sm.Bb/2, self.sm.Bb/2)
             self.VE_val.set_text('VE = ' + str(round(self.sm.Bb/self.sm.yView, 1)))
 
-            # # remove outdated channels
-            # stratMax = Bast - yViewmax
-            # chanListOutdatedIdx = geom.outdatedIndex(chanList, stratMax)
-            # chanList = chanList[ ~chanListOutdatedIdx ]
-            # chanListPoly = [i for (i, v) in 
-            #                 zip(chanListPoly, chanListOutdatedIdx) if not v]
+            # remove outdated channels
+            stratMin = self.Bast - yViewmax
+            # print("yupper=", self.channel.y_upper)
+            # print("Bast-ymax = ", self.Bast - yViewmax)
+            # print("yViewmax = ", yViewmax, '\n')
+            outdatedIdx = [c.y_upper < stratMin for c in self.channelList]
+            self.channelList = [c for (c, i) in 
+                                zip(self.channelList, outdatedIdx) if not i]
+            self.channelRectangleList = [c for (c, i) in 
+                                         zip(self.channelRectangleList, outdatedIdx) if not i]
+            # print(outdatedIdx)
+            print(len(self.channelList))
+            # self.channelList = self.channelList[ ~outdatedIdx ]
+            # self.channelRectangleList = self.channelRectangleList[ ~outdatedIdx ]
 
         return self.BastLine, self.channelPatchCollection, self.VE_val
 
