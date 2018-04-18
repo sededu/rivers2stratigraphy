@@ -83,10 +83,6 @@ class Channel(object):
             self.x_side = np.array([[self.x_cent - (self.Bc/2)], 
                                     [self.x_cent + (self.Bc/2)]])
             self.x_outer = np.abs(self.x_side).max()
-            # if self.x_outer >= self.Bb / 2:
-            #     print("x_cent = ", self.x_cent)
-            #     print("x_outer = ", self.x_outer)
-            #     print("xlim = ", self.Bb/2-(self.Bc/2))
         
         self.y_cent = Bast - (self.H / 2)
         self.ll = np.array([(self.x_cent - (self.Bc / 2)), (self.y_cent - (self.H / 2))])
@@ -118,7 +114,6 @@ class Channel(object):
         self.geometry()
         val = np.random.uniform(-Bb/2 + (self.Bc/2), 
                                  Bb/2 - (self.Bc/2))
-        # print(val)
         return val
 
 
