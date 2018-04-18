@@ -30,7 +30,7 @@ import sys
 
 
 # model run params
-dt = 50 # timestep in yrs
+dt = 100 # timestep in yrs
 
 # setup params
 Cf = 0.004 # friction coeff
@@ -205,7 +205,7 @@ class Strat(object):
                                 conR, cong, conrhof)  # sedment transport rate based on new geom
 
         # # update plot
-        if i % 2 == 0 or self.channel.avul_timer == 0:
+        if i % 1 == 0 or self.channel.avul_timer == 0:
 
             self.BastLine.set_ydata([self.Bast, self.Bast])
 
@@ -252,18 +252,13 @@ class Strat(object):
 
             # remove outdated channels
             stratMin = self.Bast - yViewmax
-            # print("yupper=", self.channel.y_upper)
-            # print("Bast-ymax = ", self.Bast - yViewmax)
-            # print("yViewmax = ", yViewmax, '\n')
             outdatedIdx = [c.y_upper < stratMin for c in self.channelList]
             self.channelList = [c for (c, i) in 
                                 zip(self.channelList, outdatedIdx) if not i]
             self.channelRectangleList = [c for (c, i) in 
                                          zip(self.channelRectangleList, outdatedIdx) if not i]
-            # print(outdatedIdx)
-            print(len(self.channelList))
-            # self.channelList = self.channelList[ ~outdatedIdx ]
-            # self.channelRectangleList = self.channelRectangleList[ ~outdatedIdx ]
+            print(self.Bast)
+
 
         return self.BastLine, self.channelPatchCollection, self.VE_val
 
@@ -386,6 +381,6 @@ col_dict = {'Water discharge': 'Qw',
 # while plt.fignum_exists(1):
 strat = Strat(ax)
 anim = FuncAnimation(fig, strat, init_func=strat.func_init,
-                     interval=50, blit=True)
+                     interval=100, blit=True)
 
 plt.show()
