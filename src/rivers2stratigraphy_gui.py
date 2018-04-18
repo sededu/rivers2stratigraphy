@@ -26,6 +26,8 @@ from matplotlib.animation import FuncAnimation
 from itertools import compress
 import geom, sedtrans, utils
 
+import sys
+
 
 # model run params
 dt = 50 # timestep in yrs
@@ -35,7 +37,7 @@ Cf = 0.004 # friction coeff
 D50 = 300*1e-6
 Beta = 1.5 # exponent to avulsion function
 Gamma = 1e-2 # factor for avulsion timing
-Df = 0.05 # dampening factor to lateral migration rate change
+Df = 0.5 # dampening factor to lateral migration rate change
 dxdtstd = 0.5 # stdev of lateral migration dist, [m/yr]?
 
 conR = 1.65 
@@ -79,24 +81,28 @@ class Channel(object):
         if avul_timer > self.Ta:
             self.avulsion()
 
-        self.get_geometry()
+        self.geometry()
 
         self.x_outer = np.inf
-        while self.x_outer >= self.Bb/2-(self.Bc/2): # keep channel within belt
-            self.dxdt = self.get_new_dxdt()
-            self.dx = dt * (((Df) * self.dxdt) + ((1-Df) * self.dxdt0))
+        while self.x_outer >= (self.Bb / 2): # keep channel within belt
+            self.dxdt = self.new_dxdt()
+            self.dx = dt * (   ((Df) * self.dxdt) + ((1-Df) * self.dxdt0)   )
             self.x_cent = self.x_cent0 + self.dx
-            self.x_outer = np.array([[self.x_cent - self.Bc/2], 
-                                       [self.x_cent + self.Bc/2]]).max()
-            if self.x_outer >= self.Bb/2-(self.Bc/2):
-                print("x_outer = ", self.x_outer, '\n', "xlim = ", self.Bb/2)
+            self.x_side = np.array([[self.x_cent - (self.Bc/2)], 
+                                    [self.x_cent + (self.Bc/2)]])
+            self.x_outer = np.abs(self.x_side).max()
+            if self.x_outer >= self.Bb / 2:
+                print("x_cent = ", self.x_cent)
+                print("x_outer = ", self.x_outer)
+                print("xlim = ", self.Bb/2-(self.Bc/2))
+                # sys.exit(1)
             # self.x_outer = abs(self.x_cent) + self.Bc/2
         
-        self.y_cent = Bast - self.H/2
-        self.ll = np.array([(self.x_cent - self.Bc), (Bast - (self.H))])
+        self.y_cent = Bast - (self.H / 2)
+        self.ll = np.array([(self.x_cent - (self.Bc / 2)), (self.y_cent - (self.H / 2))])
 
 
-    def get_geometry(self):
+    def geometry(self):
         Qhat = geom.Qhatfun(self.Qw, D50, cong)
         Hbar = geom.Hbarfun(Qhat, Rep)
         Bbar = geom.Bbarfun(Qhat, Rep)
@@ -106,21 +112,21 @@ class Channel(object):
         self.S = Sbar
 
 
-    def get_new_dxdt(self):
+    def new_dxdt(self):
         dxdt = (dxdtstd * (np.random.randn()) )
         return dxdt
 
 
     def avulsion(self):
-        self.x_cent0 = self.get_new_xcent(Bb = self.Bb)
-        self.dxdt0 = 0 # self.get_new_dxdt()
+        self.x_cent0 = self.new_xcent(Bb = self.Bb)
+        self.dxdt0 = 0 # self.new_dxdt()
         self.avul_timer = 0
         self.avul_num = self.avul_num + 1
         print("avulsion!", self.avul_num)
 
 
-    def get_new_xcent(self, Bb):
-        self.get_geometry()
+    def new_xcent(self, Bb):
+        self.geometry()
         val = np.random.uniform(-Bb/2 + (self.Bc/2), 
                                  Bb/2 - (self.Bc/2), 1)
         # print(val)
