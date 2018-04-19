@@ -269,7 +269,6 @@ class Strat(object):
                                 zip(self.channelList, outdatedIdx) if not i]
             self.channelRectangleList = [c for (c, i) in 
                                          zip(self.channelRectangleList, outdatedIdx) if not i]
-            print(self.Bast)
 
 
         return self.BastLine, self.channelPatchCollection, self.VE_val
