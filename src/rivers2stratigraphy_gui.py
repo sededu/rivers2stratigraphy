@@ -166,6 +166,7 @@ class Strat(object):
                                sm = self.sm)
         self.channelList = [self.channel]
         self.channelRectangleList = []
+        self.channelPatchCollection = PatchCollection(self.channelRectangleList)
 
         self.BastLine, = ax.plot([-Bbmax*1000/2, Bbmax*1000/2], 
                                  [Bast, Bast], 'k--') # plot basin top
@@ -174,11 +175,12 @@ class Strat(object):
                                backgroundcolor='white')
 
 
-    def func_init(self):
-        self.BastLine.set_ydata([Bast, Bast])
+    def func_init(fig, ax, self):
+        # self.BastLine.set_ydata([Bast, Bast])
 
-        return self.BastLine,
 
+        # return self.BastLine, self.channelPatchCollection
+        return self
 
     def __call__(self, i):
 
@@ -391,7 +393,9 @@ col_dict = {'Water discharge': 'Qw',
 # time looping
 # while plt.fignum_exists(1):
 strat = Strat(ax)
-anim = FuncAnimation(fig, strat, init_func=strat.func_init,
+# anim = FuncAnimation(fig, strat, init_func=strat.func_init,
+#                      interval=100, blit=True)
+anim = FuncAnimation(fig, strat,
                      interval=100, blit=True)
 
 plt.show()
