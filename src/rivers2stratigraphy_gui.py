@@ -99,7 +99,7 @@ class Channel(object):
 
         self.y_cent = self.Bast - (self.H / 2)
         self.y_upper = self.Bast
-        self.ll = np.array([(self.x_cent - (self.Bc / 2)), (self.y_cent - (self.H / 2))])
+        self.ll = self.lower_left()
 
 
     def geometry(self):
@@ -124,7 +124,18 @@ class Channel(object):
         self.avul_num = self.avul_num + 1
 
 
+    def subside(self, dz):
+        self.y_cent -= dz
+        self.ll = self.lower_left()
+
+
+    def lower_left(self):
+        return np.array([(self.x_cent - (self.Bc / 2)), 
+                         (self.y_cent - (self.H / 2))])
+
+
     def new_xcent(self, Bb):
+        # avulsion chooser
         self.geometry()
         val = np.random.uniform(-Bb/2 + (self.Bc/2), 
                                  Bb/2 - (self.Bc/2))
@@ -198,7 +209,22 @@ class Strat(object):
 
         # find new geom
         self.sm.get_all()
-        self.Bast = np.round( self.Bast + (self.sm.sig * dt) , 1)
+        # self.Bast = np.round( self.Bast + (self.sm.sig * dt) , 1)
+        for c in iter(self.channelList):
+            # c0 = c.y_cent
+            c.subside(self.sm.sig * dt)
+            # print('c0 = ', round(c0,4))
+            # print('c = ', round(c.y_cent,4))
+            # print(c.ll)
+
+        # for c in iter(self.channelRectangleList)
+
+        # self.channelList = [c.subside(self.sm.sig * dt) for c in iter(self.channelList)]
+        # print(self.channelList)
+        self.channelRectangleList = [Rectangle(c.ll, c.Bc, c.H) for c in iter(self.channelList)]
+        # print(self.channelRectangleList)
+        
+
         self.channel = Channel(x_cent0 = self.channel0.x_cent,
                                dxdt0 = self.channel0.dxdt,
                                Bast = self.Bast,
@@ -206,6 +232,14 @@ class Strat(object):
                                avul_num = self.channel0.avul_num,
                                avul_timer = self.channel0.avul_timer + dt,
                                sm = self.sm)
+        self.channelRectangle = Rectangle(self.channel.ll, self.channel.Bc, 
+                                    self.channel.H)
+
+        self.channelList.append(self.channel)
+        self.channelRectangleList.append(self.channelRectangle)
+
+        self.channelPatchCollection = PatchCollection(self.channelRectangleList)
+        self.channelPatchCollection.set_edgecolor('0') # remove for speed?
 
         # this validates channel position with basin resizing
         # if abs(self.channel.x_cent) + channel.Bc/2 > self.sm.Bb/2: 
@@ -221,13 +255,14 @@ class Strat(object):
 
             self.BastLine.set_ydata([self.Bast, self.Bast])
 
-            self.channelRectangle = Rectangle(self.channel.ll, self.channel.Bc, 
-                                    self.channel.H)
-            self.channelList.append(self.channel)
-            self.channelRectangleList.append(self.channelRectangle)
+            # self.channelRectangle = Rectangle(self.channel.ll, self.channel.Bc, 
+            #                         self.channel.H)
 
-            self.channelPatchCollection = PatchCollection(self.channelRectangleList)
-            self.channelPatchCollection.set_edgecolor('0') # remove for speed?
+            # self.channelList.append(self.channel)
+            # self.channelRectangleList.append(self.channelRectangle)
+
+            # self.channelPatchCollection = PatchCollection(self.channelRectangleList)
+            # self.channelPatchCollection.set_edgecolor('0') # remove for speed?
 
             if self.sm.colFlag == 'age':
                 age_array = np.array([c.age for c in self.channelList])
@@ -251,8 +286,8 @@ class Strat(object):
             self.ax.add_collection(self.channelPatchCollection)
 
             # scroll the view
-            ylims = utils.new_ylims(yView = self.sm.yView, Bast = self.Bast)
-            self.ax.set_ylim(ylims)
+            # ylims = utils.new_ylims(yView = self.sm.yView, Bast = self.Bast)
+            # self.ax.set_ylim(ylims)
             self.ax.set_xlim(-self.sm.Bb/2, self.sm.Bb/2)
 
             # add vertical exagg text
@@ -266,7 +301,8 @@ class Strat(object):
             self.channelRectangleList = [c for (c, i) in 
                                          zip(self.channelRectangleList, outdatedIdx) if not i]
 
-        return self.BastLine, self.channelPatchCollection, self.VE_val, self.ax.yaxis
+        return self.BastLine, self.channelPatchCollection, \
+               self.VE_val
 
 
 
@@ -379,7 +415,7 @@ col_dict = {'Water discharge': 'Qw',
 # time looping
 strat = Strat(ax)
 
-animation.Animation._blit_draw = utils._blit_draw # patch taken from stackoverflow
+# animation.Animation._blit_draw = utils._blit_draw # patch taken from stackoverflow
 anim = animation.FuncAnimation(fig, strat,
                                 interval=100, blit=True)
 anim.running = True
