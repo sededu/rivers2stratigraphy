@@ -10,7 +10,7 @@
 #   written by Andrew J. Moodie
 #   amoodie@rice.edu
 #   Feb 2018
-#
+#   
 #   TODO:
 #    - control for "natural" ad default where lateral migration 
 #       and Ta are a function of sediment transport (Qw)
