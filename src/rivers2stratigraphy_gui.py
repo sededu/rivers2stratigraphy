@@ -195,8 +195,7 @@ class Strat(object):
         '''
         handles the initiation of the figure and axes for blitting
         '''
-        # self.BastLine.set_ydata([Bast, Bast])
-        # return self.BastLine, self.channelPatchCollection
+
         return self
 
 
@@ -209,21 +208,13 @@ class Strat(object):
 
         # find new geom
         self.sm.get_all()
-        # self.Bast = np.round( self.Bast + (self.sm.sig * dt) , 1)
+
+        # subside the channels by sig
         for c in iter(self.channelList):
-            # c0 = c.y_cent
             c.subside(self.sm.sig * dt)
-            # print('c0 = ', round(c0,4))
-            # print('c = ', round(c.y_cent,4))
-            # print(c.ll)
 
-        # for c in iter(self.channelRectangleList)
-
-        # self.channelList = [c.subside(self.sm.sig * dt) for c in iter(self.channelList)]
-        # print(self.channelList)
+        # recalculate the channel bodies
         self.channelRectangleList = [Rectangle(c.ll, c.Bc, c.H) for c in iter(self.channelList)]
-        # print(self.channelRectangleList)
-        
 
         self.channel = Channel(x_cent0 = self.channel0.x_cent,
                                dxdt0 = self.channel0.dxdt,
@@ -241,11 +232,6 @@ class Strat(object):
         self.channelPatchCollection = PatchCollection(self.channelRectangleList)
         self.channelPatchCollection.set_edgecolor('0') # remove for speed?
 
-        # this validates channel position with basin resizing
-        # if abs(self.channel.x_cent) + channel.Bc/2 > self.sm.Bb/2: 
-            # self.Ccc = np.hstack([np.random.uniform(-self.Bb/2+(Bc/2), self.Bb/2-(Bc/2), 1),
-                             # self.Ccc[1]])
-
         self.qs = sedtrans.qsEH(D50, Cf, 
                                 sedtrans.taubfun(self.channel.H, self.channel.S, cong, conrhof), 
                                 conR, cong, conrhof)  # sedment transport rate based on new geom
@@ -254,15 +240,6 @@ class Strat(object):
         if i % 1 == 0 or self.channel.avul_timer == 0:
 
             self.BastLine.set_ydata([self.Bast, self.Bast])
-
-            # self.channelRectangle = Rectangle(self.channel.ll, self.channel.Bc, 
-            #                         self.channel.H)
-
-            # self.channelList.append(self.channel)
-            # self.channelRectangleList.append(self.channelRectangle)
-
-            # self.channelPatchCollection = PatchCollection(self.channelRectangleList)
-            # self.channelPatchCollection.set_edgecolor('0') # remove for speed?
 
             if self.sm.colFlag == 'age':
                 age_array = np.array([c.age for c in self.channelList])
@@ -285,12 +262,10 @@ class Strat(object):
 
             self.ax.add_collection(self.channelPatchCollection)
 
-            # scroll the view
-            # ylims = utils.new_ylims(yView = self.sm.yView, Bast = self.Bast)
-            # self.ax.set_ylim(ylims)
+            # xview
             self.ax.set_xlim(-self.sm.Bb/2, self.sm.Bb/2)
 
-            # add vertical exagg text
+            # vertical exagg text
             self.VE_val.set_text('VE = ' + str(round(self.sm.Bb/self.sm.yView, 1)))
 
             # remove outdated channels
@@ -303,7 +278,6 @@ class Strat(object):
 
         return self.BastLine, self.channelPatchCollection, \
                self.VE_val
-
 
 
 
@@ -320,6 +294,7 @@ plt.xlim(-Bb/2, Bb/2)
 ax.xaxis.set_major_formatter( plt.FuncFormatter(
                              lambda v, x: str(v / 1000).format('%0.0f')) )
 
+
 # define reset functions, must operate on global vars
 def slide_reset(event):
     slide_Qw.reset()
@@ -330,10 +305,12 @@ def slide_reset(event):
     slide_Bb.reset()
 
 
+
 def axis_reset(event):
     strat.Bast = 0
     strat.channelList = [strat.channelList[-1]]
     strat.channelRectangleList = []
+
 
 
 def pause_anim(event):
@@ -342,8 +319,7 @@ def pause_anim(event):
     else:
         anim.event_source.start()
     anim.running ^= True
-    # stratcanv = fig.canvas.copy_from_bbox(ax.bbox)
-    # fig.canvas.restore_region(stratcanv)
+
 
 
 # add sliders
@@ -415,7 +391,6 @@ col_dict = {'Water discharge': 'Qw',
 # time looping
 strat = Strat(ax)
 
-# animation.Animation._blit_draw = utils._blit_draw # patch taken from stackoverflow
 anim = animation.FuncAnimation(fig, strat,
                                 interval=100, blit=True)
 anim.running = True
