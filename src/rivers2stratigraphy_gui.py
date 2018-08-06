@@ -155,6 +155,9 @@ class SliderManager(object):
 class Strat(object):
 
     def __init__(self, ax):
+        '''
+        initiation of the main strat object
+        '''
         
         self.ax = ax
         self.Bast = 0
@@ -176,13 +179,18 @@ class Strat(object):
 
 
     def func_init(fig, ax, self):
+        '''
+        handles the initiation of the figure and axes for blitting
+        '''
         # self.BastLine.set_ydata([Bast, Bast])
-
-
         # return self.BastLine, self.channelPatchCollection
         return self
 
+
     def __call__(self, i):
+        '''
+        called every loop
+        '''
 
         self.channel0 = self.channel
 
@@ -219,8 +227,12 @@ class Strat(object):
             self.channelPatchCollection = PatchCollection(self.channelRectangleList)
             self.channelPatchCollection.set_edgecolor('0')
 
-            
-            if self.sm.colFlag == 'Qw':
+            if self.sm.colFlag == 'age':
+                age_array = np.array([c.age for c in self.channelList])
+                self.channelPatchCollection.set_array(age_array)
+                self.channelPatchCollection.set_clim(vmin=age_array.min(), vmax=age_array.max())
+                self.channelPatchCollection.set_cmap(plt.cm.viridis)
+            elif self.sm.colFlag == 'Qw':
                 self.channelPatchCollection.set_array(np.array([c.Qw for c in self.channelList]))
                 self.channelPatchCollection.set_clim(vmin=Qwmin, vmax=Qwmax)
                 self.channelPatchCollection.set_cmap(plt.cm.viridis)
@@ -228,17 +240,6 @@ class Strat(object):
                 self.channelPatchCollection.set_array(np.array([c.avul_num % 9 for c in self.channelList]))
                 self.channelPatchCollection.set_clim(vmin=0, vmax=9)
                 self.channelPatchCollection.set_cmap(plt.cm.Set1)
-            elif self.sm.colFlag == 'age':
-                # inViewIdx = [ all( c['coords'][0][:,1] > (Bast - yView) ) 
-                              # for c in chanList ]
-                # color age to visible strat:
-                # ageCmap = plt.cm.viridis( utils.normalizeColor(
-                    # chanList['age'], chanList['age'][inViewIdx].min(), loopcnt).flatten() )
-                # color age to all strat in memory:
-                age_array = np.array([c.age for c in self.channelList])
-                self.channelPatchCollection.set_array(age_array)
-                self.channelPatchCollection.set_clim(vmin=age_array.min(), vmax=age_array.max())
-                self.channelPatchCollection.set_cmap(plt.cm.viridis)
             elif self.sm.colFlag == 'sig':
                 sig_array = np.array([c.sig for c in self.channelList])
                 self.channelPatchCollection.set_array(sig_array)
@@ -248,8 +249,9 @@ class Strat(object):
             self.ax.add_collection(self.channelPatchCollection)
 
             # # scroll the view
-            self.ax.set_ylim(utils.new_ylims(yView = self.sm.yView,
-                                             Bast = self.Bast))
+            # self.ax.set_ylim(utils.new_ylims(yView = self.sm.yView,
+            #                                  Bast = self.Bast))
+            
             # could try below to do things by shifting channels instead -- faster?
             # self.channelList = [c for (c, i) in 
             #                     zip(self.channelList, outdatedIdx) if not i]
@@ -259,10 +261,6 @@ class Strat(object):
 
             self.ax.set_xlim(-self.sm.Bb/2, self.sm.Bb/2)
             self.VE_val.set_text('VE = ' + str(round(self.sm.Bb/self.sm.yView, 1)))
-
-
-
-
 
             # remove outdated channels
             stratMin = self.Bast - yViewmax
@@ -302,10 +300,10 @@ def slide_reset(event):
 
 
 def axis_reset(event):
-    global chanList, chanListPoly, Bast
-    Bast = 0
-    chanList = chanList[-1]
-    chanListPoly = []
+    strat.Bast = 0
+    strat.channelList = [strat.channelList[-1]]
+    # strat.channelRectangleList = [strat.channelRectangleList[-1]]
+    strat.channelRectangleList = []
 
 
 # add sliders
