@@ -262,7 +262,9 @@ class Strat(object):
 
             self.ax.add_collection(self.channelPatchCollection)
 
-            # xview
+            # yview and xview
+            ylims = utils.new_ylims(yView = self.sm.yView, Bast = self.Bast)
+            self.ax.set_ylim(ylims)
             self.ax.set_xlim(-self.sm.Bb/2, self.sm.Bb/2)
 
             # vertical exagg text
