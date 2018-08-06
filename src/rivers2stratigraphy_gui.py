@@ -22,7 +22,8 @@ import matplotlib.pyplot as plt
 import matplotlib.widgets as widget
 from matplotlib.patches import Polygon, Rectangle
 from matplotlib.collections import PatchCollection, LineCollection
-from matplotlib.animation import FuncAnimation
+# from matplotlib.animation import FuncAnimation
+import matplotlib.animation as animation
 from itertools import compress
 import geom, sedtrans, utils
 
@@ -176,6 +177,7 @@ class Strat(object):
         self.VE_val = plt.text(0.675, 0.025, 'VE = ' + str(round(self.sm.Bb/self.sm.yView, 1)),
                                fontsize=12, transform=ax.transAxes, 
                                backgroundcolor='white')
+        # self.yView = slide_yView.val
 
 
     def func_init(fig, ax, self):
@@ -225,7 +227,7 @@ class Strat(object):
             self.channelRectangleList.append(self.channelRectangle)
 
             self.channelPatchCollection = PatchCollection(self.channelRectangleList)
-            self.channelPatchCollection.set_edgecolor('0')
+            self.channelPatchCollection.set_edgecolor('0') # remove for speed?
 
             if self.sm.colFlag == 'age':
                 age_array = np.array([c.age for c in self.channelList])
@@ -247,19 +249,13 @@ class Strat(object):
                 self.channelPatchCollection.set_cmap(plt.cm.viridis)
 
             self.ax.add_collection(self.channelPatchCollection)
-            # ax.draw_artist(ax.patch)
-            # ax.draw_artist(line)
-            # fig.canvas.update()
-            # fig.canvas.flush_events()
 
-            # # scroll the view
-            self.ax.set_ylim(utils.new_ylims(yView = self.sm.yView,
-                                             Bast = self.Bast))
-            # plt.draw()
-            # self.ax.draw_artist(ax.yaxis)
-            # .canvas.update()
-
+            # scroll the view
+            ylims = utils.new_ylims(yView = self.sm.yView, Bast = self.Bast)
+            self.ax.set_ylim(ylims)
             self.ax.set_xlim(-self.sm.Bb/2, self.sm.Bb/2)
+
+            # add vertical exagg text
             self.VE_val.set_text('VE = ' + str(round(self.sm.Bb/self.sm.yView, 1)))
 
             # remove outdated channels
@@ -270,7 +266,7 @@ class Strat(object):
             self.channelRectangleList = [c for (c, i) in 
                                          zip(self.channelRectangleList, outdatedIdx) if not i]
 
-        return self.BastLine, self.channelPatchCollection, self.VE_val
+        return self.BastLine, self.channelPatchCollection, self.VE_val, self.ax.yaxis
 
 
 
@@ -310,8 +306,8 @@ def pause_anim(event):
     else:
         anim.event_source.start()
     anim.running ^= True
-    stratcanv = fig.canvas.copy_from_bbox(ax.bbox)
-    fig.canvas.restore_region(stratcanv)
+    # stratcanv = fig.canvas.copy_from_bbox(ax.bbox)
+    # fig.canvas.restore_region(stratcanv)
 
 
 # add sliders
@@ -383,8 +379,9 @@ col_dict = {'Water discharge': 'Qw',
 # time looping
 strat = Strat(ax)
 
-anim = FuncAnimation(fig, strat,
-                     interval=100, blit=True)
+animation.Animation._blit_draw = utils._blit_draw # patch taken from stackoverflow
+anim = animation.FuncAnimation(fig, strat,
+                                interval=100, blit=True)
 anim.running = True
 
 plt.show()
