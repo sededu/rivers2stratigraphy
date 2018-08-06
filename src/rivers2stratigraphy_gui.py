@@ -172,7 +172,7 @@ class Strat(object):
         self.channelPatchCollection = PatchCollection(self.channelRectangleList)
 
         self.BastLine, = ax.plot([-Bbmax*1000/2, Bbmax*1000/2], 
-                                 [Bast, Bast], 'k--') # plot basin top
+                                 [Bast, Bast], 'k--', animated=True) # plot basin top
         self.VE_val = plt.text(0.675, 0.025, 'VE = ' + str(round(self.sm.Bb/self.sm.yView, 1)),
                                fontsize=12, transform=ax.transAxes, 
                                backgroundcolor='white')
@@ -247,11 +247,16 @@ class Strat(object):
                 self.channelPatchCollection.set_cmap(plt.cm.viridis)
 
             self.ax.add_collection(self.channelPatchCollection)
+            # ax.draw_artist(ax.patch)
+            # ax.draw_artist(line)
+            # fig.canvas.update()
+            # fig.canvas.flush_events()
 
             # # scroll the view
-            # self.ax.set_ylim(utils.new_ylims(yView = self.sm.yView,
-            #                                  Bast = self.Bast))
-            
+            self.ax.set_ylim(utils.new_ylims(yView = self.sm.yView,
+                                             Bast = self.Bast))
+            # self.ax.draw_artist(ax.yaxis)
+
             # could try below to do things by shifting channels instead -- faster?
             # self.channelList = [c for (c, i) in 
             #                     zip(self.channelList, outdatedIdx) if not i]
@@ -302,8 +307,16 @@ def slide_reset(event):
 def axis_reset(event):
     strat.Bast = 0
     strat.channelList = [strat.channelList[-1]]
-    # strat.channelRectangleList = [strat.channelRectangleList[-1]]
     strat.channelRectangleList = []
+
+
+def pause_anim(event):
+    if anim.running:
+        anim.event_source.stop()
+    else:
+        anim.event_source.start()
+    anim.running ^= True
+    # strat.ax.figure.canvas.draw()
 
 
 # add sliders
@@ -350,36 +363,34 @@ slide_Bb_ax = plt.axes([0.565, 0.24, 0.36, 0.05], facecolor=widget_color)
 slide_Bb = utils.MinMaxSlider(slide_Bb_ax, 'Channel belt width (km)', Bbmin, Bbmax, 
 valinit=BbInit/1000, valstep=0.5, valfmt="%g", transform=ax.transAxes)
 
-# VE_val = plt.text(0.675, 0.025, 'VE = ' + str(round(Bb/yView, 1)),
-#                   fontsize=12, transform=ax.transAxes, 
-#                   backgroundcolor='white')
-
 btn_slidereset_ax = plt.axes([0.565, 0.14, 0.2, 0.04])
-btn_slidereset = widget.Button(btn_slidereset_ax, 'Reset sliders', color=widget_color, hovercolor='0.975')
+btn_slidereset = utils.NoDrawButton(btn_slidereset_ax, 'Reset sliders', color=widget_color, hovercolor='0.975')
 btn_slidereset.on_clicked(slide_reset)
 
 btn_axisreset_ax = plt.axes([0.565, 0.09, 0.2, 0.04])
-btn_axisreset = widget.Button(btn_axisreset_ax, 'Reset stratigraphy', color=widget_color, hovercolor='0.975')
+btn_axisreset = utils.NoDrawButton(btn_axisreset_ax, 'Reset stratigraphy', color=widget_color, hovercolor='0.975')
 btn_axisreset.on_clicked(axis_reset)
 
-# add plot elements
-# BastLine, = ax.plot([-Bbmax*1000/2, Bbmax*1000/2], 
-#                      [Bast, Bast], 'k--') # plot basin top
+btn_pause_ax = plt.axes([0.565, 0.03, 0.2, 0.04])
+# btn_pause = widget.Button(btn_pause_ax, 'Pause', color=widget_color, hovercolor='0.975')
+btn_pause = utils.NoDrawButton(btn_pause_ax, 'Pause', color=widget_color, hovercolor='0.975')
+btn_pause.on_clicked(pause_anim)
+
 
 # initialize a few more things
 loopcnt = 0 # loop counter
 avulcnt = 0 # avulsion timer 
 avulrec = 0 # number avulsion
-    
-chanAct = np.zeros(1, dtype=[('coords', float, (4,2)),
-                             ('sig',    float,  4),
-                             ('avul',   float,  4),
-                             ('Qw',     float,  4),
-                             ('age',    int,    1)])
-chanList = chanAct # all channels in memory
-chanListPoly = []
-channelPatchCollection = PatchCollection(chanListPoly)
-ax.add_collection(channelPatchCollection)
+
+# chanAct = np.zeros(1, dtype=[('coords', float, (4,2)),
+#                              ('sig',    float,  4),
+#                              ('avul',   float,  4),
+#                              ('Qw',     float,  4),
+#                              ('age',    int,    1)])
+# chanList = chanAct # all channels in memory
+# chanListPoly = []
+# channelPatchCollection = PatchCollection(chanListPoly)
+# ax.add_collection(channelPatchCollection)
 
 # chanActShp = sg.box(Ccc[0], Ccc[1], Ccc[0], Ccc[1])
 
@@ -389,11 +400,12 @@ col_dict = {'Water discharge': 'Qw',
             'Subsidence rate':'sig'}
 
 # time looping
-# while plt.fignum_exists(1):
 strat = Strat(ax)
-# anim = FuncAnimation(fig, strat, init_func=strat.func_init,
-#                      interval=100, blit=True)
+
 anim = FuncAnimation(fig, strat,
                      interval=100, blit=True)
+anim.running = True
+
+# cid = fig.canvas.mpl_connect('button_press_event', pause_anim)
 
 plt.show()
