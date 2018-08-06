@@ -196,7 +196,7 @@ class Strat(object):
 
         # find new geom
         self.sm.get_all()
-        self.Bast = self.Bast + (self.sm.sig * dt)
+        self.Bast = np.round( self.Bast + (self.sm.sig * dt) , 1)
         self.channel = Channel(x_cent0 = self.channel0.x_cent,
                                dxdt0 = self.channel0.dxdt,
                                Bast = self.Bast,
@@ -255,14 +255,9 @@ class Strat(object):
             # # scroll the view
             self.ax.set_ylim(utils.new_ylims(yView = self.sm.yView,
                                              Bast = self.Bast))
+            # plt.draw()
             # self.ax.draw_artist(ax.yaxis)
-
-            # could try below to do things by shifting channels instead -- faster?
-            # self.channelList = [c for (c, i) in 
-            #                     zip(self.channelList, outdatedIdx) if not i]
-            # self.channelRectangleList = [c for (c, i) in 
-            #                              zip(self.channelRectangleList, outdatedIdx) if not i]
-
+            # .canvas.update()
 
             self.ax.set_xlim(-self.sm.Bb/2, self.sm.Bb/2)
             self.VE_val.set_text('VE = ' + str(round(self.sm.Bb/self.sm.yView, 1)))
@@ -275,7 +270,6 @@ class Strat(object):
             self.channelRectangleList = [c for (c, i) in 
                                          zip(self.channelRectangleList, outdatedIdx) if not i]
 
-
         return self.BastLine, self.channelPatchCollection, self.VE_val
 
 
@@ -285,7 +279,7 @@ class Strat(object):
 plt.rcParams['toolbar'] = 'None'
 plt.rcParams['figure.figsize'] = 8, 6
 fig, ax = plt.subplots()
-fig.canvas.set_window_title('SedEdu -- Rivers to Stratigraphy')
+fig.canvas.set_window_title('SedEdu -- rivers2stratigraphy')
 plt.subplots_adjust(left=0.085, bottom=0.1, top=0.95, right=0.5)
 ax.set_xlabel("channel belt (km)")
 ax.set_ylabel("stratigraphy (m)")
@@ -316,7 +310,8 @@ def pause_anim(event):
     else:
         anim.event_source.start()
     anim.running ^= True
-    # strat.ax.figure.canvas.draw()
+    stratcanv = fig.canvas.copy_from_bbox(ax.bbox)
+    fig.canvas.restore_region(stratcanv)
 
 
 # add sliders
@@ -372,7 +367,6 @@ btn_axisreset = utils.NoDrawButton(btn_axisreset_ax, 'Reset stratigraphy', color
 btn_axisreset.on_clicked(axis_reset)
 
 btn_pause_ax = plt.axes([0.565, 0.03, 0.2, 0.04])
-# btn_pause = widget.Button(btn_pause_ax, 'Pause', color=widget_color, hovercolor='0.975')
 btn_pause = utils.NoDrawButton(btn_pause_ax, 'Pause', color=widget_color, hovercolor='0.975')
 btn_pause.on_clicked(pause_anim)
 
@@ -381,19 +375,6 @@ btn_pause.on_clicked(pause_anim)
 loopcnt = 0 # loop counter
 avulcnt = 0 # avulsion timer 
 avulrec = 0 # number avulsion
-
-# chanAct = np.zeros(1, dtype=[('coords', float, (4,2)),
-#                              ('sig',    float,  4),
-#                              ('avul',   float,  4),
-#                              ('Qw',     float,  4),
-#                              ('age',    int,    1)])
-# chanList = chanAct # all channels in memory
-# chanListPoly = []
-# channelPatchCollection = PatchCollection(chanListPoly)
-# ax.add_collection(channelPatchCollection)
-
-# chanActShp = sg.box(Ccc[0], Ccc[1], Ccc[0], Ccc[1])
-
 col_dict = {'Water discharge': 'Qw', 
             'Avulsion number': 'avul',
             'Deposit age': 'age',
@@ -405,7 +386,5 @@ strat = Strat(ax)
 anim = FuncAnimation(fig, strat,
                      interval=100, blit=True)
 anim.running = True
-
-# cid = fig.canvas.mpl_connect('button_press_event', pause_anim)
 
 plt.show()

@@ -12,13 +12,12 @@ def format_number(number):
 
 def format_table(number):
     integer = (round(number, 1))
-    # string = "{:,}".format(integer)
     string = str(integer)
     return(string)
 
 
 def new_ylims(yView, Bast):
-    return (Bast-yView, Bast+0.1*yView)
+    return Bast-yView, Bast+0.1*yView
 
 
 def normalizeColor(v, minV, maxV):
@@ -196,6 +195,8 @@ class MinMaxSlider(AxesWidget):
         self.valtext.set_text(self.valfmt % val)
         if self.drawon:
             self.ax.figure.canvas.draw_idle()
+            # stratcanv = fig.canvas.copy_from_bbox(ax.bbox)
+            # fig.canvas.restore_region(stratcanv)
         self.val = val
         if not self.eventson:
             return
