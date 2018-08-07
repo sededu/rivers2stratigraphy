@@ -4,8 +4,6 @@
 #   basin surface and subsidence is only control on vertical stratigraphy.
 #   Horizontal stratigraphy is set by 1) lateral migration (drawn from a pdf) 
 #   and dampened for realism, and 2) avulsion that is set to a fixed value.
-#   Default parameters are based on measurements for Piceance and Big Horn 
-#   basins from Foreman et al., 2012 and Foreman, 2014
 #
 #   written by Andrew J. Moodie
 #   amoodie@rice.edu
@@ -73,14 +71,6 @@ class Channel(object):
         self.geometry()
 
         self.x_outer = self.Bb
-        # while self.x_outer >= (self.Bb / 2): # keep channel within belt
-        #     self.dxdt = self.new_dxdt()
-        #     self.dx = dt * (   ((1-Df) * self.dxdt) + ((Df) * self.dxdt0)   )
-        #     self.x_cent = self.x_cent0 + self.dx
-        #     self.x_side = np.array([[self.x_cent - (self.Bc/2)], 
-        #                             [self.x_cent + (self.Bc/2)]])
-        #     self.x_outer = np.max(np.abs(self.x_side))
-    
         self.dxdt = self.new_dxdt()
         self.dx = dt * (   ((1-Df) * self.dxdt) + ((Df) * self.dxdt0)   )
         self.x_cent = self.x_cent0 + self.dx
@@ -184,7 +174,6 @@ class Strat(object):
         self.VE_val = plt.text(0.675, 0.025, 'VE = ' + str(round(self.sm.Bb/self.sm.yView, 1)),
                                fontsize=12, transform=ax.transAxes, 
                                backgroundcolor='white')
-        # self.yView = slide_yView.val
 
 
     def func_init(fig, ax, self):
@@ -393,11 +382,13 @@ col_dict = {'Water discharge': 'Qw',
             'Deposit age': 'age',
             'Subsidence rate':'sig'}
 
-# time looping
-strat = Strat(ax)
 
-anim = animation.FuncAnimation(fig, strat,
-                                interval=100, blit=True)
-anim.running = True
+if __name__ == '__main__':
+    # time looping
+    strat = Strat(ax)
 
-plt.show()
+    anim = animation.FuncAnimation(fig, strat,
+                                   interval=100, blit=True)
+    anim.running = True
+
+    plt.show()
