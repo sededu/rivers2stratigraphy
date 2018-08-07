@@ -10,7 +10,7 @@
 #   written by Andrew J. Moodie
 #   amoodie@rice.edu
 #   Feb 2018
-#
+#   
 #   TODO:
 #    - control for "natural" ad default where lateral migration 
 #       and Ta are a function of sediment transport (Qw)
@@ -20,51 +20,274 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.widgets as widget
-from matplotlib.patches import Polygon
+from matplotlib.patches import Polygon, Rectangle
 from matplotlib.collections import PatchCollection, LineCollection
-import shapely.geometry as sg
-import shapely.ops as so
+# from matplotlib.animation import FuncAnimation
+import matplotlib.animation as animation
 from itertools import compress
 import geom, sedtrans, utils
 
-import time # DELETE FOR RELEASE
+import sys
 
 
 # model run params
-dt = 50 # timestep in yrs
+dt = 100 # timestep in yrs
 
 # setup params
 Cf = 0.004 # friction coeff
 D50 = 300*1e-6
 Beta = 1.5 # exponent to avulsion function
 Gamma = 1e-2 # factor for avulsion timing
-Df = 0.0005 # dampening factor to lateral migration rate change
-dxstd = 0.5 # stdev of lateral migration dist, [m/yr]?
+Df = 0.6 # dampening factor to lateral migration rate change
+dxdtstd = 1 # stdev of lateral migration dist, [m/yr]?
 
 conR = 1.65 
 cong = 9.81
 conrhof = 1000
 connu = 1.004e-6
+Rep = geom.Repfun(D50, conR, cong, connu) # particle Reynolds num
     
 # initial conditions
 Bb = BbInit = 4000 # width of belt (m)
 yView = yViewInit = 100
 Qw = QwInit = 1000
-Qhat = geom.Qhatfun(Qw, D50, cong) # dimensionless Qw
-Rep = geom.Repfun(D50, conR, cong, connu) # particle Reynolds num
-Hbar = geom.Hbarfun(Qhat, Rep) # dimensionless depth
-Hnbf = geom.dimless2dimfun(Hbar, Qw, cong) # depth
-Bast = -yView + Hnbf # Basin top level
 Bast = 0 # Basin top level
-Ccc = np.array([ 0, (0 - (Hnbf / 2)) ]) # Channel center center
-avulct = 0 # count time since last avul (for triggering)
-dx = dt * (dxstd * np.random.randn()) # lateral migration per timestep [m/yr]
+
+
+
+class Channel(object):
+
+    def __init__(self, x_cent0=0, dxdt0=0, Bast=0, 
+                 age=0, avul_num=0, avul_timer=0, sm=None):
+
+        self.Bast = Bast
+        self.x_cent0 = x_cent0
+        self.dxdt0 = dxdt0
+        self.Qw = sm.Qw
+        self.sig = sm.sig
+        self.Ta = sm.Ta
+        self.Bb = sm.Bb
+        self.avul_timer = avul_timer
+        self.avul_num = avul_num
+        self.age = age
+
+        if avul_timer > self.Ta:
+            self.avulsion()
+
+        self.geometry()
+
+        self.x_outer = self.Bb
+        # while self.x_outer >= (self.Bb / 2): # keep channel within belt
+        #     self.dxdt = self.new_dxdt()
+        #     self.dx = dt * (   ((1-Df) * self.dxdt) + ((Df) * self.dxdt0)   )
+        #     self.x_cent = self.x_cent0 + self.dx
+        #     self.x_side = np.array([[self.x_cent - (self.Bc/2)], 
+        #                             [self.x_cent + (self.Bc/2)]])
+        #     self.x_outer = np.max(np.abs(self.x_side))
+    
+        self.dxdt = self.new_dxdt()
+        self.dx = dt * (   ((1-Df) * self.dxdt) + ((Df) * self.dxdt0)   )
+        self.x_cent = self.x_cent0 + self.dx
+        self.x_side = np.array([[self.x_cent - (self.Bc/2)], 
+                                [self.x_cent + (self.Bc/2)]])
+        self.x_outer = np.max(np.abs(self.x_side))
+        if self.x_outer >= (self.Bb / 2): # keep channel within belt
+            self.x_cent = self.x_cent0 - self.dx
+            self.x_side = np.array([[self.x_cent - (self.Bc/2)], 
+                                    [self.x_cent + (self.Bc/2)]])
+            self.x_outer = np.max(np.abs(self.x_side))
+
+        self.y_cent = self.Bast - (self.H / 2)
+        self.y_upper = self.Bast
+        self.ll = self.lower_left()
+
+
+    def geometry(self):
+        Qhat = geom.Qhatfun(self.Qw, D50, cong)
+        Hbar = geom.Hbarfun(Qhat, Rep)
+        Bbar = geom.Bbarfun(Qhat, Rep)
+        Sbar = geom.Sbarfun(Qhat, Rep)
+        self.H = geom.dimless2dimfun(Hbar, self.Qw, cong) # new depth
+        self.Bc = geom.dimless2dimfun(Bbar, self.Qw, cong) # new width
+        self.S = Sbar
+
+
+    def new_dxdt(self):
+        dxdt = (dxdtstd * (np.random.randn()) )
+        return dxdt
+
+
+    def avulsion(self):
+        self.x_cent0 = self.new_xcent(Bb = self.Bb)
+        self.dxdt0 = 0 # self.new_dxdt()
+        self.avul_timer = 0
+        self.avul_num = self.avul_num + 1
+
+
+    def subside(self, dz):
+        self.y_cent -= dz
+        self.ll = self.lower_left()
+
+
+    def lower_left(self):
+        return np.array([(self.x_cent - (self.Bc / 2)), 
+                         (self.y_cent - (self.H / 2))])
+
+
+    def new_xcent(self, Bb):
+        # avulsion chooser
+        self.geometry()
+        val = np.random.uniform(-Bb/2 + (self.Bc/2), 
+                                 Bb/2 - (self.Bc/2))
+        return val
+
+
+
+class SliderManager(object):
+    def __init__(self):
+        # read the sliders for values
+        self.get_all()
+
+    def get_display_options(self):
+        self.colFlag = col_dict[rad_col.value_selected]
+        self.yView = slide_yView.val
+
+    def get_calculation_options(self):
+        self.Bb = slide_Bb.val * 1000
+        self.Qw = slide_Qw.val
+        self.sig = slide_sig.val / 1000
+        self.Ta = slide_Ta.val
+
+    def get_all(self):
+        self.get_display_options()
+        self.get_calculation_options()
+
+
+
+class Strat(object):
+
+    def __init__(self, ax):
+        '''
+        initiation of the main strat object
+        '''
+        
+        self.ax = ax
+        self.Bast = 0
+        self.avul_num = 0
+        self.sm = SliderManager()
+
+        self.channel = Channel(x_cent0 = 0, dxdt0 = 0,
+                               Bast = self.Bast,
+                               sm = self.sm)
+        self.channelList = [self.channel]
+        self.channelRectangleList = []
+        self.channelPatchCollection = PatchCollection(self.channelRectangleList)
+
+        self.BastLine, = ax.plot([-Bbmax*1000/2, Bbmax*1000/2], 
+                                 [Bast, Bast], 'k--', animated=True) # plot basin top
+        self.VE_val = plt.text(0.675, 0.025, 'VE = ' + str(round(self.sm.Bb/self.sm.yView, 1)),
+                               fontsize=12, transform=ax.transAxes, 
+                               backgroundcolor='white')
+        # self.yView = slide_yView.val
+
+
+    def func_init(fig, ax, self):
+        '''
+        handles the initiation of the figure and axes for blitting
+        '''
+
+        return self
+
+
+    def __call__(self, i):
+        '''
+        called every loop
+        '''
+
+        self.channel0 = self.channel
+
+        # find new geom
+        self.sm.get_all()
+
+        # subside the channels by sig
+        for c in iter(self.channelList):
+            c.subside(self.sm.sig * dt)
+
+        # recalculate the channel bodies
+        self.channelRectangleList = [Rectangle(c.ll, c.Bc, c.H) for c in iter(self.channelList)]
+
+        self.channel = Channel(x_cent0 = self.channel0.x_cent,
+                               dxdt0 = self.channel0.dxdt,
+                               Bast = self.Bast,
+                               age = i,
+                               avul_num = self.channel0.avul_num,
+                               avul_timer = self.channel0.avul_timer + dt,
+                               sm = self.sm)
+        self.channelRectangle = Rectangle(self.channel.ll, self.channel.Bc, 
+                                    self.channel.H)
+
+        self.channelList.append(self.channel)
+        self.channelRectangleList.append(self.channelRectangle)
+
+        self.channelPatchCollection = PatchCollection(self.channelRectangleList)
+        self.channelPatchCollection.set_edgecolor('0') # remove for speed?
+
+        self.qs = sedtrans.qsEH(D50, Cf, 
+                                sedtrans.taubfun(self.channel.H, self.channel.S, cong, conrhof), 
+                                conR, cong, conrhof)  # sedment transport rate based on new geom
+
+        # # update plot
+        if i % 1 == 0 or self.channel.avul_timer == 0:
+
+            self.BastLine.set_ydata([self.Bast, self.Bast])
+
+            if self.sm.colFlag == 'age':
+                age_array = np.array([c.age for c in self.channelList])
+                self.channelPatchCollection.set_array(age_array)
+                self.channelPatchCollection.set_clim(vmin=age_array.min(), vmax=age_array.max())
+                self.channelPatchCollection.set_cmap(plt.cm.viridis)
+            elif self.sm.colFlag == 'Qw':
+                self.channelPatchCollection.set_array(np.array([c.Qw for c in self.channelList]))
+                self.channelPatchCollection.set_clim(vmin=Qwmin, vmax=Qwmax)
+                self.channelPatchCollection.set_cmap(plt.cm.viridis)
+            elif self.sm.colFlag == 'avul':
+                self.channelPatchCollection.set_array(np.array([c.avul_num % 9 for c in self.channelList]))
+                self.channelPatchCollection.set_clim(vmin=0, vmax=9)
+                self.channelPatchCollection.set_cmap(plt.cm.Set1)
+            elif self.sm.colFlag == 'sig':
+                sig_array = np.array([c.sig for c in self.channelList])
+                self.channelPatchCollection.set_array(sig_array)
+                self.channelPatchCollection.set_clim(vmin=sigmin/1000, vmax=sigmax/1000)
+                self.channelPatchCollection.set_cmap(plt.cm.viridis)
+
+            self.ax.add_collection(self.channelPatchCollection)
+
+            # yview and xview
+            ylims = utils.new_ylims(yView = self.sm.yView, Bast = self.Bast)
+            self.ax.set_ylim(ylims)
+            self.ax.set_xlim(-self.sm.Bb/2, self.sm.Bb/2)
+
+            # vertical exagg text
+            self.VE_val.set_text('VE = ' + str(round(self.sm.Bb/self.sm.yView, 1)))
+
+            # remove outdated channels
+            stratMin = self.Bast - yViewmax
+            outdatedIdx = [c.y_upper < stratMin for c in self.channelList]
+            self.channelList = [c for (c, i) in 
+                                zip(self.channelList, outdatedIdx) if not i]
+            self.channelRectangleList = [c for (c, i) in 
+                                         zip(self.channelRectangleList, outdatedIdx) if not i]
+
+        return self.BastLine, self.channelPatchCollection, \
+               self.VE_val
+
+
 
 # setup the figure
 plt.rcParams['toolbar'] = 'None'
 plt.rcParams['figure.figsize'] = 8, 6
 fig, ax = plt.subplots()
-fig.canvas.set_window_title('SedEdu -- Rivers to Stratigraphy')
+fig.canvas.set_window_title('SedEdu -- rivers2stratigraphy')
 plt.subplots_adjust(left=0.085, bottom=0.1, top=0.95, right=0.5)
 ax.set_xlabel("channel belt (km)")
 ax.set_ylabel("stratigraphy (m)")
@@ -72,6 +295,7 @@ plt.ylim(-yViewInit, 0.1*yViewInit)
 plt.xlim(-Bb/2, Bb/2)
 ax.xaxis.set_major_formatter( plt.FuncFormatter(
                              lambda v, x: str(v / 1000).format('%0.0f')) )
+
 
 # define reset functions, must operate on global vars
 def slide_reset(event):
@@ -83,11 +307,27 @@ def slide_reset(event):
     slide_Bb.reset()
 
 
+
 def axis_reset(event):
-    global chanList, chanListPoly, Bast
-    Bast = 0
-    chanList = chanList[-1]
-    chanListPoly = []
+    strat.Bast = 0
+    strat.channelList = [strat.channelList[-1]]
+    strat.channelRectangleList = []
+
+
+
+def pause_anim(event):
+    if anim.running:
+        anim.event_source.stop()
+    else:
+        anim.event_source.start()
+    anim.running ^= True
+
+
+
+# def redraw_strat(event):
+#     fd = anim.new_saved_frame_seq()
+#     anim._draw_frame(fd)
+
 
 
 # add sliders
@@ -100,6 +340,7 @@ Qwstep = 100
 slide_Qw_ax = plt.axes([0.565, 0.875, 0.36, 0.05], facecolor=widget_color)
 slide_Qw = utils.MinMaxSlider(slide_Qw_ax, 'water discharge (m$^3$/s)', Qwmin, Qwmax, 
 valinit=QwInit, valstep=Qwstep, valfmt="%0.0f", transform=ax.transAxes)
+# slide_Qw.on_changed(redraw_strat)
 
 sigInit = 2
 sigmin = 0
@@ -134,160 +375,33 @@ slide_Bb_ax = plt.axes([0.565, 0.24, 0.36, 0.05], facecolor=widget_color)
 slide_Bb = utils.MinMaxSlider(slide_Bb_ax, 'Channel belt width (km)', Bbmin, Bbmax, 
 valinit=BbInit/1000, valstep=0.5, valfmt="%g", transform=ax.transAxes)
 
-VE_val = plt.text(0.675, 0.025, 'VE = ' + str(round(Bb/yView, 1)),
-                  fontsize=12, transform=ax.transAxes, 
-                  backgroundcolor='white')
-
 btn_slidereset_ax = plt.axes([0.565, 0.14, 0.2, 0.04])
-btn_slidereset = widget.Button(btn_slidereset_ax, 'Reset sliders', color=widget_color, hovercolor='0.975')
+btn_slidereset = utils.NoDrawButton(btn_slidereset_ax, 'Reset sliders', color=widget_color, hovercolor='0.975')
 btn_slidereset.on_clicked(slide_reset)
 
 btn_axisreset_ax = plt.axes([0.565, 0.09, 0.2, 0.04])
-btn_axisreset = widget.Button(btn_axisreset_ax, 'Reset stratigraphy', color=widget_color, hovercolor='0.975')
+btn_axisreset = utils.NoDrawButton(btn_axisreset_ax, 'Reset stratigraphy', color=widget_color, hovercolor='0.975')
 btn_axisreset.on_clicked(axis_reset)
 
-# add plot elements
-print(-Bbmax*1000/2)
-BastLine, = ax.plot([-Bbmax*1000/2, Bbmax*1000/2], 
-                     [Bast, Bast], 'k--') # plot basin top
+btn_pause_ax = plt.axes([0.565, 0.03, 0.2, 0.04])
+btn_pause = utils.NoDrawButton(btn_pause_ax, 'Pause', color=widget_color, hovercolor='0.975')
+btn_pause.on_clicked(pause_anim)
+
 
 # initialize a few more things
 loopcnt = 0 # loop counter
 avulcnt = 0 # avulsion timer 
 avulrec = 0 # number avulsion
-    
-chanAct = np.zeros(1, dtype=[('coords', float, (4,2)),
-                             ('sig',    float,  4),
-                             ('avul',   float,  4),
-                             ('Qw',     float,  4),
-                             ('age',    int,    1)])
-chanList = chanAct # all channels in memory
-chanListPoly = []
-chanColl = PatchCollection(chanListPoly)
-ax.add_collection(chanColl)
-
-chanActShp = sg.box(Ccc[0], Ccc[1], Ccc[0], Ccc[1])
-
 col_dict = {'Water discharge': 'Qw', 
             'Avulsion number': 'avul',
             'Deposit age': 'age',
             'Subsidence rate':'sig'}
 
 # time looping
-while plt.fignum_exists(1):
-    
-    # get new values from sliders -- do this only if changed?
-    Bb = slide_Bb.val * 1000
-    Qw = slide_Qw.val
-    sig = slide_sig.val / 1000
-    Ta = slide_Ta.val
-    yView = slide_yView.val
-    colFlag = col_dict[rad_col.value_selected]
+strat = Strat(ax)
 
-    # find new geom
-    Qhat = geom.Qhatfun(Qw, D50, cong)
-    Hbar = geom.Hbarfun(Qhat, Rep)
-    Bcbar = geom.Bbarfun(Qhat, Rep)
-    Sbar = geom.Sbarfun(Qhat, Rep)
-    Hnbf = geom.dimless2dimfun(Hbar, Qw, cong) # new depth
-    Bc = geom.dimless2dimfun(Bcbar, Qw, cong) # new width
-    S = Sbar
-    
-    # update model configurations
-    if abs(Ccc[0]) + Bc/2 > Bb/2: # this validates channel position with basin resizing
-        Ccc = np.hstack([np.random.uniform(-Bb/2+(Bc/2), Bb/2-(Bc/2), 1),
-                         Ccc[1]])
-    qsin = sedtrans.qsEH(D50, Cf, 
-                         sedtrans.taubfun(Hnbf, S, cong, conrhof), 
-                         conR, cong, conrhof)  # sedment transport rate based on new geom
-    dx = (dt * dxstd * np.random.randn()) + ((1-Df)*dx) # lateral migration for dt
-    Bast = Bast + (sig * dt)
-    while abs(Ccc[0] + dx) > Bb/2-(Bc/2): # keep channel within belt
-        dx = (dt * dxstd * np.random.randn()) + ((1-Df)*dx)
-    Ccc = [Ccc[0] + dx, Bast - (Hnbf/2)] # new channel center
-    
-    # update plot
-    if loopcnt % 10 == 0 or avulcnt == 0:
-        BastLine.set_ydata([Bast, Bast])
+anim = animation.FuncAnimation(fig, strat,
+                                interval=100, blit=True)
+anim.running = True
 
-        newCoords = geom.Ccc2coordsfun(Ccc, Bc, Hnbf)
-        newActShp = sg.box(Ccc[0]-Bc/2, Ccc[1]-Hnbf/2, Ccc[0]+Bc/2, Ccc[1]+Hnbf/2)
-        chanAct['coords'] = newCoords
-        chanAct['sig'] = plt.cm.viridis(utils.normalizeColor(sig*1000, sigmin, sigmax))
-        chanAct['avul'] = avulCmap[avulrec % 9]
-        chanAct['Qw'] = plt.cm.viridis(utils.normalizeColor(Qw, Qwmin, Qwmax))
-        chanAct['age'] = loopcnt
-
-        # method 1 -- all indiv
-        chanActPoly = Polygon(newCoords, facecolor='0.5', edgecolor='black')
-        
-        # method 2 -- unions
-        # # do somethign with if dx is too large, then splice a couple more
-        # # channels in between to ensure it is a single polygon?!
-        # chanActShp_un = so.unary_union([chanActShp, newActShp])
-        # n_split = 0 # number of times the distance has been spaced
-        
-        # # while chanActShp_un.type == 'MultiPolygon':
-        # #     print("is multi")
-
-        # #     n_split += 1
-
-        # if chanActShp_un.type == 'Polygon':
-        #     chanActShp = chanActShp_un
-        # elif chanActShp_un.type == 'MultiPolygon':
-        #     chanActPtList = geom.concave_hull(sg.mapping(chanActShp), sg.mapping(newActShp), dx)
-        #     chanActShp = sg.Polygon(chanActPtList)
-        # chanActPoly = Polygon(np.transpose((*[chanActShp.exterior.xy])))
-
-        chanList = np.vstack((chanList, chanAct))
-        chanListPoly.append(chanActPoly)
-
-        chanColl.remove()
-        chanColl = PatchCollection(chanListPoly)
-        chanColl.set_edgecolor('0')
-        if colFlag == 'Qw':
-            chanColl.set_facecolor( np.vstack(chanList['Qw']) )
-        elif colFlag == 'avul':
-            chanColl.set_facecolor( np.vstack(chanList['avul']) )
-        elif colFlag == 'age':
-            inViewIdx = [ all( c['coords'][0][:,1] > (Bast - yView) ) 
-                          for c in chanList ]
-            # color age to visible strat:
-            ageCmap = plt.cm.viridis( utils.normalizeColor(
-                chanList['age'], chanList['age'][inViewIdx].min(), loopcnt).flatten() )
-            # color age to all strat in memory:
-            # ageCmap = plt.cm.viridis( utils.normalizeColor(
-            #     chanList['age'], chanList['age'].min(), loopcnt).flatten() )
-            chanColl.set_facecolor( ageCmap )
-        elif colFlag == 'sig':
-            chanColl.set_facecolor( np.vstack(chanList['sig']) )
-        ax.add_collection(chanColl)
-
-        # scroll the view
-        ax.set_ylim(utils.new_ylims(yView, Bast))
-        ax.set_xlim(-Bb/2, Bb/2)
-        VE_val.set_text('VE = ' + str(round(Bb/yView, 1)))
-
-    # avulsion handler
-    avulcnt += 1 # increase since avul count
-    if avulcnt > Ta: # if time since is more than Ta: due for one
-    # abs(Ccc[0] + dx) > Bb/2-(Bc/2)
-        Ccc = np.hstack([np.random.uniform(-Bb/2+(Bc/2), Bb/2-(Bc/2), 1),
-                         Ccc[1]])
-        dx = 0 # reset dampening to 0 for new channel
-        avulcnt = 0 # reset count
-        avulrec += 1 # increment avulsion number
-        chanActShp = sg.box(Ccc[0]-Bc/2, Ccc[1]-Hnbf/2, Ccc[0]+Bc/2, Ccc[1]+Hnbf/2)
-
-    # remove outdated channels
-    stratMax = Bast - yViewmax
-    chanListOutdatedIdx = geom.outdatedIndex(chanList, stratMax)
-    chanList = chanList[ ~chanListOutdatedIdx ]
-    chanListPoly = [i for (i, v) in 
-                    zip(chanListPoly, chanListOutdatedIdx) if not v]
-
-    # draw and update counts
-    plt.pause(0.000001)
-    avulcnt += dt
-    loopcnt += dt
-
+plt.show()
