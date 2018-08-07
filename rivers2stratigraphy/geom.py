@@ -3,7 +3,7 @@
 #  - swap to x^(0.5) instead of sqrt for speed?
 
 import numpy as np
-from scipy.spatial import distance
+# from scipy.spatial import distance
 
 
 def Qhatfun(Qwf, D50, g):

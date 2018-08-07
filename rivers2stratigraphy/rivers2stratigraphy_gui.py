@@ -28,9 +28,7 @@ import matplotlib.animation as animation
 from itertools import compress
 import sys
 
-from . import geom, sedtrans, utils
-
-
+from rivers2stratigraphy import geom, sedtrans, utils
 
 
 # model run params
@@ -44,7 +42,7 @@ Gamma = 1e-2 # factor for avulsion timing
 Df = 0.6 # dampening factor to lateral migration rate change
 dxdtstd = 1 # stdev of lateral migration dist, [m/yr]?
 
-conR = 1.65 
+conR = 1.65
 cong = 9.81
 conrhof = 1000
 connu = 1.004e-6

@@ -1,1 +1,1 @@
-import rivers2stratigraphy.rivers2stratigraphy_gui
+from .run import run
