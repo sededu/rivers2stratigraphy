@@ -42,6 +42,11 @@ Whatever method you choose, you will need to install the dependencies. installat
 
 ### Installation
 
+To install with `conda` from Conda-cloud use:
+```
+conda install -c amoodie rivers2stratigraphy
+```
+
 To install globally with `pip` from Pypi use:
 ```
 pip3 install rivers2stratigraphy
