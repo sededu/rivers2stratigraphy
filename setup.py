@@ -4,7 +4,7 @@ import re
 
 # borrowed from Agile Scientific bruges tools
 verstr = 'unknown'
-VERSIONFILE = "src/_version.py"
+VERSIONFILE = "rivers2stratigraphy/_version.py"
 with open(VERSIONFILE, "r") as f:
     verstrline = f.read().strip()
     pattern = re.compile(r"__version__ = ['\"](.*)['\"]")
@@ -31,9 +31,7 @@ setup(
     install_requires=[
         'scipy',
         'numpy',
-        'matplotlib',
-        'itertools',
-        'sys'],
+        'matplotlib'],
     include_package_data=True,
     classifiers=[
         'Development Status :: 4 - Beta',

@@ -1,17 +1,23 @@
-# rivers2stratigraphy GUI -- build river stratigraphy interactively
-#   Stratigraphic model based on LAB models, i.e., geometric channel body is  
-#   deposited in "matrix" of floodplain mud. The channel is always fixed to the 
-#   basin surface and subsidence is only control on vertical stratigraphy.
-#   Horizontal stratigraphy is set by 1) lateral migration (drawn from a pdf) 
-#   and dampened for realism, and 2) avulsion that is set to a fixed value.
-#
-#   written by Andrew J. Moodie
-#   amoodie@rice.edu
-#   Feb 2018
-#   
-#   TODO:
-#    - control for "natural" ad default where lateral migration 
-#       and Ta are a function of sediment transport (Qw)
+"""
+rivers2stratigraphy GUI -- build river stratigraphy interactively
+  Stratigraphic model based on LAB models, i.e., geometric channel body is  
+  deposited in "matrix" of floodplain mud. The channel is always fixed to the 
+  basin surface and subsidence is only control on vertical stratigraphy.
+  Horizontal stratigraphy is set by 1) lateral migration (drawn from a pdf) 
+  and dampened for realism, and 2) avulsion that is set to a fixed value.
+  
+  written by Andrew J. Moodie
+  amoodie@rice.edu
+  Feb 2018
+  
+  TODO:
+   - control for "natural" ad default where lateral migration 
+      and Ta are a function of sediment transport (Qw)
+
+
+
+"""
+
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -20,8 +26,11 @@ from matplotlib.patches import Polygon, Rectangle
 from matplotlib.collections import PatchCollection, LineCollection
 import matplotlib.animation as animation
 from itertools import compress
-import geom, sedtrans, utils
 import sys
+
+from . import geom, sedtrans, utils
+
+
 
 
 # model run params
@@ -111,11 +120,13 @@ class Channel(object):
 
 
     def subside(self, dz):
+        # subside method to be called each iteration
         self.y_cent -= dz
         self.ll = self.lower_left()
 
 
     def lower_left(self):
+        # method to calculate the lower left corner of channel
         return np.array([(self.x_cent - (self.Bc / 2)), 
                          (self.y_cent - (self.H / 2))])
 
@@ -383,12 +394,12 @@ col_dict = {'Water discharge': 'Qw',
             'Subsidence rate':'sig'}
 
 
-if __name__ == '__main__':
-    # time looping
-    strat = Strat(ax)
+# if __name__ == '__main__':
+# time looping
+strat = Strat(ax)
 
-    anim = animation.FuncAnimation(fig, strat,
-                                   interval=100, blit=True)
-    anim.running = True
+anim = animation.FuncAnimation(fig, strat,
+                               interval=100, blit=True)
+anim.running = True
 
-    plt.show()
+plt.show()
