@@ -324,6 +324,12 @@ def pause_anim(event):
 
 
 
+# def redraw_strat(event):
+#     fd = anim.new_saved_frame_seq()
+#     anim._draw_frame(fd)
+
+
+
 # add sliders
 widget_color = 'lightgoldenrodyellow'
 
@@ -334,6 +340,7 @@ Qwstep = 100
 slide_Qw_ax = plt.axes([0.565, 0.875, 0.36, 0.05], facecolor=widget_color)
 slide_Qw = utils.MinMaxSlider(slide_Qw_ax, 'water discharge (m$^3$/s)', Qwmin, Qwmax, 
 valinit=QwInit, valstep=Qwstep, valfmt="%0.0f", transform=ax.transAxes)
+# slide_Qw.on_changed(redraw_strat)
 
 sigInit = 2
 sigmin = 0
