@@ -42,7 +42,7 @@ Whatever method you choose, you will need to install the dependencies. installat
 
 ### Installation
 
-To install with `conda` from Conda-cloud use:
+To install with `conda` use:
 ```
 conda install -c amoodie rivers2stratigraphy
 ```
@@ -52,29 +52,28 @@ To install globally with `pip` from Pypi use:
 pip3 install rivers2stratigraphy
 ```
 
-Note that you may need to use `sudo` on OSX and Linux.
+Note that you may need to use `sudo` on OSX and Linux or run as administrator on Windows.
+
 See below instructions for downloading the source code.
 
 
 ### Run the module
 
-Run the module in a single line with:
-```
-python3 -m rivers2stratigraphy
-```
-Note that this approach may throw an error on closing the window, but this is not a problem to functionality.
-
-Alternatively, run the module from the Python interpreter/command line, with
-```
-python3
-```
-followed by:
+Run the module from the Python shell with:
 ```
 import rivers2stratigraphy
+rivers2stratigraphy.run()
 ```
 
-Please [open an issue](https://github.com/amoodie/rivers2stratigraphy/issues) if you encounter any error messages! 
-Please include 1) operating system, 2) installation method, 3) copy-paste the error.
+Alternatively, run the module with provided script:
+```
+python3 <path-to-installation>/run_rivers2stratigraphy.py
+```
+
+Note that this may throw an error on closing the window, but this is not a problem to functionality.
+
+Please [open an issue](https://github.com/amoodie/rivers2stratigraphy/issues) if you encounter any additional error messages! 
+Please include 1) operating system, 2) installation method, and 3) copy-paste the error.
 
 
 
