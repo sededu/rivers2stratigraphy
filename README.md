@@ -50,10 +50,17 @@ See below instructions for downloading the source code.
 
 ### Run the module
 
-Run the module from the Python interpreter/command line, with
+Run the module in a single line with:
+```
+python3 -m rivers2stratigraphy
+```
+Note that this approach may throw an error on closing the window, but this is not a problem to functionality.
+
+Alternatively, run the module from the Python interpreter/command line, with
 ```
 python3
 ```
+followed by:
 ```
 import rivers2stratigraphy
 ```
