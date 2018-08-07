@@ -1,0 +1,6 @@
+include *.txt *.md
+recursive-include docs *
+recursive-exclude docs .gitignore .git
+recursive-exclude .gitignore .git
+recursive-exclude rivers2stratigraphy __pycache__
+global-exclude __pycache__ *.pyc 

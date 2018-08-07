@@ -14,19 +14,15 @@
 #   TODO:
 #    - control for "natural" ad default where lateral migration 
 #       and Ta are a function of sediment transport (Qw)
-#    - support for coloring by subsidence
-#    - fix runtime warnings on startup
 
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.widgets as widget
 from matplotlib.patches import Polygon, Rectangle
 from matplotlib.collections import PatchCollection, LineCollection
-# from matplotlib.animation import FuncAnimation
 import matplotlib.animation as animation
 from itertools import compress
 import geom, sedtrans, utils
-
 import sys
 
 
