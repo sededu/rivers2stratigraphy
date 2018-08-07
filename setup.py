@@ -17,14 +17,14 @@ else:
 
 
 setup(
-    name='sededu',
+    name='rivers2stratigraphy',
     version=verstr,
     author='Andrew J. Moodie other contributors',
     author_email='amoodie@rice.edu',
-    packages=['sededu'],
-    url='https://github.com/amoodie/sededu',
+    packages=['rivers2stratigraphy'],
+    url='https://github.com/amoodie/rivers2stratigraphy',
     license='LICENSE.txt',
-    description='sediment-related educational activity suite',
+    description='educational activity for teaching how rivers become stratigraphy',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
     python_requires='>=3',
@@ -32,18 +32,18 @@ setup(
         'scipy',
         'numpy',
         'matplotlib',
-        'Shapely',
-        'pygame'],
+        'itertools',
+        'sys'],
     include_package_data=True,
     classifiers=[
         'Development Status :: 4 - Beta',
-        'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
+        'License :: OSI Approved :: MIT License',
         'Intended Audience :: Education',
         'Intended Audience :: End Users/Desktop',
         'Intended Audience :: Science/Research',
         'Topic :: Education'],
     project_urls={
-        'Bug Reports': 'https://github.com/amoodie/sededu/issues',
-        'Source': 'https://github.com/amoodie/sededu/',
+        'Bug Reports': 'https://github.com/amoodie/rivers2stratigraphy/issues',
+        'Source': 'https://github.com/amoodie/rivers2stratigraphy',
     },
 )

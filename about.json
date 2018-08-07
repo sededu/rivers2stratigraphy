@@ -8,7 +8,7 @@
     "projurl": "[hosted on GitHub](https://github.com/amoodie/rivers2stratigraphy)",
     "projreadme": ["README.md"],
     "preview": ["private", "demo.png"],
-    "exec": ["src", "rivers2stratigraphy_gui.py"],
+    "exec": ["rivers2stratigraphy", "rivers2stratigraphy.py"],
     "docloc": ["docs"],
     "doclist": {
     	"blankdoc.txt": "A blank textfile"
