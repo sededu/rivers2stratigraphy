@@ -4,7 +4,10 @@
 Explore how a river becomes stratigraphy.
 
 
+<!--
 ![demo image](./private/demo.png "Demo of GUI")
+-->
+<img src="https://github.com/amoodie/rivers2stratigraphy/blob/master/private/rivers2stratigraphy_demo.gif" alt="demo_gif">
 
 
 This readme file provides an overview of the installation and setup process, as well as a brief description of the module worksheets available.
