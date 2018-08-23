@@ -25,6 +25,8 @@ import matplotlib.widgets as widget
 from matplotlib.patches import Polygon, Rectangle
 from matplotlib.collections import PatchCollection, LineCollection
 import matplotlib.animation as animation
+import shapely.geometry as sg
+import shapely.ops as so
 from itertools import compress
 import sys
 
