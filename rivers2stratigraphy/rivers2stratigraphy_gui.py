@@ -22,11 +22,12 @@ rivers2stratigraphy GUI -- build river stratigraphy interactively
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.widgets as widget
-from matplotlib.patches import Polygon, Rectangle
+from matplotlib.patches import Polygon, Rectangle, PathPatch
 from matplotlib.collections import PatchCollection, LineCollection
 import matplotlib.animation as animation
 import shapely.geometry as sg
 import shapely.ops as so
+from descartes import PolygonPatch
 from itertools import compress
 import sys
 
@@ -58,6 +59,7 @@ Bast = 0 # Basin top level
 
 
 class Channel(object):
+
     def __init__(self, x_centi = 0, Bast=0, age=0, avul_num=0, sm=None):
         
         self.sm = sm
@@ -65,7 +67,7 @@ class Channel(object):
         self.avul_timer = 0
         self.Ta = self.sm.Ta
             
-        self.state = State(x_cent = x_centi, dxdt =0, Bast = Bast, age = 0, sm = self.sm)
+        self.state = State(new_channel = True, dxdt =0, Bast = Bast, age = 0, sm = self.sm)
         self.stateList = [self.state]
 
         self.y_upper = Bast # THIS NEED TO BE MODIFIFED FOR OUTDATED TRACKING!!!
@@ -74,83 +76,113 @@ class Channel(object):
         self.state0 = self.state
 
         # do all calculations here, and pass needed values to State
+        self.subside()
         x_cent, dxdt = self.migrate()
 
         self.state = State(x_cent = x_cent, dxdt = dxdt,
-                           Bast = self.state0.Bast,
-                           sm = self.sm)
+                           Bast = self.state0.Bast, sm = self.sm)
+        self.stateList.append(self.state)
 
         if self.avul_timer > self.Ta:
             self.avulsion()
         else:
             self.avul_timer += dt
 
-    def geom(self):
+    def get_patches(self):
         '''
         geometry of the body to be plotted
-
-        if active, its a patch collection, otherwise its a single patch
         '''
-        geom = [Rectangle(c.ll, c.Bc, c.H) for c in iter(self.stateList)]
+        patches = [Rectangle(s.ll, s.Bc, s.H) for s in iter(self.stateList)]
+        geom = PatchCollection(patches)
         return geom
 
     def migrate(self):
         dxdt = (dxdtstd * (np.random.randn()) )
         dx = dt * (   ((1-Df) * dxdt) + ((Df) * self.state0.dxdt)   )
         x_cent = self.state0.x_cent + dx
-        print("x_cent = ", x_cent)
         return x_cent, dxdt
 
     def avulsion(self):
-        # self.x_cent0 = self.new_xcent(Bb = self.Bb)
-        # self.dxdt0 = 0 # self.new_dxdt()
-        # self.avul_timer = 0
-        # self.avul_num = self.avul_num + 1
         self.avulsed = True
 
-    def pick_x_cent(self, Bb):
-        # avulsion chooser
-        tempState = State(sm = self.sm)
-        tempState.calc_geometry()
-        new_x_cent = np.random.uniform(-Bb/2 + (tempState.Bc/2), 
-                                 Bb/2 - (tempState.Bc/2))
-        return new_x_cent
+
+
+    def subside(self):
+        # subside method to be called each iteration
+        dz = (self.sm.sig * dt)
+        for s in iter(self.stateList):
+            s.subside(dz)
+            s.ll = s.lower_left()
+
+
+
+class ChannelBody(object):
+    '''
+    when the channel is avulsed, convert it to a ChannelBody type
+    '''
+    def __init__(self, stateList):
+        stateBoxes = []
+        for s in iter(stateList):
+            stateBoxes.append(self.rect2box(s.ll, s.Bc, s.H))
+
+        stateUnion = so.cascaded_union(stateBoxes) # try so.cascaded_union(stateBoxes[::2]) for speed?
+
+        # if type is polygon
+        uniontype = stateUnion.geom_type
+        if uniontype == 'Polygon':
+            self.polygonAsArray = np.asarray(stateUnion.exterior)
+        elif uniontype == 'MultiPolygon':
+            stateUnionConvexHull = stateUnion.convex_hull
+            self.polygonAsArray = np.asarray(stateUnionConvexHull.exterior)
+
+        self.polygonXs = self.polygonAsArray[:,0]
+        self.polygonYs = self.polygonAsArray[:,1]
+
+        self.polygonPatch = Polygon(self.polygonAsArray)
+
+        # do all the conversions above here
+        # get all the "means" of variables for coloring values
 
     def subside(self, dz):
         # subside method to be called each iteration
-        # subside the channels by sig
-        for c in iter(self.stateList):
-            # c.subside(self.sm.sig * dt)
-            self.y_cent -= dz
+        self.polygonYs -= dz
+        xsys = np.column_stack((self.polygonXs, self.polygonYs))
+        self.polygonPatch.set_xy(xsys)
+
+    def get_patch(self):
+        return self.polygonPatch
+
+    def rect2box(self, ll, Bc, H):
+        box = sg.box(ll[0], ll[1], 
+                     ll[0] + Bc, ll[1] + H)
+        return box
+
 
 
 class State(object):
 
-    def __init__(self, x_cent = 0, dxdt = 0, Bast = 0, age = 0, sm = None):
+    def __init__(self, new_channel = False, x_cent = 0, dxdt = 0, Bast = 0, age = 0, sm = None):
 
         self.Bast = Bast
-        self.x_cent = x_cent
         self.dxdt = dxdt
         self.Qw = sm.Qw
         self.sig = sm.sig
         self.Ta = sm.Ta
         self.Bb = sm.Bb
-        # self.avul_timer = avul_timer
-        # self.avul_num = avul_num
         self.age = age
 
         self.calc_geometry()
 
-        self.x_outer = self.Bb
+        if new_channel:
+            self.x_cent = self.pick_x_cent(self.Bb)
+        else:
+            self.x_cent = x_cent
 
-        # self.dx = dt * (   ((1-Df) * self.dxdt) + ((Df) * self.state0.dxdt)   )
-        
-        # self.x_cent = self.x_cent0 + self.dx
         self.x_side = np.array([[self.x_cent - (self.Bc/2)], 
                                 [self.x_cent + (self.Bc/2)]])
         self.x_outer = np.max(np.abs(self.x_side))
         if self.x_outer >= (self.Bb / 2): # keep channel within belt
-            self.x_cent = self.x_cent0 - self.dx
+            self.x_cent = self.x_cent
             self.x_side = np.array([[self.x_cent - (self.Bc/2)], 
                                     [self.x_cent + (self.Bc/2)]])
             self.x_outer = np.max(np.abs(self.x_side))
@@ -181,9 +213,10 @@ class State(object):
         return np.array([(self.x_cent - (self.Bc / 2)), 
                          (self.y_cent - (self.H / 2))])
 
-
-
-
+    def pick_x_cent(self, Bb):
+        new_x_cent = np.random.uniform(-Bb/2 + (self.Bc/2), 
+                                 Bb/2 - (self.Bc/2))
+        return new_x_cent
 
 
 class SliderManager(object):
@@ -220,9 +253,9 @@ class Strat(object):
         self.sm = SliderManager()
 
         self.activeChannel = Channel(x_centi = 0, Bast = self.Bast, age = 0, avul_num = 0, sm = self.sm)
-        self.channelList = [self.activeChannel]
-        self.channelRectangleList = []
-        self.channelPatchCollection = PatchCollection(self.channelRectangleList)
+        self.channelBodyList = []
+        # self.channelRectangleList = []
+        # self.channelPatchCollection = PatchCollection(self.channelRectangleList)
 
         self.BastLine, = ax.plot([-Bbmax*1000/2, Bbmax*1000/2], 
                                  [Bast, Bast], 'k--', animated=True) # plot basin top
@@ -265,19 +298,31 @@ class Strat(object):
         # timestep the current channel object
         if not self.activeChannel.avulsed:
             self.activeChannel.timestep()
+            dz = self.sm.sig * dt
+            for c in self.channelBodyList:
+                c.subside(dz)
         else:
+            self.channelBodyList.append( ChannelBody(self.activeChannel.stateList) )
             self.avul_num += 1
+            # delete the active channel object here?
             self.activeChannel = Channel(Bast = self.Bast, age = i, 
                                          avul_num = self.avul_num, sm = self.sm)
+            # self.channelList.append(self.activeChannel)
 
-        self.channelList.append(self.activeChannel)
+        self.channelBodyPatchList = [c.get_patch() for c in self.channelBodyList]
+        self.channelBodyPatchCollection = PatchCollection(self.channelBodyPatchList)
+        self.channelBodyPatchCollection.set_edgecolor('0')
 
-        self.channelPatchList = [c.geom() for c in self.channelList]
 
-        print(self.channelPatchList)
-        self.channelPatchCollection = PatchCollection(self.channelPatchList)
-        print(self.channelPatchCollection)
-        self.channelPatchCollection.set_edgecolor('0') # remove for speed?
+        self.activeChannelPatchCollection = self.activeChannel.get_patches()
+        self.activeChannelPatchCollection.set_edgecolor('0')
+
+
+
+        # print(self.channelPatchList)
+        # self.channelPatchCollection = PatchCollection(self.channelPatchList)
+        # print(self.channelPatchCollection)
+        # self.channelPatchCollection.set_edgecolor('0') # remove for speed?
 
         # self.qs = sedtrans.qsEH(D50, Cf, 
         #                         sedtrans.taubfun(self.channel.H, self.channel.S, cong, conrhof), 
@@ -286,7 +331,8 @@ class Strat(object):
         # # update plot
         if i % 1 == 0 or self.channel.avul_timer == 0:
 
-            self.BastLine.set_ydata([self.Bast, self.Bast])
+            # NO NEED FOR THIS LINE??:
+            # self.BastLine.set_ydata([self.Bast, self.Bast])
 
             # if self.sm.colFlag == 'age':
             #     age_array = np.array([c.age for c in self.channelList])
@@ -307,7 +353,8 @@ class Strat(object):
             #     self.channelPatchCollection.set_clim(vmin=sigmin/1000, vmax=sigmax/1000)
             #     self.channelPatchCollection.set_cmap(plt.cm.viridis)
 
-            self.ax.add_collection(self.channelPatchCollection)
+            self.ax.add_collection(self.channelBodyPatchCollection)
+            self.ax.add_collection(self.activeChannelPatchCollection)
 
             # yview and xview
             ylims = utils.new_ylims(yView = self.sm.yView, Bast = self.Bast)
@@ -318,15 +365,15 @@ class Strat(object):
             self.VE_val.set_text('VE = ' + str(round(self.sm.Bb/self.sm.yView, 1)))
 
             # remove outdated channels
-            stratMin = self.Bast - yViewmax
-            outdatedIdx = [c.y_upper < stratMin for c in self.channelList]
-            self.channelList = [c for (c, i) in 
-                                zip(self.channelList, outdatedIdx) if not i]
-            self.channelRectangleList = [c for (c, i) in 
-                                         zip(self.channelRectangleList, outdatedIdx) if not i]
+            # stratMin = self.Bast - yViewmax
+            # outdatedIdx = [c.y_upper < stratMin for c in self.channelList]
+            # self.channelList = [c for (c, i) in 
+            #                     zip(self.channelList, outdatedIdx) if not i]
+            # self.channelRectangleList = [c for (c, i) in 
+            #                              zip(self.channelRectangleList, outdatedIdx) if not i]
 
-        return self.BastLine, self.channelPatchCollection, \
-               self.VE_val
+        return self.BastLine, self.VE_val, \
+               self.channelBodyPatchCollection, self.activeChannelPatchCollection
 
 
 
