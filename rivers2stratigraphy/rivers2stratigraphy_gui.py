@@ -64,11 +64,9 @@ class Channel(object):
         self.avulsed = False
         self.avul_timer = 0
         self.Ta = self.sm.Ta
+            
         self.state = State(x_cent = x_centi, dxdt =0, Bast = Bast, age = 0, sm = self.sm)
-
         self.stateList = [self.state]
-
-
 
         self.y_upper = Bast # THIS NEED TO BE MODIFIFED FOR OUTDATED TRACKING!!!
 
@@ -109,14 +107,14 @@ class Channel(object):
         # self.avul_timer = 0
         # self.avul_num = self.avul_num + 1
         self.avulsed = True
-        self.new_x_cent = self.pick_x_cent(self.sm.Bb)
 
     def pick_x_cent(self, Bb):
         # avulsion chooser
-        self.state.calc_geometry()
-        val = np.random.uniform(-Bb/2 + (self.Bc/2), 
-                                 Bb/2 - (self.Bc/2))
-        return val
+        tempState = State(sm = self.sm)
+        tempState.calc_geometry()
+        new_x_cent = np.random.uniform(-Bb/2 + (tempState.Bc/2), 
+                                 Bb/2 - (tempState.Bc/2))
+        return new_x_cent
 
     def subside(self, dz):
         # subside method to be called each iteration
@@ -221,7 +219,7 @@ class Strat(object):
         self.avul_num = 0
         self.sm = SliderManager()
 
-        self.activeChannel = Channel(Bast = self.Bast, age = 0, avul_num = 0, sm = self.sm)
+        self.activeChannel = Channel(x_centi = 0, Bast = self.Bast, age = 0, avul_num = 0, sm = self.sm)
         self.channelList = [self.activeChannel]
         self.channelRectangleList = []
         self.channelPatchCollection = PatchCollection(self.channelRectangleList)
@@ -269,13 +267,16 @@ class Strat(object):
             self.activeChannel.timestep()
         else:
             self.avul_num += 1
-            self.activeChannel = Channel(x_centi = self.activeChannel.new_x_cent, Bast = self.Bast, age = i, avul_num = self.avul_num, sm = self.sm)
+            self.activeChannel = Channel(Bast = self.Bast, age = i, 
+                                         avul_num = self.avul_num, sm = self.sm)
 
         self.channelList.append(self.activeChannel)
 
-        self.channelPatchList = [c.geom for c in self.channelList]
+        self.channelPatchList = [c.geom() for c in self.channelList]
 
-        self.channelPatchCollection = PatchCollection(self.channelRectangleList)
+        print(self.channelPatchList)
+        self.channelPatchCollection = PatchCollection(self.channelPatchList)
+        print(self.channelPatchCollection)
         self.channelPatchCollection.set_edgecolor('0') # remove for speed?
 
         # self.qs = sedtrans.qsEH(D50, Cf, 
