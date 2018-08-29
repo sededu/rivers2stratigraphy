@@ -22,12 +22,11 @@ rivers2stratigraphy GUI -- build river stratigraphy interactively
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.widgets as widget
-from matplotlib.patches import Polygon, Rectangle, PathPatch
+from matplotlib.patches import Polygon, Rectangle
 from matplotlib.collections import PatchCollection, LineCollection
 import matplotlib.animation as animation
 import shapely.geometry as sg
 import shapely.ops as so
-from descartes import PolygonPatch
 from itertools import compress
 import sys
 
