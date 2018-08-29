@@ -58,45 +58,62 @@ Bast = 0 # Basin top level
 
 
 class Channel(object):
-    def __init__(self, Bast=0, age=0, avul_num=0, sm=None):
+    def __init__(self, x_centi = 0, Bast=0, age=0, avul_num=0, sm=None):
         
         self.sm = sm
         self.avulsed = False
-        self.statei = State(x_cent0 = 0, dx = 0,
-                               Bast = Bast,
-                               sm = self.sm)
+        self.avul_timer = 0
+        self.Ta = self.sm.Ta
+        self.state = State(x_cent = x_centi, dxdt =0, Bast = Bast, age = 0, sm = self.sm)
 
-        self.stateList = [self.statei]
-
-        self.geom = [Rectangle(c.ll, c.Bc, c.H) for c in iter(self.stateList)]
+        self.stateList = [self.state]
 
 
-    def timestep(self, x_cent0, dxdt0):
-        dxdt = self.new_dxdt()
-        dx = dt * (   ((1-Df) * dxdt) + ((Df) * dxdt0)   )
-        newchannel = State(x_cent0 = xcent0, dx = dx,
-                           Bast = self.Bast,
+
+        self.y_upper = Bast # THIS NEED TO BE MODIFIFED FOR OUTDATED TRACKING!!!
+
+    def timestep(self):
+        self.state0 = self.state
+
+        # do all calculations here, and pass needed values to State
+        x_cent, dxdt = self.migrate()
+
+        self.state = State(x_cent = x_cent, dxdt = dxdt,
+                           Bast = self.state0.Bast,
                            sm = self.sm)
 
-        if avul_timer > self.Ta:
+        if self.avul_timer > self.Ta:
             self.avulsion()
+        else:
+            self.avul_timer += dt
 
+    def geom(self):
+        '''
+        geometry of the body to be plotted
 
-    def new_dxdt(self):
+        if active, its a patch collection, otherwise its a single patch
+        '''
+        geom = [Rectangle(c.ll, c.Bc, c.H) for c in iter(self.stateList)]
+        return geom
+
+    def migrate(self):
         dxdt = (dxdtstd * (np.random.randn()) )
-        return dxdt
-
+        dx = dt * (   ((1-Df) * dxdt) + ((Df) * self.state0.dxdt)   )
+        x_cent = self.state0.x_cent + dx
+        print("x_cent = ", x_cent)
+        return x_cent, dxdt
 
     def avulsion(self):
-        self.x_cent0 = self.new_xcent(Bb = self.Bb)
-        self.dxdt0 = 0 # self.new_dxdt()
-        self.avul_timer = 0
-        self.avul_num = self.avul_num + 1
+        # self.x_cent0 = self.new_xcent(Bb = self.Bb)
+        # self.dxdt0 = 0 # self.new_dxdt()
+        # self.avul_timer = 0
+        # self.avul_num = self.avul_num + 1
         self.avulsed = True
+        self.new_x_cent = self.pick_x_cent(self.sm.Bb)
 
-    def new_xcent(self, Bb):
+    def pick_x_cent(self, Bb):
         # avulsion chooser
-        self.calc_geometry()
+        self.state.calc_geometry()
         val = np.random.uniform(-Bb/2 + (self.Bc/2), 
                                  Bb/2 - (self.Bc/2))
         return val
@@ -111,25 +128,26 @@ class Channel(object):
 
 class State(object):
 
-    def __init__(self, x_cent0 = 0, dx = 0, Bast = 0, 
-                 age = 0, avul_num = 0, avul_timer = 0, sm = None):
+    def __init__(self, x_cent = 0, dxdt = 0, Bast = 0, age = 0, sm = None):
 
         self.Bast = Bast
-        self.x_cent0 = x_cent0
-        self.dx = dx
+        self.x_cent = x_cent
+        self.dxdt = dxdt
         self.Qw = sm.Qw
         self.sig = sm.sig
         self.Ta = sm.Ta
         self.Bb = sm.Bb
-        self.avul_timer = avul_timer
-        self.avul_num = avul_num
+        # self.avul_timer = avul_timer
+        # self.avul_num = avul_num
         self.age = age
 
         self.calc_geometry()
 
         self.x_outer = self.Bb
+
+        # self.dx = dt * (   ((1-Df) * self.dxdt) + ((Df) * self.state0.dxdt)   )
         
-        self.x_cent = self.x_cent0 + self.dx
+        # self.x_cent = self.x_cent0 + self.dx
         self.x_side = np.array([[self.x_cent - (self.Bc/2)], 
                                 [self.x_cent + (self.Bc/2)]])
         self.x_outer = np.max(np.abs(self.x_side))
@@ -203,8 +221,8 @@ class Strat(object):
         self.avul_num = 0
         self.sm = SliderManager()
 
-        self.channel = Channel(Bast = self.Bast, age = 0, avul_num = 0, sm = self.sm)
-        self.channelList = [self.channel]
+        self.activeChannel = Channel(Bast = self.Bast, age = 0, avul_num = 0, sm = self.sm)
+        self.channelList = [self.activeChannel]
         self.channelRectangleList = []
         self.channelPatchCollection = PatchCollection(self.channelRectangleList)
 
@@ -228,59 +246,65 @@ class Strat(object):
         called every loop
         '''
 
-        self.channel0 = self.channel
+        # self.channel0 = self.channel
 
         # find new slider vals
         self.sm.get_all()
 
-        
-
         # recalculate the channel bodies
-        self.channelRectangleList = [Rectangle(c.ll, c.Bc, c.H) for c in iter(self.channelList)]
+        # self.channelRectangleList = [Rectangle(c.ll, c.Bc, c.H) for c in iter(self.channelList)]
 
-        self.channel = Channel(x_cent0 = self.channel0.x_cent,
-                               dxdt0 = self.channel0.dxdt,
-                               Bast = self.Bast,
-                               age = i,
-                               avul_num = self.channel0.avul_num,
-                               avul_timer = self.channel0.avul_timer + dt,
-                               sm = self.sm)
-        self.channelRectangle = Rectangle(self.channel.ll, self.channel.Bc, 
-                                    self.channel.H)
+        # self.channel = Channel(x_cent0 = self.channel0.x_cent,
+        #                        dxdt0 = self.channel0.dxdt,
+        #                        Bast = self.Bast,
+        #                        age = i,
+        #                        avul_num = self.channel0.avul_num,
+        #                        avul_timer = self.channel0.avul_timer + dt,
+        #                        sm = self.sm)
+        # self.channelRectangle = Rectangle(self.channel.ll, self.channel.Bc, 
+        #                             self.channel.H)
 
-        self.channelList.append(self.channel)
-        self.channelRectangleList.append(self.channelRectangle)
+        # timestep the current channel object
+        if not self.activeChannel.avulsed:
+            self.activeChannel.timestep()
+        else:
+            self.avul_num += 1
+            self.activeChannel = Channel(x_centi = self.activeChannel.new_x_cent, Bast = self.Bast, age = i, avul_num = self.avul_num, sm = self.sm)
+
+        self.channelList.append(self.activeChannel)
+
+        self.channelPatchList = [c.geom for c in self.channelList]
 
         self.channelPatchCollection = PatchCollection(self.channelRectangleList)
         self.channelPatchCollection.set_edgecolor('0') # remove for speed?
 
-        self.qs = sedtrans.qsEH(D50, Cf, 
-                                sedtrans.taubfun(self.channel.H, self.channel.S, cong, conrhof), 
-                                conR, cong, conrhof)  # sedment transport rate based on new geom
+        # self.qs = sedtrans.qsEH(D50, Cf, 
+        #                         sedtrans.taubfun(self.channel.H, self.channel.S, cong, conrhof), 
+        #                         conR, cong, conrhof)  # sedment transport rate based on new geom
 
         # # update plot
         if i % 1 == 0 or self.channel.avul_timer == 0:
 
             self.BastLine.set_ydata([self.Bast, self.Bast])
 
-            if self.sm.colFlag == 'age':
-                age_array = np.array([c.age for c in self.channelList])
-                self.channelPatchCollection.set_array(age_array)
-                self.channelPatchCollection.set_clim(vmin=age_array.min(), vmax=age_array.max())
-                self.channelPatchCollection.set_cmap(plt.cm.viridis)
-            elif self.sm.colFlag == 'Qw':
-                self.channelPatchCollection.set_array(np.array([c.Qw for c in self.channelList]))
-                self.channelPatchCollection.set_clim(vmin=Qwmin, vmax=Qwmax)
-                self.channelPatchCollection.set_cmap(plt.cm.viridis)
-            elif self.sm.colFlag == 'avul':
-                self.channelPatchCollection.set_array(np.array([c.avul_num % 9 for c in self.channelList]))
-                self.channelPatchCollection.set_clim(vmin=0, vmax=9)
-                self.channelPatchCollection.set_cmap(plt.cm.Set1)
-            elif self.sm.colFlag == 'sig':
-                sig_array = np.array([c.sig for c in self.channelList])
-                self.channelPatchCollection.set_array(sig_array)
-                self.channelPatchCollection.set_clim(vmin=sigmin/1000, vmax=sigmax/1000)
-                self.channelPatchCollection.set_cmap(plt.cm.viridis)
+            # if self.sm.colFlag == 'age':
+            #     age_array = np.array([c.age for c in self.channelList])
+            #     self.channelPatchCollection.set_array(age_array)
+            #     self.channelPatchCollection.set_clim(vmin=age_array.min(), vmax=age_array.max())
+            #     self.channelPatchCollection.set_cmap(plt.cm.viridis)
+            # elif self.sm.colFlag == 'Qw':
+            #     self.channelPatchCollection.set_array(np.array([c.Qw for c in self.channelList]))
+            #     self.channelPatchCollection.set_clim(vmin=Qwmin, vmax=Qwmax)
+            #     self.channelPatchCollection.set_cmap(plt.cm.viridis)
+            # elif self.sm.colFlag == 'avul':
+            #     self.channelPatchCollection.set_array(np.array([c.avul_num % 9 for c in self.channelList]))
+            #     self.channelPatchCollection.set_clim(vmin=0, vmax=9)
+            #     self.channelPatchCollection.set_cmap(plt.cm.Set1)
+            # elif self.sm.colFlag == 'sig':
+            #     sig_array = np.array([c.sig for c in self.channelList])
+            #     self.channelPatchCollection.set_array(sig_array)
+            #     self.channelPatchCollection.set_clim(vmin=sigmin/1000, vmax=sigmax/1000)
+            #     self.channelPatchCollection.set_cmap(plt.cm.viridis)
 
             self.ax.add_collection(self.channelPatchCollection)
 
