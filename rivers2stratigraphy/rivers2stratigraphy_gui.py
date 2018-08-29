@@ -105,8 +105,6 @@ class Channel(object):
     def avulsion(self):
         self.avulsed = True
 
-
-
     def subside(self):
         # subside method to be called each iteration
         dz = (self.sm.sig * dt)
@@ -123,7 +121,8 @@ class ChannelBody(object):
     def __init__(self, stateList):
         stateBoxes = []
         for s in iter(stateList):
-            stateBoxes.append(self.rect2box(s.ll, s.Bc, s.H))
+            stateBoxes.append(self.rect2box(s.ll, s.Bc, s.H)) # different way to do this?
+            # instead go straight polygon to union?
 
         stateUnion = so.cascaded_union(stateBoxes) # try so.cascaded_union(stateBoxes[::2]) for speed?
 
@@ -254,8 +253,6 @@ class Strat(object):
 
         self.activeChannel = Channel(x_centi = 0, Bast = self.Bast, age = 0, avul_num = 0, sm = self.sm)
         self.channelBodyList = []
-        # self.channelRectangleList = []
-        # self.channelPatchCollection = PatchCollection(self.channelRectangleList)
 
         self.BastLine, = ax.plot([-Bbmax*1000/2, Bbmax*1000/2], 
                                  [Bast, Bast], 'k--', animated=True) # plot basin top
@@ -277,23 +274,10 @@ class Strat(object):
         called every loop
         '''
 
-        # self.channel0 = self.channel
 
         # find new slider vals
         self.sm.get_all()
 
-        # recalculate the channel bodies
-        # self.channelRectangleList = [Rectangle(c.ll, c.Bc, c.H) for c in iter(self.channelList)]
-
-        # self.channel = Channel(x_cent0 = self.channel0.x_cent,
-        #                        dxdt0 = self.channel0.dxdt,
-        #                        Bast = self.Bast,
-        #                        age = i,
-        #                        avul_num = self.channel0.avul_num,
-        #                        avul_timer = self.channel0.avul_timer + dt,
-        #                        sm = self.sm)
-        # self.channelRectangle = Rectangle(self.channel.ll, self.channel.Bc, 
-        #                             self.channel.H)
 
         # timestep the current channel object
         if not self.activeChannel.avulsed:
@@ -313,32 +297,24 @@ class Strat(object):
         self.channelBodyPatchCollection = PatchCollection(self.channelBodyPatchList)
         self.channelBodyPatchCollection.set_edgecolor('0')
 
-
         self.activeChannelPatchCollection = self.activeChannel.get_patches()
         self.activeChannelPatchCollection.set_edgecolor('0')
-
-
-
-        # print(self.channelPatchList)
-        # self.channelPatchCollection = PatchCollection(self.channelPatchList)
-        # print(self.channelPatchCollection)
-        # self.channelPatchCollection.set_edgecolor('0') # remove for speed?
 
         # self.qs = sedtrans.qsEH(D50, Cf, 
         #                         sedtrans.taubfun(self.channel.H, self.channel.S, cong, conrhof), 
         #                         conR, cong, conrhof)  # sedment transport rate based on new geom
 
-        # # update plot
+        # update plot
         if i % 1 == 0 or self.channel.avul_timer == 0:
 
             # NO NEED FOR THIS LINE??:
             # self.BastLine.set_ydata([self.Bast, self.Bast])
 
-            # if self.sm.colFlag == 'age':
-            #     age_array = np.array([c.age for c in self.channelList])
-            #     self.channelPatchCollection.set_array(age_array)
-            #     self.channelPatchCollection.set_clim(vmin=age_array.min(), vmax=age_array.max())
-            #     self.channelPatchCollection.set_cmap(plt.cm.viridis)
+            if self.sm.colFlag == 'age':
+                age_array = np.array([c.age for c in self.channelList])
+                self.channelPatchCollection.set_array(age_array)
+                self.channelPatchCollection.set_clim(vmin=age_array.min(), vmax=age_array.max())
+                self.channelPatchCollection.set_cmap(plt.cm.viridis)
             # elif self.sm.colFlag == 'Qw':
             #     self.channelPatchCollection.set_array(np.array([c.Qw for c in self.channelList]))
             #     self.channelPatchCollection.set_clim(vmin=Qwmin, vmax=Qwmax)
