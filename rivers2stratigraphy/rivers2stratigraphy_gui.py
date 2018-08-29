@@ -57,15 +57,66 @@ Qw = QwInit = 1000
 Bast = 0 # Basin top level
 
 
-
 class Channel(object):
+    def __init__(self, Bast=0, age=0, avul_num=0, sm=None):
+        
+        self.sm = sm
+        self.avulsed = False
+        self.statei = State(x_cent0 = 0, dx = 0,
+                               Bast = Bast,
+                               sm = self.sm)
 
-    def __init__(self, x_cent0=0, dxdt0=0, Bast=0, 
-                 age=0, avul_num=0, avul_timer=0, sm=None):
+        self.stateList = [self.statei]
+
+        self.geom = [Rectangle(c.ll, c.Bc, c.H) for c in iter(self.stateList)]
+
+
+    def timestep(self, x_cent0, dxdt0):
+        dxdt = self.new_dxdt()
+        dx = dt * (   ((1-Df) * dxdt) + ((Df) * dxdt0)   )
+        newchannel = State(x_cent0 = xcent0, dx = dx,
+                           Bast = self.Bast,
+                           sm = self.sm)
+
+        if avul_timer > self.Ta:
+            self.avulsion()
+
+
+    def new_dxdt(self):
+        dxdt = (dxdtstd * (np.random.randn()) )
+        return dxdt
+
+
+    def avulsion(self):
+        self.x_cent0 = self.new_xcent(Bb = self.Bb)
+        self.dxdt0 = 0 # self.new_dxdt()
+        self.avul_timer = 0
+        self.avul_num = self.avul_num + 1
+        self.avulsed = True
+
+    def new_xcent(self, Bb):
+        # avulsion chooser
+        self.calc_geometry()
+        val = np.random.uniform(-Bb/2 + (self.Bc/2), 
+                                 Bb/2 - (self.Bc/2))
+        return val
+
+    def subside(self, dz):
+        # subside method to be called each iteration
+        # subside the channels by sig
+        for c in iter(self.stateList):
+            # c.subside(self.sm.sig * dt)
+            self.y_cent -= dz
+
+
+class State(object):
+
+    def __init__(self, x_cent0 = 0, dx = 0, Bast = 0, 
+                 age = 0, avul_num = 0, avul_timer = 0, sm = None):
 
         self.Bast = Bast
         self.x_cent0 = x_cent0
-        self.dxdt0 = dxdt0
+        self.dx = dx
         self.Qw = sm.Qw
         self.sig = sm.sig
         self.Ta = sm.Ta
@@ -74,14 +125,10 @@ class Channel(object):
         self.avul_num = avul_num
         self.age = age
 
-        if avul_timer > self.Ta:
-            self.avulsion()
-
-        self.geometry()
+        self.calc_geometry()
 
         self.x_outer = self.Bb
-        self.dxdt = self.new_dxdt()
-        self.dx = dt * (   ((1-Df) * self.dxdt) + ((Df) * self.dxdt0)   )
+        
         self.x_cent = self.x_cent0 + self.dx
         self.x_side = np.array([[self.x_cent - (self.Bc/2)], 
                                 [self.x_cent + (self.Bc/2)]])
@@ -97,7 +144,7 @@ class Channel(object):
         self.ll = self.lower_left()
 
 
-    def geometry(self):
+    def calc_geometry(self):
         Qhat = geom.Qhatfun(self.Qw, D50, cong)
         Hbar = geom.Hbarfun(Qhat, Rep)
         Bbar = geom.Bbarfun(Qhat, Rep)
@@ -105,18 +152,6 @@ class Channel(object):
         self.H = geom.dimless2dimfun(Hbar, self.Qw, cong) # new depth
         self.Bc = geom.dimless2dimfun(Bbar, self.Qw, cong) # new width
         self.S = Sbar
-
-
-    def new_dxdt(self):
-        dxdt = (dxdtstd * (np.random.randn()) )
-        return dxdt
-
-
-    def avulsion(self):
-        self.x_cent0 = self.new_xcent(Bb = self.Bb)
-        self.dxdt0 = 0 # self.new_dxdt()
-        self.avul_timer = 0
-        self.avul_num = self.avul_num + 1
 
 
     def subside(self, dz):
@@ -131,12 +166,7 @@ class Channel(object):
                          (self.y_cent - (self.H / 2))])
 
 
-    def new_xcent(self, Bb):
-        # avulsion chooser
-        self.geometry()
-        val = np.random.uniform(-Bb/2 + (self.Bc/2), 
-                                 Bb/2 - (self.Bc/2))
-        return val
+
 
 
 
@@ -173,9 +203,7 @@ class Strat(object):
         self.avul_num = 0
         self.sm = SliderManager()
 
-        self.channel = Channel(x_cent0 = 0, dxdt0 = 0,
-                               Bast = self.Bast,
-                               sm = self.sm)
+        self.channel = Channel(Bast = self.Bast, age = 0, avul_num = 0, sm = self.sm)
         self.channelList = [self.channel]
         self.channelRectangleList = []
         self.channelPatchCollection = PatchCollection(self.channelRectangleList)
@@ -202,12 +230,10 @@ class Strat(object):
 
         self.channel0 = self.channel
 
-        # find new geom
+        # find new slider vals
         self.sm.get_all()
 
-        # subside the channels by sig
-        for c in iter(self.channelList):
-            c.subside(self.sm.sig * dt)
+        
 
         # recalculate the channel bodies
         self.channelRectangleList = [Rectangle(c.ll, c.Bc, c.H) for c in iter(self.channelList)]
