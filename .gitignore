@@ -20,6 +20,7 @@ parts/
 sdist/
 var/
 wheels/
+conda-build-dir/
 *.egg-info/
 .installed.cfg
 *.egg
