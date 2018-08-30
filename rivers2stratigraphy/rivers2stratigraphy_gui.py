@@ -29,6 +29,7 @@ import shapely.geometry as sg
 import shapely.ops as so
 from itertools import compress
 import sys
+import gc
 
 from rivers2stratigraphy import geom, sedtrans, utils
 
@@ -70,8 +71,6 @@ class Channel(object):
             
         self.state = State(new_channel = True, dxdt =0, Bast = Bast, age = 0, sm = self.sm)
         self.stateList = [self.state]
-
-        self.y_upper = Bast # THIS NEED TO BE MODIFIFED FOR OUTDATED TRACKING!!!
 
     def timestep(self):
         self.state0 = self.state
@@ -135,8 +134,8 @@ class ChannelBody(object):
 
         self.y_upper = channel.stateList[-1].y_upper
 
+        # different methods for polygon and multipolygon
         stateUnion = so.cascaded_union(stateBoxes) # try so.cascaded_union(stateBoxes[::2]) for speed?
-
         # if type is polygon
         uniontype = stateUnion.geom_type
         if uniontype == 'Polygon':
@@ -144,6 +143,11 @@ class ChannelBody(object):
         elif uniontype == 'MultiPolygon':
             stateUnionConvexHull = stateUnion.convex_hull
             self.polygonAsArray = np.asarray(stateUnionConvexHull.exterior)
+
+        # same method for all
+        # stateUnion = so.cascaded_union(stateBoxes[::2])
+        # stateUnionConvexHull = stateUnion.convex_hull
+        # self.polygonAsArray = np.asarray(stateUnionConvexHull.exterior)
 
         self.polygonXs = self.polygonAsArray[:,0]
         self.polygonYs = self.polygonAsArray[:,1]
@@ -294,13 +298,15 @@ class Strat(object):
         self.sm.get_all()
 
 
-        # timestep the current channel object
+        # timestep the current channel objects
+        dz = self.sm.sig * dt
+        for c in self.channelBodyList:
+                c.subside(dz)
         if not self.activeChannel.avulsed:
             # when an avulsion has not occurred:
             self.activeChannel.timestep()
-            dz = self.sm.sig * dt
-            for c in self.channelBodyList:
-                c.subside(dz)
+            
+            
         else:
             # once an avulsion has occurred:
             self.channelBodyList.append( ChannelBody(self.activeChannel) )
@@ -317,7 +323,7 @@ class Strat(object):
             outdatedIdx = [c.polygonYs.max() < stratMin for c in self.channelBodyList]
             self.channelBodyList = [c for (c, i) in 
                                 zip(self.channelBodyList, outdatedIdx) if not i]
-            print("num bodies = ", len(self.channelBodyList))
+            gc.collect()
 
         self.channelBodyPatchList = [c.get_patch() for c in self.channelBodyList]
         self.channelBodyPatchCollection = PatchCollection(self.channelBodyPatchList)
@@ -494,8 +500,7 @@ col_dict = {'Water discharge': 'Qw',
 # time looping
 strat = Strat(ax)
 
-anim = animation.FuncAnimation(fig, strat,
-                               interval=100, blit=True)
+anim = animation.FuncAnimation(fig, strat, interval=100, blit=True, save_count=None)
 anim.running = True
 
 plt.show()
