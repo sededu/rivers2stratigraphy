@@ -1,1 +1,3 @@
-from .run import run
+from . import launcher
+
+launcher.import_runner()
