@@ -1,37 +1,58 @@
+import sys
+
 def get_response():
-    resp = input("Would you like to launch the module now? [y/n] ").lower()
-    if resp == "y":
+
+    posInput = ['y', 'yes']
+    negInput = ['n', 'no']
+    allInput = posInput + negInput
+
+    badInput = True
+    while badInput:
+        resp = input('Would you like to launch the module now? [y/n] \n').lower()
+        check = resp in allInput
+        badInput = not check
+        if badInput:
+            print('invalid input: select [y/n]')
+
+    return resp
+
+
+def check_response(resp):
+    if resp in ['y', 'yes']:
+        print('okay, launching module . . . . .\n')
         return True
-    elif resp == "n":
+    elif resp in ['n', 'no']:
+        print('okay, not launching module . . . . .\n')
         return False
     else:
-        raise ValueError("invalid input: select [y/n]")
+        raise ValueError('invalid input: select [y/n]')
 
 
-def import_runnner():
-    """
+def run():
+    print(sys.modules)
+    if 'rivers2stratigraphy.geom' not in sys.modules:
+        print("got here")
+        from . import main
+    else:        
+        print("hehre")
+        import importlib
+        importlib.reload('.main')
+
+
+
+def import_runner():
+    '''
     a super simple method to run the gui from a Python shell
-    """
-
-    # from . import rivers2stratigraphy_gui as rtsrun
-    # 
-    # rtsrun()
-    print("\n\n")
-    print("SedEdu -- rivers2stratigraphy Module")
-    print("\n\n")
+    '''
+    print('\n')
+    print('SedEdu -- rivers2stratigraphy module')
+    print('\n\n')
 
     resp = get_response()
-    if resp:
-        import rivers2stratigraphy
+    launch = check_response(resp)
+    if launch:
+        run()
 
-        import os
+# run the importer
+import_runner()
 
-        ## initialize the GUI
-        thisDir = os.path.dirname(__file__)
-        thisPath = os.path.join(thisDir,'')
-        execFile = os.path.join(thisPath, 'rivers2stratigraphy.py')
-        exec(open(execFile).read())
-
-    # rivers2stratigraphy_gui()
-
-import_runnner()
