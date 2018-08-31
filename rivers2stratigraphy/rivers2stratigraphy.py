@@ -31,7 +31,7 @@ from itertools import compress
 import sys
 import gc
 
-from rivers2stratigraphy import geom, sedtrans, utils
+import geom, sedtrans, utils
 
 
 # model run params
@@ -496,7 +496,7 @@ col_dict = {'Water discharge': 'Qw',
             'Subsidence rate':'sig'}
 
 
-
+# if __name__ == "__main__":
 # time looping
 strat = Strat(ax)
 
