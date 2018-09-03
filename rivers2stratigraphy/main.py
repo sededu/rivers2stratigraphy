@@ -35,6 +35,11 @@ from .channel import Channel, State, ChannelBody
 from . import geom, sedtrans, utils
 
 
+from pympler.tracker import SummaryTracker, summary, muppy
+tracker = SummaryTracker()
+import types
+
+
 # model run params
 dt = 100 # timestep in yrs
 
@@ -101,6 +106,8 @@ class Strat(object):
         self.activeChannel = Channel(x_centi = 0, Bast = self.Bast, age = 0, avul_num = 0, sm = self.sm)
         self.channelBodyList = []
 
+        
+
         self.BastLine, = ax.plot([-Bbmax*1000/2, Bbmax*1000/2], 
                                  [Bast, Bast], 'k--', animated=True) # plot basin top
         self.VE_val = plt.text(0.675, 0.025, 'VE = ' + str(round(self.sm.Bb/self.sm.yView, 1)),
@@ -113,7 +120,7 @@ class Strat(object):
         handles the initiation of the figure and axes for blitting
         '''
 
-        return self
+        return ax, self
 
 
     def __call__(self, i):
@@ -128,18 +135,16 @@ class Strat(object):
         # timestep the current channel objects
         dz = self.sm.sig * dt
         for c in self.channelBodyList:
-                c.subside(dz)
+            c.subside(dz)
+
         if not self.activeChannel.avulsed:
             # when an avulsion has not occurred:
             self.activeChannel.timestep()
-            
-            
         else:
             # once an avulsion has occurred:
             self.channelBodyList.append( ChannelBody(self.activeChannel) )
             self.avul_num += 1
             self.color = True
-            # delete the active channel object here?
 
             # create a new Channel
             self.activeChannel = Channel(Bast = self.Bast, age = i, 
@@ -150,13 +155,28 @@ class Strat(object):
             outdatedIdx = [c.polygonYs.max() < stratMin for c in self.channelBodyList]
             self.channelBodyList = [c for (c, i) in 
                                 zip(self.channelBodyList, outdatedIdx) if not i]
-            gc.collect()
+            
+            print(len(self.channelBodyList))
 
-        self.channelBodyPatchList = [c.get_patch() for c in self.channelBodyList]
+            objList = muppy.get_objects()
+            my_types = muppy.filter(objList, Type=(Channel, ChannelBody, PatchCollection, Polygon))
+            # for t in my_types:
+            #     print(t)
+
+            sum1 = summary.summarize(my_types)
+            summary.print_(sum1)
+            
+            # tracker.print_diff()
+
+
+        temp = [c.get_patch() for c in self.channelBodyList]
+        self.channelBodyPatchList = temp
+        print('i = ', i, ', and refct = ', sys.getrefcount(temp))
+        del temp
         self.channelBodyPatchCollection = PatchCollection(self.channelBodyPatchList)
         self.channelBodyPatchCollection.set_edgecolor('0')
 
-        self.activeChannelPatchCollection = self.activeChannel.get_patches()
+        self.activeChannelPatchCollection = self.activeChannel.update_patches()
         self.activeChannelPatchCollection.set_facecolor('0.6')
         self.activeChannelPatchCollection.set_edgecolor('0')
 
@@ -189,6 +209,8 @@ class Strat(object):
 
         self.ax.add_collection(self.channelBodyPatchCollection)
         self.ax.add_collection(self.activeChannelPatchCollection)
+        # print(i)
+        # print(self.channelBodyPatchCollection)
 
         # yview and xview
         ylims = utils.new_ylims(yView = self.sm.yView, Bast = self.Bast)
@@ -197,6 +219,9 @@ class Strat(object):
 
         # vertical exagg text
         self.VE_val.set_text('VE = ' + str(round(self.sm.Bb/self.sm.yView, 1)))
+
+        # print(gc.garbage)
+        gc.collect()
 
         return self.BastLine, self.VE_val, \
                self.channelBodyPatchCollection, self.activeChannelPatchCollection
@@ -231,9 +256,7 @@ def slide_reset(event):
 
 def axis_reset(event):
     strat.Bast = 0
-    # strat.channelList = [strat.channelList[-1]]
     strat.channelBodyList = []
-    # strat.channelRectangleList = []
 
 
 
@@ -264,7 +287,7 @@ slide_Qw = utils.MinMaxSlider(slide_Qw_ax, 'water discharge (m$^3$/s)', Qwmin, Q
 valinit=QwInit, valstep=Qwstep, valfmt="%0.0f", transform=ax.transAxes)
 # slide_Qw.on_changed(redraw_strat)
 
-sigInit = 2
+sigInit = 10
 sigmin = 0
 sigmax = 5
 sigstep = 0.2
@@ -285,7 +308,7 @@ rad_col = widget.RadioButtons(rad_col_ax, ('Deposit age', 'Water discharge', 'Su
 
 yViewInit = yViewInit
 yViewmin = 25
-yViewmax = 250
+yViewmax = 100
 slide_yView_ax = plt.axes([0.565, 0.345, 0.36, 0.05], facecolor=widget_color)
 slide_yView = utils.MinMaxSlider(slide_yView_ax, 'stratigraphic view (m)', yViewmin, yViewmax, 
 valinit=yViewInit, valstep=25, valfmt="%i", transform=ax.transAxes)

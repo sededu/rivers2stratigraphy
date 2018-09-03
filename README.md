@@ -62,7 +62,6 @@ See below instructions for downloading the source code.
 Run the module from the Python shell with:
 ```
 import rivers2stratigraphy
-rivers2stratigraphy.run()
 ```
 
 Alternatively, run the module with provided script:
@@ -72,10 +71,12 @@ python3 <path-to-installation>/run_rivers2stratigraphy.py
 
 Note that this may throw an error on closing the window, but this is not a problem to functionality.
 
+<!--
 Or you can run the module directly:
 ```
 
 ```
+-->
 
 Please [open an issue](https://github.com/amoodie/rivers2stratigraphy/issues) if you encounter any additional error messages! 
 Please include 1) operating system, 2) installation method, and 3) copy-paste the error.

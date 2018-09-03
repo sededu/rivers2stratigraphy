@@ -21,6 +21,8 @@ class Channel(object):
             
         self.state = State(new_channel = True, dxdt =0, Bast = Bast, age = 0, sm = self.sm)
         self.stateList = [self.state]
+        self.geom = Rectangle(self.state.ll, self.state.Bc, self.state.H)
+        # self.geom = PatchCollection(patch)
 
     def timestep(self):
         self.state0 = self.state
@@ -32,19 +34,22 @@ class Channel(object):
         self.state = State(x_cent = x_cent, dxdt = dxdt,
                            Bast = self.state0.Bast, sm = self.sm)
         self.stateList.append(self.state)
+        self.update_patches()
 
         if self.avul_timer > self.Ta:
             self.avulsion()
         else:
             self.avul_timer += self.sm.dt
 
-    def get_patches(self):
+    def update_patches(self):
         '''
         geometry of the body to be plotted
         '''
         patches = [Rectangle(s.ll, s.Bc, s.H) for s in iter(self.stateList)]
-        geom = PatchCollection(patches)
-        return geom
+        patchcollection = PatchCollection(patches)
+        self.geom = patchcollection
+        del patches, patchcollection
+        return self.geom
 
     def migrate(self):
         dxdt = (self.sm.dxdtstd * (np.random.randn()) )
@@ -59,7 +64,7 @@ class Channel(object):
         # subside method to be called each iteration
         dz = (self.sm.sig * self.sm.dt)
         for s in iter(self.stateList):
-            s.subside(dz)
+            s.state_subside(dz)
             s.ll = s.lower_left()
 
 
@@ -170,7 +175,7 @@ class State(object):
         self.S = Sbar
 
 
-    def subside(self, dz):
+    def state_subside(self, dz):
         # subside method to be called each iteration
         self.y_cent -= dz
         self.ll = self.lower_left()
