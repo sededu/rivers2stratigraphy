@@ -8,7 +8,7 @@ import shapely.ops as so
 from . import geom, sedtrans, utils
 
 
-class Channel(object):
+class ActiveChannel(object):
     # make everything into a float16
     def __init__(self, x_centi = 0, Bast = 0, age = 0, avul_num = 0, sm = None, parent=None):
         

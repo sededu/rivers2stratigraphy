@@ -31,7 +31,7 @@ from itertools import compress
 import sys
 import gc
 
-from .channel import Channel, State, ChannelBody
+from .channel import ActiveChannel, State, ChannelBody
 from . import geom, sedtrans, utils
 
 
@@ -104,7 +104,7 @@ class Strat(object):
         self.sm = SliderManager()
 
         # create an active channel and corresping PatchCollection
-        self.activeChannel = Channel(x_centi = 0, Bast = self.Bast, age = 0, 
+        self.activeChannel = ActiveChannel(x_centi = 0, Bast = self.Bast, age = 0, 
                                      avul_num = 0, sm = self.sm)
         self.activeChannelPatchCollection = PatchCollection(self.activeChannel.patches)
         self.ax.add_collection(self.activeChannelPatchCollection)
@@ -154,7 +154,7 @@ class Strat(object):
             self.color = True
 
             # create a new Channel
-            self.activeChannel = Channel(Bast = self.Bast, age = i, 
+            self.activeChannel = ActiveChannel(Bast = self.Bast, age = i, 
                                          avul_num = self.avul_num, sm = self.sm)
 
             # remove outdated channels
