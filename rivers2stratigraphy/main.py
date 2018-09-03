@@ -168,13 +168,14 @@ class Strat(object):
                                 in iter(self.activeChannel.stateList)]
         self.channelBodyPatchList = [c.get_patch() for c in self.channelBodyList]
 
+        # set paths of the PatchCollection Objects
         self.activeChannelPatchCollection.set_paths(activeChannelPatches)
         self.channelBodyPatchCollection.set_paths(self.channelBodyPatchList)
 
-        self.channelBodyPatchCollection.set_edgecolor('0')
-
-        self.activeChannelPatchCollection.set_facecolor('0.6')
-        self.activeChannelPatchCollection.set_edgecolor('0')
+        # update coloring of PatchCollections
+        # self.channelBodyPatchCollection.set_edgecolor('0')
+        # self.activeChannelPatchCollection.set_facecolor('0.6')
+        # self.activeChannelPatchCollection.set_edgecolor('0')
 
         # self.qs = sedtrans.qsEH(D50, Cf, 
         #                         sedtrans.taubfun(self.channel.H, self.channel.S, cong, conrhof), 
