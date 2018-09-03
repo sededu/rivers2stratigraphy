@@ -8,9 +8,8 @@ import shapely.ops as so
 from . import geom, sedtrans, utils
 
 
-class Channel(object):
-    # make everything into a float16
-    def __init__(self, x_centi = 0, Bast = 0, age = 0, avul_num = 0, sm = None):
+class ActiveChannel(object):
+    def __init__(self, x_centi = 0, Bast = 0, age = 0, avul_num = 0, sm = None, parent=None):
         
         self.sm = sm
         self.avul_num = avul_num
@@ -18,9 +17,11 @@ class Channel(object):
         self.avul_timer = 0
         self.Ta = self.sm.Ta
         self.age = age
+        self.parent = parent
             
         self.state = State(new_channel = True, dxdt =0, Bast = Bast, age = 0, sm = self.sm)
         self.stateList = [self.state]
+        self.patches = [Rectangle(self.state.ll, self.state.Bc, self.state.H)]
 
     def timestep(self):
         self.state0 = self.state
@@ -38,14 +39,6 @@ class Channel(object):
         else:
             self.avul_timer += self.sm.dt
 
-    def get_patches(self):
-        '''
-        geometry of the body to be plotted
-        '''
-        patches = [Rectangle(s.ll, s.Bc, s.H) for s in iter(self.stateList)]
-        geom = PatchCollection(patches)
-        return geom
-
     def migrate(self):
         dxdt = (self.sm.dxdtstd * (np.random.randn()) )
         dx = self.sm.dt * ( ((1-self.sm.Df) * dxdt) + ((self.sm.Df) * self.state0.dxdt) )
@@ -59,7 +52,7 @@ class Channel(object):
         # subside method to be called each iteration
         dz = (self.sm.sig * self.sm.dt)
         for s in iter(self.stateList):
-            s.subside(dz)
+            s.state_subside(dz)
             s.ll = s.lower_left()
 
 
@@ -102,7 +95,7 @@ class ChannelBody(object):
         self.polygonXs = self.polygonAsArray[:,0]
         self.polygonYs = self.polygonAsArray[:,1]
 
-        self.polygonPatch = Polygon(self.polygonAsArray)
+        self.patch = Polygon(self.polygonAsArray)
 
         # get all the "means" of variables for coloring values
         self.age = channel.age
@@ -115,10 +108,10 @@ class ChannelBody(object):
         self.polygonYs -= dz
         # self.y_upper = self.polygonYs.max()
         xsys = np.column_stack((self.polygonXs, self.polygonYs))
-        self.polygonPatch.set_xy(xsys)
+        self.patch.set_xy(xsys)
 
     def get_patch(self):
-        return self.polygonPatch
+        return self.patch
 
     def rect2box(self, ll, Bc, H):
         box = sg.box(ll[0], ll[1], 
@@ -170,7 +163,7 @@ class State(object):
         self.S = Sbar
 
 
-    def subside(self, dz):
+    def state_subside(self, dz):
         # subside method to be called each iteration
         self.y_cent -= dz
         self.ll = self.lower_left()
