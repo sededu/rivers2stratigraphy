@@ -1,22 +1,4 @@
-"""
-rivers2stratigraphy GUI -- build river stratigraphy interactively
-  Stratigraphic model based on LAB models, i.e., geometric channel body is  
-  deposited in "matrix" of floodplain mud. The channel is always fixed to the 
-  basin surface and subsidence is only control on vertical stratigraphy.
-  Horizontal stratigraphy is set by 1) lateral migration (drawn from a pdf) 
-  and dampened for realism, and 2) avulsion that is set to a fixed value.
-  
-  written by Andrew J. Moodie
-  amoodie@rice.edu
-  Feb 2018
-  
-  TODO:
-   - control for "natural" ad default where lateral migration 
-      and Ta are a function of sediment transport (Qw)
 
-
-
-"""
 
 
 import numpy as np
@@ -31,101 +13,34 @@ from itertools import compress
 import sys
 import gc
 
-from .channel import Channel, State, ChannelBody
-from . import geom, sedtrans, utils
-
-
 from pympler.tracker import SummaryTracker, summary, muppy
 tracker = SummaryTracker()
 import types
 
-
-# model run params
-dt = 100 # timestep in yrs
-
-# setup params
-Cf = 0.004 # friction coeff
-D50 = 300*1e-6
-Beta = 1.5 # exponent to avulsion function
-Df = 0.6 # dampening factor to lateral migration rate change
-dxdtstd = 1 # stdev of lateral migration dist, [m/yr]?
-
-conR = 1.65
-cong = 9.81
-conrhof = 1000
-connu = 1.004e-6
-Rep = geom.Repfun(D50, conR, cong, connu) # particle Reynolds num
-    
-# initial conditions
-Bb = BbInit = 4000 # width of belt (m)
-yView = yViewInit = 100
-Qw = QwInit = 1000
-Bast = 0 # Basin top level
-
-
-class SliderManager(object):
-    def __init__(self):
-        # read the sliders for values
-        self.get_all()
-        self.D50 = D50
-        self.cong = cong
-        self.Rep = Rep
-        self.dt = dt
-        self.Df = Df
-        self.dxdtstd = dxdtstd
-
-    def get_display_options(self):
-        self.colFlag = col_dict[rad_col.value_selected]
-        self.yView = slide_yView.val
-
-    def get_calculation_options(self):
-        self.Bb = slide_Bb.val * 1000
-        self.Qw = slide_Qw.val
-        self.sig = slide_sig.val / 1000
-        self.Ta = slide_Ta.val
-
-    def get_all(self):
-        self.get_display_options()
-        self.get_calculation_options()
+class MagicRectangle(object):
+    def __init__(self, y = Y):
+        randX = 
+        self.geom = Rectangle(np.array([randX, Y]), 3, 1)
 
 
 
-class Strat(object):
+class Looper(object):
 
     def __init__(self, ax):
         '''
-        initiation of the main strat object
+        initiation of the main Looper object
         '''
-        
+        y = 0
+        self.rect = MagicRectangle(y)
+
         self.ax = ax
-        self.Bast = 0
-        self.avul_num = 0
-        self.color = False
-        self.sm = SliderManager()
-
-        self.activeChannel = Channel(x_centi = 0, Bast = self.Bast, age = 0, 
-                                     avul_num = 0, sm = self.sm)
-        self.channelBodyList = []
-
-        self.activeChannelPatchCollection = PatchCollection(self.activeChannel.patches)
-        self.ax.add_collection(self.activeChannelPatchCollection)
-
-        self.channelBodyPatchCollection = PatchCollection(self.channelBodyList)
-        self.ax.add_collection(self.channelBodyPatchCollection)
-
-        self.BastLine, = ax.plot([-Bbmax*1000/2, Bbmax*1000/2], 
-                                 [Bast, Bast], 'k--', animated=True) # plot basin top
-        self.VE_val = plt.text(0.675, 0.025, 'VE = ' + str(round(self.sm.Bb/self.sm.yView, 1)),
-                               fontsize=12, transform=ax.transAxes, 
-                               backgroundcolor='white')
-
 
     def func_init(fig, ax, self):
         '''
         handles the initiation of the figure and axes for blitting
         '''
 
-        return ax, self
+        return self
 
 
     def __call__(self, i):
@@ -134,17 +49,9 @@ class Strat(object):
         '''
 
         # find new slider vals
-        self.sm.get_all()
+        y += 1
 
-
-        # timestep the current channel objects
-        dz = self.sm.sig * dt
-        for c in self.channelBodyList:
-            c.subside(dz)
-
-        if not self.activeChannel.avulsed:
-            # when an avulsion has not occurred:
-            self.activeChannel.timestep()
+        self.ax.set_ylim([y-100, y])
 
         else:
             # once an avulsion has occurred:
@@ -157,32 +64,30 @@ class Strat(object):
                                          avul_num = self.avul_num, sm = self.sm)
 
             # remove outdated channels
-            stratMin = self.Bast - yViewmax
-            outdatedIdx = [c.polygonYs.max() < stratMin for c in self.channelBodyList]
+            LooperMin = self.Bast - yViewmax
+            outdatedIdx = [c.polygonYs.max() < LooperMin for c in self.channelBodyList]
             self.channelBodyList = [c for (c, i) in 
-                                    zip(self.channelBodyList, outdatedIdx) if not i]
+                                zip(self.channelBodyList, outdatedIdx) if not i]
             
             print(len(self.channelBodyList))
 
             objList = muppy.get_objects()
             my_types = muppy.filter(objList, Type=(Channel, ChannelBody, PatchCollection, Polygon))
+            # for t in my_types:
+            #     print(t)
+
             sum1 = summary.summarize(my_types)
             summary.print_(sum1)
             
             # tracker.print_diff()
 
-        activeChannelPatches = [Rectangle(s.ll, s.Bc, s.H) for s 
-                                in iter(self.activeChannel.stateList)]
-        self.activeChannelPatchCollection.set_paths(activeChannelPatches)
 
-
-        # temp = [c.get_patch() for c in self.channelBodyList]
         self.channelBodyPatchList = [c.get_patch() for c in self.channelBodyList]
-        # self.channelBodyPatchCollection = PatchCollection(self.channelBodyPatchList)
-        self.channelBodyPatchCollection.set_paths(self.channelBodyPatchList)
+        self.channelBodyPatchCollection = PatchCollection(self.channelBodyPatchList)
         self.channelBodyPatchCollection.set_edgecolor('0')
 
-        # self.activeChannelPatchCollection = self.activeChannel.update_patches()
+
+        self.activeChannelPatchCollection = self.activeChannel.update_patches()
         self.activeChannelPatchCollection.set_facecolor('0.6')
         self.activeChannelPatchCollection.set_edgecolor('0')
 
@@ -214,9 +119,9 @@ class Strat(object):
                 self.channelBodyPatchCollection.set_cmap(plt.cm.viridis)
 
         self.ax.add_collection(self.channelBodyPatchCollection)
-        # self.ax.add_collection(self.activeChannelPatchCollection)
-        # print(i)
-        # print(self.channelBodyPatchCollection)
+        self.ax.add_collection(self.activeChannelPatchCollection)
+        print(i)
+        print(self.channelBodyPatchCollection)
 
         # yview and xview
         ylims = utils.new_ylims(yView = self.sm.yView, Bast = self.Bast)
@@ -226,11 +131,8 @@ class Strat(object):
         # vertical exagg text
         self.VE_val.set_text('VE = ' + str(round(self.sm.Bb/self.sm.yView, 1)))
 
-        # print(gc.garbage)
-        # gc.collect()
+        gc.collect()
 
-        # print(self.activeChannel.activeChannelPatchCollection.get_paths())
-        # print(self.channelBodyPatchCollection)
         return self.BastLine, self.VE_val, \
                self.channelBodyPatchCollection, self.activeChannelPatchCollection
 
@@ -240,10 +142,10 @@ class Strat(object):
 plt.rcParams['toolbar'] = 'None'
 plt.rcParams['figure.figsize'] = 8, 6
 fig, ax = plt.subplots()
-fig.canvas.set_window_title('SedEdu -- rivers2stratigraphy')
+fig.canvas.set_window_title('SedEdu -- rivers2Looperigraphy')
 plt.subplots_adjust(left=0.085, bottom=0.1, top=0.95, right=0.5)
 ax.set_xlabel("channel belt (km)")
-ax.set_ylabel("stratigraphy (m)")
+ax.set_ylabel("Looperigraphy (m)")
 plt.ylim(-yViewInit, 0.1*yViewInit)
 plt.xlim(-Bb/2, Bb/2)
 ax.xaxis.set_major_formatter( plt.FuncFormatter(
@@ -263,8 +165,8 @@ def slide_reset(event):
 
 
 def axis_reset(event):
-    strat.Bast = 0
-    strat.channelBodyList = []
+    Looper.Bast = 0
+    Looper.channelBodyList = []
 
 
 
@@ -277,7 +179,7 @@ def pause_anim(event):
 
 
 
-# def redraw_strat(event):
+# def redraw_Looper(event):
 #     fd = anim.new_saved_frame_seq()
 #     anim._draw_frame(fd)
 
@@ -293,7 +195,7 @@ Qwstep = 100
 slide_Qw_ax = plt.axes([0.565, 0.875, 0.36, 0.05], facecolor=widget_color)
 slide_Qw = utils.MinMaxSlider(slide_Qw_ax, 'water discharge (m$^3$/s)', Qwmin, Qwmax, 
 valinit=QwInit, valstep=Qwstep, valfmt="%0.0f", transform=ax.transAxes)
-# slide_Qw.on_changed(redraw_strat)
+# slide_Qw.on_changed(redraw_Looper)
 
 sigInit = 10
 sigmin = 0
@@ -318,7 +220,7 @@ yViewInit = yViewInit
 yViewmin = 25
 yViewmax = 100
 slide_yView_ax = plt.axes([0.565, 0.345, 0.36, 0.05], facecolor=widget_color)
-slide_yView = utils.MinMaxSlider(slide_yView_ax, 'stratigraphic view (m)', yViewmin, yViewmax, 
+slide_yView = utils.MinMaxSlider(slide_yView_ax, 'Looperigraphic view (m)', yViewmin, yViewmax, 
 valinit=yViewInit, valstep=25, valfmt="%i", transform=ax.transAxes)
 
 BbInit = BbInit # width of belt
@@ -335,7 +237,7 @@ btn_slidereset = utils.NoDrawButton(btn_slidereset_ax, 'Reset sliders', color=wi
 btn_slidereset.on_clicked(slide_reset)
 
 btn_axisreset_ax = plt.axes([0.565, 0.09, 0.2, 0.04])
-btn_axisreset = utils.NoDrawButton(btn_axisreset_ax, 'Reset stratigraphy', color=widget_color, hovercolor='0.975')
+btn_axisreset = utils.NoDrawButton(btn_axisreset_ax, 'Reset Looperigraphy', color=widget_color, hovercolor='0.975')
 btn_axisreset.on_clicked(axis_reset)
 
 btn_pause_ax = plt.axes([0.565, 0.03, 0.2, 0.04])
@@ -352,9 +254,9 @@ col_dict = {'Water discharge': 'Qw',
 
 
 # time looping
-strat = Strat(ax)
+Looper = Looper(ax)
 
-anim = animation.FuncAnimation(fig, strat, interval=100, blit=True, save_count=None)
+anim = animation.FuncAnimation(fig, Looper, interval=100, blit=True, save_count=None)
 anim.running = True
 
 plt.show()
