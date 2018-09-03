@@ -103,13 +103,14 @@ class Strat(object):
         self.color = False
         self.sm = SliderManager()
 
+        # create an active channel and corresping PatchCollection
         self.activeChannel = Channel(x_centi = 0, Bast = self.Bast, age = 0, 
                                      avul_num = 0, sm = self.sm)
-        self.channelBodyList = []
-
         self.activeChannelPatchCollection = PatchCollection(self.activeChannel.patches)
         self.ax.add_collection(self.activeChannelPatchCollection)
 
+        # create a channelbody and corresping PatchCollection
+        self.channelBodyList = []
         self.channelBodyPatchCollection = PatchCollection(self.channelBodyList)
         self.ax.add_collection(self.channelBodyPatchCollection)
 
@@ -161,28 +162,17 @@ class Strat(object):
             outdatedIdx = [c.polygonYs.max() < stratMin for c in self.channelBodyList]
             self.channelBodyList = [c for (c, i) in 
                                     zip(self.channelBodyList, outdatedIdx) if not i]
-            
-            print(len(self.channelBodyList))
 
-            objList = muppy.get_objects()
-            my_types = muppy.filter(objList, Type=(Channel, ChannelBody, PatchCollection, Polygon))
-            sum1 = summary.summarize(my_types)
-            summary.print_(sum1)
-            
-            # tracker.print_diff()
-
+        # generate new patch lists for updating the PatchCollection objects
         activeChannelPatches = [Rectangle(s.ll, s.Bc, s.H) for s 
                                 in iter(self.activeChannel.stateList)]
-        self.activeChannelPatchCollection.set_paths(activeChannelPatches)
-
-
-        # temp = [c.get_patch() for c in self.channelBodyList]
         self.channelBodyPatchList = [c.get_patch() for c in self.channelBodyList]
-        # self.channelBodyPatchCollection = PatchCollection(self.channelBodyPatchList)
+
+        self.activeChannelPatchCollection.set_paths(activeChannelPatches)
         self.channelBodyPatchCollection.set_paths(self.channelBodyPatchList)
+
         self.channelBodyPatchCollection.set_edgecolor('0')
 
-        # self.activeChannelPatchCollection = self.activeChannel.update_patches()
         self.activeChannelPatchCollection.set_facecolor('0.6')
         self.activeChannelPatchCollection.set_edgecolor('0')
 
@@ -295,7 +285,7 @@ slide_Qw = utils.MinMaxSlider(slide_Qw_ax, 'water discharge (m$^3$/s)', Qwmin, Q
 valinit=QwInit, valstep=Qwstep, valfmt="%0.0f", transform=ax.transAxes)
 # slide_Qw.on_changed(redraw_strat)
 
-sigInit = 10
+sigInit = 2
 sigmin = 0
 sigmax = 5
 sigstep = 0.2
@@ -316,7 +306,7 @@ rad_col = widget.RadioButtons(rad_col_ax, ('Deposit age', 'Water discharge', 'Su
 
 yViewInit = yViewInit
 yViewmin = 25
-yViewmax = 100
+yViewmax = 250
 slide_yView_ax = plt.axes([0.565, 0.345, 0.36, 0.05], facecolor=widget_color)
 slide_yView = utils.MinMaxSlider(slide_yView_ax, 'stratigraphic view (m)', yViewmin, yViewmax, 
 valinit=yViewInit, valstep=25, valfmt="%i", transform=ax.transAxes)
