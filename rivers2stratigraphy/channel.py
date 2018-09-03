@@ -9,7 +9,6 @@ from . import geom, sedtrans, utils
 
 
 class ActiveChannel(object):
-    # make everything into a float16
     def __init__(self, x_centi = 0, Bast = 0, age = 0, avul_num = 0, sm = None, parent=None):
         
         self.sm = sm
@@ -24,11 +23,6 @@ class ActiveChannel(object):
         self.stateList = [self.state]
         self.patches = [Rectangle(self.state.ll, self.state.Bc, self.state.H)]
 
-        # onechannel = [Rectangle(self.state.ll, self.state.Bc, self.state.H)]
-        # self.activeChannelPatchCollection = PatchCollection(onechannel)
-        
-        # self.geom = PatchCollection(patch)
-
     def timestep(self):
         self.state0 = self.state
 
@@ -39,29 +33,11 @@ class ActiveChannel(object):
         self.state = State(x_cent = x_cent, dxdt = dxdt,
                            Bast = self.state0.Bast, sm = self.sm)
         self.stateList.append(self.state)
-        self.update_patches()
 
         if self.avul_timer > self.Ta:
             self.avulsion()
         else:
             self.avul_timer += self.sm.dt
-
-    def update_patches(self):
-        '''
-        geometry of the body to be plotted
-        '''
-        
-        # self.patches = [Rectangle(s.ll, s.Bc, s.H) for s in iter(self.stateList)]
-        # self.parent.activeChannelPatchCollection.set_paths(self.patches)
-        pass
-
-        # patchcollection = PatchCollection(patches)
-        # self.activeChannelPatchCollection = self.activeChannelPatchCollection.set_paths(patches)
-        
-        # self.activeChannelPatchCollection.set_paths(patches)
-        
-        # del patches, patchcollection
-        # return self.geom
 
     def migrate(self):
         dxdt = (self.sm.dxdtstd * (np.random.randn()) )
