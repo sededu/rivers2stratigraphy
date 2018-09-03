@@ -103,16 +103,21 @@ class Strat(object):
         self.color = False
         self.sm = SliderManager()
 
-        # create an active channel and corresping PatchCollection
+        # create an active channel and corresponding PatchCollection
         self.activeChannel = ActiveChannel(x_centi = 0, Bast = self.Bast, age = 0, 
                                      avul_num = 0, sm = self.sm)
         self.activeChannelPatchCollection = PatchCollection(self.activeChannel.patches)
         self.ax.add_collection(self.activeChannelPatchCollection)
 
-        # create a channelbody and corresping PatchCollection
+        # create a channelbody and corresponding PatchCollection
         self.channelBodyList = []
         self.channelBodyPatchCollection = PatchCollection(self.channelBodyList)
         self.ax.add_collection(self.channelBodyPatchCollection)
+
+        # set fixed color attributes of PatchCollections
+        self.channelBodyPatchCollection.set_edgecolor('0')
+        self.activeChannelPatchCollection.set_facecolor('0.6')
+        self.activeChannelPatchCollection.set_edgecolor('0')
 
         self.BastLine, = ax.plot([-Bbmax*1000/2, Bbmax*1000/2], 
                                  [Bast, Bast], 'k--', animated=True) # plot basin top
@@ -172,11 +177,6 @@ class Strat(object):
         self.activeChannelPatchCollection.set_paths(activeChannelPatches)
         self.channelBodyPatchCollection.set_paths(self.channelBodyPatchList)
 
-        # update coloring of PatchCollections
-        # self.channelBodyPatchCollection.set_edgecolor('0')
-        # self.activeChannelPatchCollection.set_facecolor('0.6')
-        # self.activeChannelPatchCollection.set_edgecolor('0')
-
         # self.qs = sedtrans.qsEH(D50, Cf, 
         #                         sedtrans.taubfun(self.channel.H, self.channel.S, cong, conrhof), 
         #                         conR, cong, conrhof)  # sedment transport rate based on new geom
@@ -203,12 +203,7 @@ class Strat(object):
                 self.channelBodyPatchCollection.set_array(sig_array)
                 self.channelBodyPatchCollection.set_clim(vmin=sigmin/1000, vmax=sigmax/1000)
                 self.channelBodyPatchCollection.set_cmap(plt.cm.viridis)
-
-        self.ax.add_collection(self.channelBodyPatchCollection)
-        # self.ax.add_collection(self.activeChannelPatchCollection)
-        # print(i)
-        # print(self.channelBodyPatchCollection)
-
+        
         # yview and xview
         ylims = utils.new_ylims(yView = self.sm.yView, Bast = self.Bast)
         self.ax.set_ylim(ylims)
@@ -217,11 +212,6 @@ class Strat(object):
         # vertical exagg text
         self.VE_val.set_text('VE = ' + str(round(self.sm.Bb/self.sm.yView, 1)))
 
-        # print(gc.garbage)
-        # gc.collect()
-
-        # print(self.activeChannel.activeChannelPatchCollection.get_paths())
-        # print(self.channelBodyPatchCollection)
         return self.BastLine, self.VE_val, \
                self.channelBodyPatchCollection, self.activeChannelPatchCollection
 
