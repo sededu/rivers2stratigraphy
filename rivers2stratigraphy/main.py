@@ -102,20 +102,22 @@ class Strat(object):
         self.activeChannel = ActiveChannel(x_centi = 0, Bast = self.Bast, age = 0, 
                                      avul_num = 0, sm = self.sm)
         self.activeChannelPatchCollection = PatchCollection(self.activeChannel.patches)
-        self.ax.add_collection(self.activeChannelPatchCollection)
-
+        
         # create a channelbody and corresponding PatchCollection
         self.channelBodyList = []
         self.channelBodyPatchCollection = PatchCollection(self.channelBodyList)
+
+        # add PatchCollestions
         self.ax.add_collection(self.channelBodyPatchCollection)
+        self.ax.add_collection(self.activeChannelPatchCollection)
 
         # set fixed color attributes of PatchCollections
         self.channelBodyPatchCollection.set_edgecolor('0')
         self.activeChannelPatchCollection.set_facecolor('0.6')
         self.activeChannelPatchCollection.set_edgecolor('0')
 
-        self.BastLine, = ax.plot([-Bbmax*1000/2, Bbmax*1000/2], 
-                                 [Bast, Bast], 'k--', animated=True) # plot basin top
+        self.BastLine, = self.ax.plot([-Bbmax*1000/2, Bbmax*1000/2], 
+                                 [self.Bast, self.Bast], 'k--', animated=False) # plot basin top
         self.VE_val = plt.text(0.675, 0.025, 'VE = ' + str(round(self.sm.Bb/self.sm.yView, 1)),
                                fontsize=12, transform=ax.transAxes, 
                                backgroundcolor='white')
@@ -169,8 +171,8 @@ class Strat(object):
         self.channelBodyPatchList = [c.get_patch() for c in self.channelBodyList]
 
         # set paths of the PatchCollection Objects
-        self.activeChannelPatchCollection.set_paths(activeChannelPatches)
         self.channelBodyPatchCollection.set_paths(self.channelBodyPatchList)
+        self.activeChannelPatchCollection.set_paths(activeChannelPatches)
 
         # self.qs = sedtrans.qsEH(D50, Cf, 
         #                         sedtrans.taubfun(self.channel.H, self.channel.S, cong, conrhof), 
@@ -178,7 +180,6 @@ class Strat(object):
 
         # update plot
         if self.color:
-
             if self.sm.colFlag == 'age':
                 age_array = np.array([c.age for c in self.channelBodyList])
                 if age_array.size > 0:
@@ -330,7 +331,7 @@ col_dict = {'Water discharge': 'Qw',
 # time looping
 strat = Strat(ax)
 
-anim = animation.FuncAnimation(fig, strat, interval=100, blit=True, save_count=None)
+anim = animation.FuncAnimation(fig, strat, interval=100, blit=False, save_count=None)
 anim.running = True
 
 plt.show()
