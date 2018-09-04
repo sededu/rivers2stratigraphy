@@ -35,11 +35,6 @@ from .channel import ActiveChannel, State, ChannelBody
 from . import geom, sedtrans, utils
 
 
-from pympler.tracker import SummaryTracker, summary, muppy
-tracker = SummaryTracker()
-import types
-
-
 # model run params
 dt = 100 # timestep in yrs
 
