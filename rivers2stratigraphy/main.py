@@ -206,7 +206,10 @@ class Strat(object):
         self.ax.set_xlim(-self.sm.Bb/2, self.sm.Bb/2)
 
         # vertical exagg text
-        self.VE_val.set_text('VE = ' + str(round(self.sm.Bb/self.sm.yView, 1)))
+        if i % 10 == 0:
+            self.axbbox = self.ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
+            width, height = self.axbbox.width, self.axbbox.height
+            self.VE_val.set_text('VE = ' + str(round((self.sm.Bb/width)/(self.sm.yView/height), 1)))
 
         return self.BastLine, self.VE_val, \
                self.channelBodyPatchCollection, self.activeChannelPatchCollection
