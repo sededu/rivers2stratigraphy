@@ -1,7 +1,6 @@
 
 import numpy as np
 from matplotlib.patches import Polygon, Rectangle
-from matplotlib.collections import PatchCollection, LineCollection
 import shapely.geometry as sg
 import shapely.ops as so
 
