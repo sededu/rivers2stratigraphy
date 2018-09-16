@@ -1,5 +1,14 @@
 # utilities for drawing the gui etc
 
+
+class Config: 
+    """
+    dummy config class for storing info during generation of GUI
+    """
+
+    pass
+
+
 def format_number(number):
     integer = int(round(number, -1))
     string = "{:,}".format(integer)
