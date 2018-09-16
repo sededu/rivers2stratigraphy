@@ -139,31 +139,31 @@ class Strat(object):
         # find new slider vals
         self.sm.get_all()
 
+        if anim.running:
+            # timestep the current channel objects
+            dz = self.sm.sig * dt
+            for c in self.channelBodyList:
+                c.subside(dz)
 
-        # timestep the current channel objects
-        dz = self.sm.sig * dt
-        for c in self.channelBodyList:
-            c.subside(dz)
+            if not self.activeChannel.avulsed:
+                # when an avulsion has not occurred:
+                self.activeChannel.timestep()
 
-        if not self.activeChannel.avulsed:
-            # when an avulsion has not occurred:
-            self.activeChannel.timestep()
+            else:
+                # once an avulsion has occurred:
+                self.channelBodyList.append( ChannelBody(self.activeChannel) )
+                self.avul_num += 1
+                self.color = True
 
-        else:
-            # once an avulsion has occurred:
-            self.channelBodyList.append( ChannelBody(self.activeChannel) )
-            self.avul_num += 1
-            self.color = True
+                # create a new Channel
+                self.activeChannel = ActiveChannel(Bast = self.Bast, age = i, 
+                                             avul_num = self.avul_num, sm = self.sm)
 
-            # create a new Channel
-            self.activeChannel = ActiveChannel(Bast = self.Bast, age = i, 
-                                         avul_num = self.avul_num, sm = self.sm)
-
-            # remove outdated channels
-            stratMin = self.Bast - yViewmax
-            outdatedIdx = [c.polygonYs.max() < stratMin for c in self.channelBodyList]
-            self.channelBodyList = [c for (c, i) in 
-                                    zip(self.channelBodyList, outdatedIdx) if not i]
+                # remove outdated channels
+                stratMin = self.Bast - yViewmax
+                outdatedIdx = [c.polygonYs.max() < stratMin for c in self.channelBodyList]
+                self.channelBodyList = [c for (c, i) in 
+                                        zip(self.channelBodyList, outdatedIdx) if not i]
 
         # generate new patch lists for updating the PatchCollection objects
         activeChannelPatches = [Rectangle(s.ll, s.Bc, s.H) for s 
@@ -241,25 +241,16 @@ def slide_reset(event):
     slide_Bb.reset()
 
 
-
 def axis_reset(event):
     strat.Bast = 0
     strat.channelBodyList = []
 
 
-
 def pause_anim(event):
     if anim.running:
-        anim.event_source.stop()
+        anim.running = False
     else:
-        anim.event_source.start()
-    anim.running ^= True
-
-
-
-# def redraw_strat(event):
-#     fd = anim.new_saved_frame_seq()
-#     anim._draw_frame(fd)
+        anim.running = True
 
 
 
