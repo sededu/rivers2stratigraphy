@@ -291,7 +291,7 @@ class NoDrawButton(AxesWidget):
 
         self.connect_event('button_press_event', self._click)
         self.connect_event('button_release_event', self._release)
-        self.connect_event('motion_notify_event', self._motion)
+        # self.connect_event('motion_notify_event', self._motion)
         ax.set_navigate(False)
         ax.set_facecolor(color)
         ax.set_xticks([])
@@ -324,19 +324,19 @@ class NoDrawButton(AxesWidget):
         for cid, func in self.observers.items():
             func(event)
 
-    def _motion(self, event):
-        if self.ignore(event):
-            return
-        if event.inaxes == self.ax:
-            # c = self.hovercolor
-            return
-        else:
-            c = self.color
-        if c != self._lastcolor:
-            self.ax.set_facecolor(c)
-            self._lastcolor = c
-            if self.drawon:
-                self.ax.figure.canvas.draw()
+    # def _motion(self, event):
+        # if self.ignore(event):
+        #     return
+        # if event.inaxes == self.ax:
+        #     c = self.hovercolor
+        #     return
+        # else:
+        #     c = self.color
+        # if c != self._lastcolor:
+        #     self.ax.set_facecolor(c)
+        #     self._lastcolor = c
+        #     if self.drawon:
+        #         self.ax.figure.canvas.draw()
 
     def on_clicked(self, func):
         """
