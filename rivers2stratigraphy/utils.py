@@ -1,8 +1,4 @@
 # utilities for drawing the gui etc
-import numpy as np
-from matplotlib.widgets import AxesWidget
-import six
-
 
 def format_number(number):
     integer = int(round(number, -1))
@@ -24,4 +20,15 @@ def normalizeColor(v, minV, maxV):
     return (v-minV)/(maxV-minV)
 
 
+def strat_reset(event, gui):
+    gui.strat.Bast = 0
+    gui.strat.channelBodyList = []
 
+
+def slide_reset(event, gui):
+    gui.sm.slide_Qw.reset()
+    gui.sm.slide_sig.reset()
+    gui.sm.slide_Ta.reset()
+    gui.sm.rad_col.set_active(0)
+    gui.sm.slide_yView.reset()
+    gui.sm.slide_Bb.reset()
