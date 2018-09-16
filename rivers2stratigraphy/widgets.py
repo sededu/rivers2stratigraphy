@@ -1,6 +1,11 @@
-# import numpy as np
+"""
+module to provide customized versions of the matplotlib widgets
+"""
+
+import numpy as np
 from matplotlib.widgets import AxesWidget
-# import six
+from matplotlib.patches import Circle
+import six
 
 class MinMaxSlider(AxesWidget):
     """
@@ -321,6 +326,136 @@ class NoDrawButton(AxesWidget):
         When the button is clicked, call this *func* with event.
         A connection id is returned. It can be used to disconnect
         the button from its callback.
+        """
+        cid = self.cnt
+        self.observers[cid] = func
+        self.cnt += 1
+        return cid
+
+    def disconnect(self, cid):
+        """remove the observer with connection id *cid*"""
+        try:
+            del self.observers[cid]
+        except KeyError:
+            pass
+
+
+class RadioButtons(AxesWidget):
+    """
+    A GUI neutral radio button.
+    For the buttons to remain responsive
+    you must keep a reference to this object.
+    The following attributes are exposed:
+     *ax*
+        The :class:`matplotlib.axes.Axes` instance the buttons are in
+     *activecolor*
+        The color of the button when clicked
+     *labels*
+        A list of :class:`matplotlib.text.Text` instances
+     *circles*
+        A list of :class:`matplotlib.patches.Circle` instances
+     *value_selected*
+        A string listing the current value selected
+    Connect to the RadioButtons with the :meth:`on_clicked` method
+    """
+    def __init__(self, ax, labels, active=0, activecolor='blue'):
+        """
+        Add radio buttons to :class:`matplotlib.axes.Axes` instance *ax*
+        *labels*
+            A len(buttons) list of labels as strings
+        *active*
+            The index into labels for the button that is active
+        *activecolor*
+            The color of the button when clicked
+        """
+        AxesWidget.__init__(self, ax)
+        self.activecolor = activecolor
+        self.value_selected = None
+
+        ax.set_xticks([])
+        ax.set_yticks([])
+        ax.set_navigate(False)
+        dy = 1. / (len(labels) + 1)
+        ys = np.linspace(1 - dy, dy, len(labels))
+        cnt = 0
+        axcolor = ax.get_facecolor()
+
+        # scale the radius of the circle with the spacing between each one
+        circle_radius = (dy / 2) - 0.01
+
+        # defaul to hard-coded value if the radius becomes too large
+        if(circle_radius > 0.05):
+            circle_radius = 0.05
+
+        self.labels = []
+        self.circles = []
+        for y, label in zip(ys, labels):
+            t = ax.text(0.25, y, label, transform=ax.transAxes,
+                        horizontalalignment='left',
+                        verticalalignment='center')
+
+            if cnt == active:
+                self.value_selected = label
+                facecolor = activecolor
+            else:
+                facecolor = axcolor
+
+            p = Circle(xy=(0.15, y), radius=circle_radius, edgecolor='black',
+                       facecolor=facecolor, transform=ax.transAxes)
+
+            self.labels.append(t)
+            self.circles.append(p)
+            ax.add_patch(p)
+            cnt += 1
+
+        self.connect_event('button_press_event', self._clicked)
+
+        self.cnt = 0
+        self.observers = {}
+
+    def _clicked(self, event):
+        if self.ignore(event) or event.button != 1 or event.inaxes != self.ax:
+            return
+        xy = self.ax.transAxes.inverted().transform_point((event.x, event.y))
+        pclicked = np.array([xy[0], xy[1]])
+        for i, (p, t) in enumerate(zip(self.circles, self.labels)):
+            if (t.get_window_extent().contains(event.x, event.y)
+                    or np.linalg.norm(pclicked - p.center) < p.radius):
+                self.set_active(i)
+                break
+
+    def set_active(self, index):
+        """
+        Trigger which radio button to make active.
+        *index* is an index into the original label list
+            that this object was constructed with.
+            Raise ValueError if the index is invalid.
+        Callbacks will be triggered if :attr:`eventson` is True.
+        """
+        if 0 > index >= len(self.labels):
+            raise ValueError("Invalid RadioButton index: %d" % index)
+
+        self.value_selected = self.labels[index].get_text()
+
+        for i, p in enumerate(self.circles):
+            if i == index:
+                color = self.activecolor
+            else:
+                color = self.ax.get_facecolor()
+            p.set_facecolor(color)
+
+        if self.drawon:
+            self.ax.figure.canvas.draw()
+
+        if not self.eventson:
+            return
+        for cid, func in self.observers.items():
+            func(self.labels[index].get_text())
+
+    def on_clicked(self, func):
+        """
+        When the button is clicked, call *func* with button label
+        A connection id is returned which can be used to disconnect
         """
         cid = self.cnt
         self.observers[cid] = func
