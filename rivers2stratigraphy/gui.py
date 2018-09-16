@@ -28,12 +28,7 @@ from slider_manager import SliderManager
 from channel import ActiveChannel, State, ChannelBody
 import geom, sedtrans, utils
 
-class Config: 
-    """
-    dummy config class for storing info
-    """
 
-    pass
 
 
 
@@ -48,7 +43,7 @@ class GUI(object):
     def __init__(self):
         # initial conditions
         
-        config = Config()
+        config = utils.Config()
 
         # model run params
         config.dt = 100 # timestep in yrs
