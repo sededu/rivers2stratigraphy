@@ -5,7 +5,7 @@ from matplotlib.collections import PatchCollection, LineCollection
 import shapely.geometry as sg
 import shapely.ops as so
 
-from . import geom, sedtrans, utils
+import geom, sedtrans, utils
 
 
 class ActiveChannel(object):

@@ -31,8 +31,9 @@ from itertools import compress
 import sys
 import gc
 
+# import channel
 from .channel import ActiveChannel, State, ChannelBody
-from . import geom, sedtrans, utils
+import geom, sedtrans, utils
 
 
 # model run params
