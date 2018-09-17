@@ -1,8 +1,7 @@
 # rivers2stratigraphy
 
 
-Explore how a river becomes stratigraphy.
-
+Explore how a river becomes stratigraphy
 
 <img src="https://github.com/amoodie/rivers2stratigraphy/blob/master/private/rivers2stratigraphy_demo.gif" alt="demo_gif">
 
@@ -10,6 +9,13 @@ Explore how a river becomes stratigraphy.
 This readme file provides an overview of the installation and setup process, as well as a brief description of the module worksheets available.
 
 This repository is also linked into the [SedEdu suite of education modules](https://github.com/amoodie/sededu), and can be accessed there as well.
+
+
+
+## About the model
+Stratigraphic model based on LAB models, i.e., geometric channel body is deposited in "matrix" of floodplain mud. 
+The channel is always fixed to the basin surface and subsidence is only control on vertical stratigraphy.
+Horizontal stratigraphy is set by 1) lateral migration (drawn from a pdf) and dampened for realism, and 2) avulsion that is set to a fixed value.
 
 
 
@@ -73,15 +79,16 @@ Finally, run the module from the Python shell with:
 import rivers2stratigraphy
 ```
 
-You will be asked if you wish to launch the module now, type `Y` and hit enter.
+Instructions will indicate to use the following command to then run the module:
+```
+rivers2stratigraphy.run()
+```
 
 
-Alternatively, run the module with provided script:
+Alternatively, run the module with provided script (this is the hook used for launching from SedEdu):
 ```
 python3 <path-to-installation>/run_rivers2stratigraphy.py
 ```
-
-Note that this may throw an error on closing the window, but this is not a problem to functionality.
 
 
 Please [open an issue](https://github.com/amoodie/rivers2stratigraphy/issues) if you encounter any additional error messages! 
@@ -95,6 +102,7 @@ This module is under ongoing development to improve stability and features and o
 If you are interested in contributing to code please see below for instructions.
 
 If you are interested in contributing to the the accompanying activites (which would be greatly appreciated!) please see [Writing Activites for SedEdu](https://github.com/amoodie/sededu/blob/develop/docs/writing_activities.md)
+
 
 #### Download the source code
 
