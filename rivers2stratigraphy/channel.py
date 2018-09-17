@@ -85,7 +85,7 @@ class ChannelBody(object):
                 stateSeriesConvexHull.append(seriesUnionTemp.convex_hull)
             stateUnion = so.cascaded_union(stateSeriesConvexHull)
             self.polygonAsArray = np.asarray(stateUnion.exterior)
-        else:
+        elif self.conversionFlag == "diff":
             # different methods for polygon and multipolygon
             stateUnion = so.cascaded_union(stateBoxes) # try so.cascaded_union(stateBoxes[::2]) for speed?
             # if type is polygon
@@ -99,6 +99,8 @@ class ChannelBody(object):
                     stateSeriesConvexHull.append(seriesUnionTemp.convex_hull)
                 stateUnion = so.cascaded_union(stateSeriesConvexHull)
                 self.polygonAsArray = np.asarray(stateUnion.exterior)
+        else:
+            raise ValueError("invalid conversionFlag in ChannelBody")
 
         
 
