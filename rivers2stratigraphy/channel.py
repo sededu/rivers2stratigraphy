@@ -18,7 +18,7 @@ class ActiveChannel(object):
         self.age = age
         self.parent = parent
             
-        self.state = State(new_channel = True, dxdt =0, Bast = Bast, age = 0, sm = self.sm)
+        self.state = ChannelState(new_channel = True, dxdt =0, Bast = Bast, age = 0, sm = self.sm)
         self.stateList = [self.state]
         self.patches = [Rectangle(self.state.ll, self.state.Bc, self.state.H)]
 
@@ -29,7 +29,7 @@ class ActiveChannel(object):
         self.subside()
         x_cent, dxdt = self.migrate()
 
-        self.state = State(x_cent = x_cent, dxdt = dxdt,
+        self.state = ChannelState(x_cent = x_cent, dxdt = dxdt,
                            Bast = self.state0.Bast, sm = self.sm)
         self.stateList.append(self.state)
 
@@ -131,7 +131,7 @@ class ChannelBody(object):
         return box
 
 
-class State(object):
+class ChannelState(object):
 
     def __init__(self, new_channel = False, x_cent = 0, dxdt = 0, Bast = 0, age = 0, sm = None):
 

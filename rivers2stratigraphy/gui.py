@@ -19,7 +19,6 @@ import matplotlib.animation as animation
 
 from .strat import Strat
 from .slider_manager import SliderManager
-from .channel import ActiveChannel, State, ChannelBody
 from . import geom, sedtrans, utils
 
 
