@@ -6,8 +6,8 @@ import matplotlib.animation as animation
 import shapely.geometry as sg
 import shapely.ops as so
 
-from channel import ActiveChannel, State, ChannelBody
-import utils
+from .channel import ActiveChannel, State, ChannelBody
+from . import utils
 
 class Strat(object):
 

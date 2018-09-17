@@ -23,13 +23,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
-from strat import Strat
-from slider_manager import SliderManager
-from channel import ActiveChannel, State, ChannelBody
-import geom, sedtrans, utils
-
-
-
+from .strat import Strat
+# import strat
+from .slider_manager import SliderManager
+from .channel import ActiveChannel, State, ChannelBody
+from . import geom, sedtrans, utils
 
 
 class GUI(object):
@@ -124,20 +122,23 @@ class GUI(object):
             self._paused = True
 
 
+
 class Runner(object):
-    gui = GUI()
+    def __init__(self):
+        gui = GUI()
 
-    # time looping
-    gui.strat = Strat(gui)
+        # time looping
+        gui.strat = Strat(gui)
 
-    anim = animation.FuncAnimation(gui.fig, gui.strat, 
-                                   interval=100, blit=False,
-                                   save_count=None)
+        anim = animation.FuncAnimation(gui.fig, gui.strat, 
+                                       interval=100, blit=False,
+                                       save_count=None)
 
-    plt.show()
+        plt.show()
 
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     runner = Runner()
+
     

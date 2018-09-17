@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 
-import widgets
-import utils
+from . import widgets
+from . import utils
 
 class SliderManager(object):
     def __init__(self, gui):

@@ -4,7 +4,7 @@ from matplotlib.patches import Polygon, Rectangle
 import shapely.geometry as sg
 import shapely.ops as so
 
-import geom, sedtrans, utils
+from . import geom, sedtrans, utils
 
 
 class ActiveChannel(object):
