@@ -9,12 +9,6 @@ rivers2stratigraphy GUI -- build river stratigraphy interactively
   written by Andrew J. Moodie
   amoodie@rice.edu
   Feb 2018
-  
-  TODO:
-   - control for "natural" ad default where lateral migration 
-      and Ta are a function of sediment transport (Qw)
-
-
 
 """
 
@@ -24,7 +18,6 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
 from .strat import Strat
-# import strat
 from .slider_manager import SliderManager
 from .channel import ActiveChannel, State, ChannelBody
 from . import geom, sedtrans, utils
