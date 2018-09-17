@@ -1,9 +1,5 @@
 import rivers2stratigraphy
 
-# import os
+print('launching activity...')
 
-# ## initialize the GUI
-# thisDir = os.path.dirname(__file__)
-# thisPath = os.path.join(thisDir,'')
-# execFile = os.path.join(thisPath, 'rivers2stratigraphy', 'rivers2stratigraphy.py')
-# exec(open(execFile).read())
+rivers2stratigraphy.run()
