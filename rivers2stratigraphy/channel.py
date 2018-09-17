@@ -18,7 +18,7 @@ class ActiveChannel(object):
         self.age = age
         self.parent = parent
             
-        self.state = State(new_channel = True, dxdt =0, Bast = Bast, age = 0, sm = self.sm)
+        self.state = ChannelState(new_channel = True, dxdt =0, Bast = Bast, age = 0, sm = self.sm)
         self.stateList = [self.state]
         self.patches = [Rectangle(self.state.ll, self.state.Bc, self.state.H)]
 
@@ -29,7 +29,7 @@ class ActiveChannel(object):
         self.subside()
         x_cent, dxdt = self.migrate()
 
-        self.state = State(x_cent = x_cent, dxdt = dxdt,
+        self.state = ChannelState(x_cent = x_cent, dxdt = dxdt,
                            Bast = self.state0.Bast, sm = self.sm)
         self.stateList.append(self.state)
 
@@ -76,20 +76,33 @@ class ChannelBody(object):
 
         self.y_upper = channel.stateList[-1].y_upper
 
-        # different methods for polygon and multipolygon
-        stateUnion = so.cascaded_union(stateBoxes) # try so.cascaded_union(stateBoxes[::2]) for speed?
-        # if type is polygon
-        uniontype = stateUnion.geom_type
-        if uniontype == 'Polygon':
+        self.conversionFlag = "same" # option to select how to convert states to bodies
+        if self.conversionFlag == "same":
+            # same method for all
+            stateSeriesConvexHull = []
+            for i, j in zip(stateBoxes[1:], stateBoxes[:-1]):
+                seriesUnionTemp = so.cascaded_union([i, j])
+                stateSeriesConvexHull.append(seriesUnionTemp.convex_hull)
+            stateUnion = so.cascaded_union(stateSeriesConvexHull)
             self.polygonAsArray = np.asarray(stateUnion.exterior)
-        elif uniontype == 'MultiPolygon':
-            stateUnionConvexHull = stateUnion.convex_hull
-            self.polygonAsArray = np.asarray(stateUnionConvexHull.exterior)
+        elif self.conversionFlag == "diff":
+            # different methods for polygon and multipolygon
+            stateUnion = so.cascaded_union(stateBoxes) # try so.cascaded_union(stateBoxes[::2]) for speed?
+            # if type is polygon
+            uniontype = stateUnion.geom_type
+            if uniontype == 'Polygon':
+                self.polygonAsArray = np.asarray(stateUnion.exterior)
+            elif uniontype == 'MultiPolygon':
+                stateSeriesConvexHull = []
+                for i, j in zip(stateBoxes[1:], stateBoxes[:-1]):
+                    seriesUnionTemp = so.cascaded_union([i, j])
+                    stateSeriesConvexHull.append(seriesUnionTemp.convex_hull)
+                stateUnion = so.cascaded_union(stateSeriesConvexHull)
+                self.polygonAsArray = np.asarray(stateUnion.exterior)
+        else:
+            raise ValueError("invalid conversionFlag in ChannelBody")
 
-        # same method for all
-        # stateUnion = so.cascaded_union(stateBoxes[::2])
-        # stateUnionConvexHull = stateUnion.convex_hull
-        # self.polygonAsArray = np.asarray(stateUnionConvexHull.exterior)
+        
 
         self.polygonXs = self.polygonAsArray[:,0]
         self.polygonYs = self.polygonAsArray[:,1]
@@ -118,7 +131,7 @@ class ChannelBody(object):
         return box
 
 
-class State(object):
+class ChannelState(object):
 
     def __init__(self, new_channel = False, x_cent = 0, dxdt = 0, Bast = 0, age = 0, sm = None):
 
