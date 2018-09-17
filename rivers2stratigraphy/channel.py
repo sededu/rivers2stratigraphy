@@ -76,20 +76,31 @@ class ChannelBody(object):
 
         self.y_upper = channel.stateList[-1].y_upper
 
-        # different methods for polygon and multipolygon
-        stateUnion = so.cascaded_union(stateBoxes) # try so.cascaded_union(stateBoxes[::2]) for speed?
-        # if type is polygon
-        uniontype = stateUnion.geom_type
-        if uniontype == 'Polygon':
+        self.conversionFlag = "same" # option to select how to convert states to bodies
+        if self.conversionFlag == "same":
+            # same method for all
+            stateSeriesConvexHull = []
+            for i, j in zip(stateBoxes[1:], stateBoxes[:-1]):
+                seriesUnionTemp = so.cascaded_union([i, j])
+                stateSeriesConvexHull.append(seriesUnionTemp.convex_hull)
+            stateUnion = so.cascaded_union(stateSeriesConvexHull)
             self.polygonAsArray = np.asarray(stateUnion.exterior)
-        elif uniontype == 'MultiPolygon':
-            stateUnionConvexHull = stateUnion.convex_hull
-            self.polygonAsArray = np.asarray(stateUnionConvexHull.exterior)
+        else:
+            # different methods for polygon and multipolygon
+            stateUnion = so.cascaded_union(stateBoxes) # try so.cascaded_union(stateBoxes[::2]) for speed?
+            # if type is polygon
+            uniontype = stateUnion.geom_type
+            if uniontype == 'Polygon':
+                self.polygonAsArray = np.asarray(stateUnion.exterior)
+            elif uniontype == 'MultiPolygon':
+                stateSeriesConvexHull = []
+                for i, j in zip(stateBoxes[1:], stateBoxes[:-1]):
+                    seriesUnionTemp = so.cascaded_union([i, j])
+                    stateSeriesConvexHull.append(seriesUnionTemp.convex_hull)
+                stateUnion = so.cascaded_union(stateSeriesConvexHull)
+                self.polygonAsArray = np.asarray(stateUnion.exterior)
 
-        # same method for all
-        # stateUnion = so.cascaded_union(stateBoxes[::2])
-        # stateUnionConvexHull = stateUnion.convex_hull
-        # self.polygonAsArray = np.asarray(stateUnionConvexHull.exterior)
+        
 
         self.polygonXs = self.polygonAsArray[:,0]
         self.polygonYs = self.polygonAsArray[:,1]
