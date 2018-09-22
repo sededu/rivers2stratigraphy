@@ -24,9 +24,8 @@ def test_get_matplotlib_backend():
     
 
 def test_set_matplotlib_backend():
-    with warnings.catch_warnings():
-        warnings.filterwarnings("ignore", module="matplotlib")
-        matplotlib.use('Qt5Agg')
+    warnings.filterwarnings("ignore", module="matplotlib")
+    matplotlib.use('Qt5Agg')
 
     ans = matplotlib.get_backend()
     assert ans == 'Qt5Agg'
