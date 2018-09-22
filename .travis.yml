@@ -36,8 +36,8 @@ install:
   - bash $HOME/minconda.sh -b -p $CONDA_PREFIX
   - export PATH="$CONDA_PREFIX/bin:$PATH"
 
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then apt install pyqt5; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install pyqt5& fi
+  # - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt install pyqt5; fi
+  # - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install pyqt5& fi
   
   - hash -r
   - conda config --set always_yes yes --set changeps1 no
@@ -48,7 +48,7 @@ install:
   # Replace dep1 dep2 ... with your dependencies
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION
   - source activate test-environment
-  - conda install numpy scipy matplotlib shapely pytest
+  - conda install numpy scipy matplotlib shapely pytest pyqt5
   - hash -r
 
 before_script:
