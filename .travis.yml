@@ -25,7 +25,7 @@ before_install:
   fi
 
 install:
-  - echo "Build on $TRAVIS_OS_NAME for Python $TRAVIS_PYTHON_VERSION
+  - echo "Build on $TRAVIS_OS_NAME for Python $TRAVIS_PYTHON_VERSION"
   - |
     if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
       OS="MacOSX-x86_64"
