@@ -45,7 +45,6 @@ install:
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION
   - source activate test-environment
   - conda install numpy scipy matplotlib shapely pytest
-  # - conda install -c amoodie rivers2stratigraphy
   - hash -r
 
 before_script:
@@ -56,5 +55,4 @@ before_script:
   - sleep 5 # give xvfb some time to start
 
 script:
-  - which -a pytest
   - pytest
