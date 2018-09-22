@@ -13,14 +13,14 @@ gui = GUI()
 strat = Strat(gui)
 
 
-def test_default_ActiveChannel():
+def test_intial_ActiveChannel():
     
-    activeChannel = ActiveChannel(sm=gui.sm)
+    activeChannel = strat.activeChannel
     
     assert activeChannel.Bast == 0
     assert activeChannel.age == 0
     assert activeChannel.avul_num == 0
-    assert len(activeChannel.stateList) == 1 
+    assert len(activeChannel.stateList) == 1
     
 
 def test_ActiveChannel_timestep():
@@ -34,4 +34,3 @@ def test_ActiveChannel_timestep():
 
     assert new_ll == expected_ll
     assert strat.activeChannel.avul_timer == avul_timer0 + strat.sm.dt
-    
