@@ -3,6 +3,9 @@ python:
   # We don't actually use the Travis Python, but this keeps it organized.
   - "3.5"
   - "3.6"
+os:
+  - linux
+  - osx
 install:
   - sudo apt-get update
   # We do this conditionally because it saves us some downloading if the
@@ -23,6 +26,7 @@ install:
   - conda install -c amoodie rivers2stratigraphy
 
 script:
+  - python3 import_test.py 
   - pytest
   # Your test script goes here
 
