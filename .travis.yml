@@ -35,6 +35,10 @@ install:
   - curl $MINICONDA_URL_BASE-$OS.sh > $HOME/minconda.sh
   - bash $HOME/minconda.sh -b -p $CONDA_PREFIX
   - export PATH="$CONDA_PREFIX/bin:$PATH"
+
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then apt install pyqt5; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install pyqt5& fi
+  
   - hash -r
   - conda config --set always_yes yes --set changeps1 no
   - conda update -q conda
