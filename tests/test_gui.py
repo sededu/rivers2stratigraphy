@@ -22,8 +22,8 @@ def test_get_matplotlib_backend():
         assert ans == 'MacOSX'
     
 
-def test_set_matplotlib_backend():
-    matplotlib.use('Qt5Agg', warn=False)
+# def test_set_matplotlib_backend():
+#     matplotlib.use('Qt5Agg', warn=False)
 
-    ans = matplotlib.get_backend()
-    assert ans == 'Qt5Agg'
+#     ans = matplotlib.get_backend()
+#     assert ans == 'Qt5Agg'
