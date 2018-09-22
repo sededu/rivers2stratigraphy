@@ -8,15 +8,17 @@ from . import geom, sedtrans, utils
 
 
 class ActiveChannel(object):
-    def __init__(self, x_centi = 0, Bast = 0, age = 0, avul_num = 0, sm = None, parent=None):
+    def __init__(self, Bast = 0, age = 0, Ta = 100, 
+                 avul_num = 0, sm = None, parent = None):
         
         self.sm = sm
         self.avul_num = avul_num
         self.avulsed = False
         self.avul_timer = 0
-        self.Ta = self.sm.Ta
+        self.Ta = Ta
         self.age = age
         self.parent = parent
+        self.Bast = Bast
             
         self.state = ChannelState(new_channel = True, dxdt =0, Bast = Bast, age = 0, sm = self.sm)
         self.stateList = [self.state]
