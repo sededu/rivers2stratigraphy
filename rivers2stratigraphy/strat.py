@@ -32,8 +32,9 @@ class Strat(object):
         # self._paused = gui._paused
 
         # create an active channel and corresponding PatchCollection
-        self.activeChannel = ActiveChannel(x_centi = 0, Bast = self.Bast, age = 0, 
-                                     avul_num = 0, sm = self.sm)
+        self.activeChannel = ActiveChannel(Bast = self.Bast, age = 0, 
+                                           Ta = self.sm.Ta, avul_num = 0, 
+                                           sm = self.sm)
         self.activeChannelPatchCollection = PatchCollection(self.activeChannel.patches)
         
         # create a channelbody and corresponding PatchCollection
@@ -82,7 +83,8 @@ class Strat(object):
 
                 # create a new Channel
                 self.activeChannel = ActiveChannel(Bast = self.Bast, age = i, 
-                                             avul_num = self.avul_num, sm = self.sm)
+                                                   Ta = self.sm.Ta, avul_num = self.avul_num, 
+                                                   sm = self.sm)
 
                 # remove outdated channels
                 stratMin = self.Bast - self.sm.yViewmax
