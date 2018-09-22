@@ -1,5 +1,4 @@
 import pytest
-import warnings
 import platform
 
 import sys, os
@@ -8,10 +7,10 @@ sys.path.append(os.path.realpath(os.path.dirname(__file__)+"/.."))
 import numpy as np
 import matplotlib
 
-from rivers2stratigraphy.gui import GUI, Runner
-from rivers2stratigraphy.strat import Strat
+# from rivers2stratigraphy.gui import GUI, Runner
+# from rivers2stratigraphy.strat import Strat
 
-gui = GUI()
+# gui = GUI()
 
 
 def test_get_matplotlib_backend():
@@ -24,8 +23,7 @@ def test_get_matplotlib_backend():
     
 
 def test_set_matplotlib_backend():
-    warnings.filterwarnings("ignore", module="matplotlib")
-    matplotlib.use('Qt5Agg')
+    matplotlib.use('Qt5Agg', warn=False)
 
     ans = matplotlib.get_backend()
     assert ans == 'Qt5Agg'

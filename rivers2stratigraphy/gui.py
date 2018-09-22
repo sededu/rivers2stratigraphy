@@ -12,11 +12,12 @@ rivers2stratigraphy GUI -- build river stratigraphy interactively
 
 """
 
+import matplotlib
+matplotlib.use('Qt5Agg', warn=False)
 
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
-import matplotlib
 
 from .strat import Strat
 from .slider_manager import SliderManager
