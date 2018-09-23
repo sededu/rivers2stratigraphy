@@ -1,5 +1,5 @@
 # rivers2stratigraphy
-[![Build Status](https://travis-ci.org/amoodie/rivers2stratigraphy.svg?branch=master)](https://travis-ci.org/amoodie/rivers2stratigraphy)
+[![Build Status](https://travis-ci.org/amoodie/rivers2stratigraphy.svg?branch=master)](https://travis-ci.org/amoodie/rivers2stratigraphy) [![Build status](https://ci.appveyor.com/api/projects/status/9twedak77iixanb7/branch/master?svg=true)](https://ci.appveyor.com/project/amoodie/rivers2stratigraphy/branch/master)
 
 Explore how a river becomes stratigraphy
 
