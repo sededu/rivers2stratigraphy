@@ -57,9 +57,10 @@ install:
 build: false
 
 test_script:
-  - cmd: pytest
-  - cmd: python pytest
-  - cmd: python test.py
+  - py.test
+  # - cmd: py.test
+  # - cmd: python pytest
+  # - cmd: python test.py
 
 # after_test:
 #   - cmd: python setup.py bdist_wheel
