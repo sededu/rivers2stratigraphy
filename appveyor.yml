@@ -49,19 +49,16 @@ install:
   - cmd: conda info
   - cmd: conda config --set always_yes yes
   - cmd: conda update conda
-  # - cmd: conda install -q --force --no-deps psutil ruamel_yaml requests
-  # - cmd: conda install -q conda-build=3.0
-  # - cmd: conda install -q anaconda-client
-  # - cmd: conda install -q numpy=1.11
-  # - cmd: pip install twine
+  - cmd: conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION
+  - cmd: source activate test-environment
+  - cmd: conda install numpy scipy matplotlib shapely pytest
   - cmd: conda list
 
 build: false
 
 test_script:
-  # - "%WITH_COMPILER% conda build -q .conda-recipe --old-build-string"
-  - cmd: conda install -q rivers2stratigraphy --use-local
-  - cmd: python py.test
+  - cmd: pytest
+  - cmd: python pytest
 
 # after_test:
 #   - cmd: python setup.py bdist_wheel
