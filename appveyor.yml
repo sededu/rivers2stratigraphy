@@ -49,8 +49,8 @@ install:
   - cmd: conda info
   - cmd: conda config --set always_yes yes
   - cmd: conda update conda
-  - cmd: conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION
-  - cmd: source activate test-environment
+  - cmd: conda create -q -n test-environment python=%PYTHON_VERSION%
+  - cmd: activate test-environment
   - cmd: conda install numpy scipy matplotlib shapely pytest
   - cmd: conda list
 
@@ -59,6 +59,7 @@ build: false
 test_script:
   - cmd: pytest
   - cmd: python pytest
+  - cmd: python test.py
 
 # after_test:
 #   - cmd: python setup.py bdist_wheel
