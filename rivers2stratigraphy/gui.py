@@ -13,7 +13,7 @@ rivers2stratigraphy GUI -- build river stratigraphy interactively
 """
 
 # import matplotlib
-# matplotlib.use('Qt5Agg', warn=False)
+# matplotlib.use('TkAgg', warn=False)
 
 import numpy as np
 import matplotlib.pyplot as plt
