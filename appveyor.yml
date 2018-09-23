@@ -57,5 +57,5 @@ install:
 build: false
 
 test_script:
-  - py.test
+  - py.test --mpl --mpl-results-path=tests/results
 
