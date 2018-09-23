@@ -36,7 +36,6 @@ platform:
   - x64
 
 os: Previous Visual Studio 2015
-# os: Visual Studio 2013
 
 init:
   - "ECHO %CONDA_INSTALL_LOCN% %CONDA_PY% %HOME% %PLATFORM%"
@@ -52,23 +51,11 @@ install:
   - cmd: conda create -q -n test-environment python=%PYTHON_VERSION%
   - cmd: activate test-environment
   - cmd: conda install numpy scipy matplotlib shapely pytest
+  - cmd: conda install -c conda-forge pytest-mpl
   - cmd: conda list
 
 build: false
 
 test_script:
   - py.test
-  # - cmd: py.test
-  # - cmd: python pytest
-  # - cmd: python test.py
 
-# after_test:
-#   - cmd: python setup.py bdist_wheel
-
-# artifacts:
-#   # Archive the generated conda package in the ci.appveyor.com build report.
-#   - path: 'dist\*'
-
-# deploy_script:
-#   - cmd: python .ci/appveyor/anaconda_upload.py
-#   - cmd: python .ci/appveyor/pypi_upload.py

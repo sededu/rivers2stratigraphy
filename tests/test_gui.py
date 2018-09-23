@@ -7,11 +7,6 @@ sys.path.append(os.path.realpath(os.path.dirname(__file__)+"/.."))
 import numpy as np
 import matplotlib
 
-# from rivers2stratigraphy.gui import GUI, Runner
-# from rivers2stratigraphy.strat import Strat
-
-# gui = GUI()
-
 
 def test_get_matplotlib_backend():
     ans = matplotlib.get_backend()
@@ -27,3 +22,11 @@ def test_get_matplotlib_backend():
 
 #     ans = matplotlib.get_backend()
 #     assert ans == 'Qt5Agg'
+
+@pytest.mark.mpl_image_compare(baseline_dir=os.path.join('figs_baseline'))
+def test_launch_fig_compare():
+    from rivers2stratigraphy.gui import GUI, Runner
+    from rivers2stratigraphy.strat import Strat
+
+    gui = GUI()
+    return gui.fig

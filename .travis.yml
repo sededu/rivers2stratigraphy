@@ -45,10 +45,11 @@ install:
   # Useful for debugging any issues with conda
   - conda info -a
 
-  # Replace dep1 dep2 ... with your dependencies
+  # Creat new env and install deps
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION
   - source activate test-environment
   - conda install numpy scipy matplotlib shapely pytest
+  - conda install -c conda-forge pytest-mpl
   - hash -r
 
 before_script:
