@@ -118,3 +118,6 @@ venv.bak/
 # build script
 build_deploy.sh
 .pypirc
+
+# test results
+tests/results/
