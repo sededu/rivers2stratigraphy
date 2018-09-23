@@ -1,49 +1,75 @@
 environment:
 
   matrix:
+    - TARGET_ARCH: x86
+      CONDA_NPY: 111
+      CONDA_PY: 27
+      CONDA_INSTALL_LOCN: C:\\Miniconda
 
-    # For Python versions available on Appveyor, see
-    # http://www.appveyor.com/docs/installed-software#python
-    # The list here is complete (excluding Python 2.6, which
-    # isn't covered by this document) at the time of writing.
+    - TARGET_ARCH: x64
+      CONDA_NPY: 111
+      CONDA_PY: 27
+      CONDA_INSTALL_LOCN: C:\\Miniconda-x64
+      DISTUTILS_USE_SDK: 1
 
-    - PYTHON: "C:\\Python34"
-    - PYTHON: "C:\\Python35"
-    - PYTHON: "C:\\Python34-x64"
-      DISTUTILS_USE_SDK: "1"
-    - PYTHON: "C:\\Python35-x64"
-    - PYTHON: "C:\\Python36-x64"
+    - TARGET_ARCH: x86
+      CONDA_NPY: 111
+      CONDA_INSTALL_LOCN: C:\\Miniconda35
+      CONDA_PY: 35
+
+    - TARGET_ARCH: x64
+      CONDA_NPY: 111
+      CONDA_INSTALL_LOCN: C:\\Miniconda35-x64
+      CONDA_PY: 35
+
+    - TARGET_ARCH: x86
+      CONDA_NPY: 111
+      CONDA_INSTALL_LOCN: C:\\Miniconda36
+      CONDA_PY: 36
+
+    - TARGET_ARCH: x64
+      CONDA_NPY: 111
+      CONDA_INSTALL_LOCN: C:\\Miniconda36-x64
+      CONDA_PY: 36
+
+platform:
+  - x64
+
+os: Previous Visual Studio 2015
+# os: Visual Studio 2013
+
+init:
+  - "ECHO %CONDA_INSTALL_LOCN% %CONDA_PY% %HOME% %PLATFORM%"
+  - "ECHO %APPVEYOR_REPO_BRANCH%"
 
 install:
-  # We need wheel installed to build wheels
-  # - "%PYTHON%\\python.exe -m pip install wheel"
+  - cmd: call %CONDA_INSTALL_LOCN%\Scripts\activate.bat
+  - cmd: conda update --yes --quiet conda
+  - cmd: set PYTHONUNBUFFERED=1
+  - cmd: conda info
+  - cmd: conda config --set always_yes yes
+  - cmd: conda update conda
+  # - cmd: conda install -q --force --no-deps psutil ruamel_yaml requests
+  # - cmd: conda install -q conda-build=3.0
+  # - cmd: conda install -q anaconda-client
+  # - cmd: conda install -q numpy=1.11
+  # - cmd: pip install twine
+  - cmd: conda list
 
-build: off
+build: false
 
 test_script:
-  # Put your test command here.
-  # If you don't need to build C extensions on 64-bit Python 3.3 or 3.4,
-  # you can remove "build.cmd" from the front of the command, as it's
-  # only needed to support those cases.
-  # Note that you must use the environment variable %PYTHON% to refer to
-  # the interpreter you're using - Appveyor does not do anything special
-  # to put the Python version you want to use on PATH.
-  # - "build.cmd %PYTHON%\\python.exe setup.py test"
-  - "build.cmd %PYTHON%\\python.exe pytest"
+  # - "%WITH_COMPILER% conda build -q .conda-recipe --old-build-string"
+  - cmd: conda install -q rivers2stratigraphy --use-local
+  - cmd: python py.test
 
-skip_tags: true
 # after_test:
-  # This step builds your wheels.
-  # Again, you only need build.cmd if you're building C extensions for
-  # 64-bit Python 3.3/3.4. And you need to use %PYTHON% to get the correct
-  # interpreter
-  # - "build.cmd %PYTHON%\\python.exe setup.py bdist_wheel"
+#   - cmd: python setup.py bdist_wheel
 
 # artifacts:
-  # bdist_wheel puts your built wheel in the dist directory
-  # - path: dist\*
+#   # Archive the generated conda package in the ci.appveyor.com build report.
+#   - path: 'dist\*'
 
-#on_success:
-#  You can use this step to upload your artifacts to a public website.
-#  See Appveyor's documentation for more details. Or you can simply
-#  access your wheels from the Appveyor "artifacts" tab for your build.
+# deploy_script:
+#   - cmd: python .ci/appveyor/anaconda_upload.py
+#   - cmd: python .ci/appveyor/pypi_upload.py
