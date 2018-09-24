@@ -22,7 +22,6 @@ class ActiveChannel(object):
             
         self.state = ChannelState(new_channel = True, dxdt =0, Bast = Bast, age = 0, sm = self.sm)
         self.stateList = [self.state]
-        self.patches = [Rectangle(self.state.ll, self.state.Bc, self.state.H)]
 
     def timestep(self):
         self.state0 = self.state
@@ -35,7 +34,7 @@ class ActiveChannel(object):
                            Bast = self.state0.Bast, sm = self.sm)
         self.stateList.append(self.state)
 
-        if self.avul_timer > self.Ta:
+        if self.avul_timer >= self.Ta:
             self.avulsion()
         else:
             self.avul_timer += self.sm.dt
