@@ -35,7 +35,9 @@ class Strat(object):
         self.activeChannel = ActiveChannel(Bast = self.Bast, age = 0, 
                                            Ta = self.sm.Ta, avul_num = 0, 
                                            sm = self.sm)
-        self.activeChannelPatchCollection = PatchCollection(self.activeChannel.patches)
+        self.activeChannelPatchCollection = PatchCollection([Rectangle(self.activeChannel.state.ll, 
+                                                                       self.activeChannel.state.Bc, 
+                                                                       self.activeChannel.state.H)])
         
         # create a channelbody and corresponding PatchCollection
         self.channelBodyList = []
@@ -93,13 +95,13 @@ class Strat(object):
                                         zip(self.channelBodyList, outdatedIdx) if not i]
 
         # generate new patch lists for updating the PatchCollection objects
-        activeChannelPatches = [Rectangle(s.ll, s.Bc, s.H) for s 
+        self.activeChannelPatches = [Rectangle(s.ll, s.Bc, s.H) for s 
                                 in iter(self.activeChannel.stateList)]
         self.channelBodyPatchList = [c.get_patch() for c in self.channelBodyList]
 
         # set paths of the PatchCollection Objects
         self.channelBodyPatchCollection.set_paths(self.channelBodyPatchList)
-        self.activeChannelPatchCollection.set_paths(activeChannelPatches)
+        self.activeChannelPatchCollection.set_paths(self.activeChannelPatches)
 
         # self.qs = sedtrans.qsEH(D50, Cf, 
         #                         sedtrans.taubfun(self.channel.H, self.channel.S, cong, conrhof), 
