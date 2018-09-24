@@ -176,5 +176,6 @@ def test_reset_strat_button_image():
         gui.strat(i=i)
 
     strat_reset(None, gui)
+    gui.strat(i=i+1)
 
     return gui.fig
