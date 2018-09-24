@@ -125,6 +125,24 @@ def test_change_rad_col():
 
 
 @pytest.mark.mpl_image_compare(baseline_dir='figs_baseline')
+def test_reset_sliders_button_image():
+
+    from rivers2stratigraphy.gui import GUI
+
+    gui = GUI()
+    gui.sm.slide_Qw.set_val(gui.config.Qwmax)
+    gui.sm.slide_sig.set_val(gui.config.sigmax)
+    gui.sm.slide_Ta.set_val(gui.config.Tamax)
+    gui.sm.slide_yView.set_val(gui.config.yViewmax)
+    gui.sm.slide_Bb.set_val(gui.config.Bbmax)
+    gui.sm.rad_col.set_active(2)
+    gui.fig.canvas.draw_idle()
+
+    return gui.fig
+
+
+
+@pytest.mark.mpl_image_compare(baseline_dir='figs_baseline', tolerance=20)
 def test_gui_convert_to_channel_body_call():
 
     from rivers2stratigraphy.gui import GUI
@@ -135,7 +153,28 @@ def test_gui_convert_to_channel_body_call():
     gui = GUI()
     gui.strat = Strat(gui)
 
-    for i in np.arange(gui.sm.Ta / gui.sm.dt + 3):
+    for i in np.arange(int(gui.sm.Ta / gui.sm.dt)+2):
         gui.strat(i=i)
+
+    return gui.fig
+
+
+
+@pytest.mark.mpl_image_compare(baseline_dir='figs_baseline')
+def test_reset_strat_button_image():
+
+    from rivers2stratigraphy.gui import GUI
+    from rivers2stratigraphy.strat import Strat
+    from rivers2stratigraphy.utils import strat_reset
+
+    np.random.seed(0)
+
+    gui = GUI()
+    gui.strat = Strat(gui)
+
+    for i in np.arange(int(gui.sm.Ta / gui.sm.dt)*5):
+        gui.strat(i=i)
+
+    strat_reset(None, gui)
 
     return gui.fig
