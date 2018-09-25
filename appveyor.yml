@@ -21,15 +21,16 @@ environment:
       CONDA_INSTALL_LOCN: C:\\Miniconda36-x64
       CONDA_PY: 36
 
-    - TARGET_ARCH: x86
-      CONDA_NPY: 115
-      CONDA_INSTALL_LOCN: C:\\Miniconda37
-      CONDA_PY: 37
+    # add 37 architecture run later this week, after appveyor rolls out new image.
+    # - TARGET_ARCH: x86
+    #   CONDA_NPY: 115
+    #   CONDA_INSTALL_LOCN: C:\\Miniconda37
+    #   CONDA_PY: 37
 
-    - TARGET_ARCH: x64
-      CONDA_NPY: 115
-      CONDA_INSTALL_LOCN: C:\\Miniconda37-x64
-      CONDA_PY: 37
+    # - TARGET_ARCH: x64
+    #   CONDA_NPY: 115
+    #   CONDA_INSTALL_LOCN: C:\\Miniconda37-x64
+    #   CONDA_PY: 37
 
 platform:
   - x64
