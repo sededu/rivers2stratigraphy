@@ -14,13 +14,13 @@ def test_get_matplotlib_backend():
     platType = platform.system()
 
     if platType in {'Linux'}:
-        assert ans in {'Qt5Agg', 'Qt4Agg'} # is this default?
+        assert ans in {'Qt5Agg', 'Qt4Agg'}
 
     elif platType in {'Darwin'}:
-        assert ans == 'MacOSX'
+        assert ans == in {'TkAgg', 'MacOSX'}
 
     elif platType in {'Windows'}:
-        pass # don't know what default is?
+        assert ans in {'Qt5Agg', 'Qt4Agg'}
 
 
 
