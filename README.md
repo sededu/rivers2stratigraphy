@@ -56,7 +56,6 @@ Please include 1) operating system, 2) installation method, and 3) copy-paste th
 conda install -c amoodie rivers2stratigraphy
 ```
 If asked to proceed, type `Y` and press "enter" to continue installation. 
-
 1. This process may take a few minutes as the necessary source code is downloaded.
 If the installation succeeds, proceed below to the "Run the module" section.
 
@@ -74,7 +73,6 @@ On Ubuntu this is done with `sudo apt install python3-tk`.
 conda install -c amoodie rivers2stratigraphy
 ```
 If asked to proceed, type `Y` and press enter to continue installation.
-
 1. This process may take a few minutes as the necessary source code is downloaded.
 If the installation succeeds, proceed below to the "Run the module" section.
 
@@ -84,7 +82,7 @@ __Note on permissions:__ you may need to use `sudo` on OSX and Linux.
 #### Advanced user installations
 To install with `pip` from Pypi use (not recommended for entry-level users):
 ```
-pip3 install rivers2stratigraphy
+pip3 install pyqt rivers2stratigraphy
 ```
 
 See below instructions for downloading the source code if you wish to be able to modify the source code for development or for exploration.
@@ -93,14 +91,10 @@ See below instructions for downloading the source code if you wish to be able to
 ### Run the module
 
 1. Open a Python shell by typing `python` (or `python3`) at the terminal (OSX and Linux users) or at the Conda or Command Prompt (Windows users).
-1. 
-Be 
-
-Finally, run the module from the Python shell with:
+1. Run the module from the Python shell with:
 ```
 import rivers2stratigraphy
 ```
-
 Instructions will indicate to use the following command to then run the module:
 ```
 rivers2stratigraphy.run()
