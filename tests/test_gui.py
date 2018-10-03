@@ -17,7 +17,7 @@ def test_get_matplotlib_backend():
         assert ans in {'Qt5Agg', 'Qt4Agg'}
 
     elif platType in {'Darwin'}:
-        assert ans in {'TkAgg', 'MacOSX'}
+        assert ans in {'Qt5Agg', 'MacOSX'}
 
     elif platType in {'Windows'}:
         assert ans in {'Qt5Agg', 'Qt4Agg'}
