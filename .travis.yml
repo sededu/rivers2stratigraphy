@@ -50,7 +50,7 @@ install:
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION
   - source activate test-environment
   - conda install numpy scipy matplotlib shapely pytest
-  - conda install -c conda-forge pytest-mpl
+  - conda install -c conda-forge pyqt pytest-mpl
   - hash -r
 
 before_script:
