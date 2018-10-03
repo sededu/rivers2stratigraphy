@@ -43,20 +43,25 @@ See below for detailed instructions on installing `rivers2stratigraphy` for your
 If you installed Anaconda Python or Miniconda, you can follow the instructions below for your operating system. 
 Otherwise see the instructions for PyPi installation below.
 
+__Please__ [open an issue](https://github.com/amoodie/rivers2stratigraphy/issues) if you encounter any troubles installing or any error messages along the way! 
+Please include 1) operating system, 2) installation method, and 3) copy-paste the error.
+
+
 #### Windows users
 
-Open your "start menu" and search for the "Anaconda prompt"; start this application.
+1. Open your "start menu" and search for the "Anaconda prompt"; start this application.
 
-To install with the module type the following command and hit "enter":
+1. Install with the module type the following command and hit "enter":
 ```
 conda install -c amoodie rivers2stratigraphy
 ```
-
 If asked to proceed, type `Y` and press "enter" to continue installation. 
-This process may take a few minutes as the necessary source code is downloaded.
+
+1. This process may take a few minutes as the necessary source code is downloaded.
 If the installation succeeds, proceed below to the "Run the module" section.
 
-_Note on permissions:__ you may need to run as administrator on Windows.
+__Note on permissions:__ you may need to run as administrator on Windows.
+
 
 #### Mac OSX and Linux users
 
@@ -64,40 +69,32 @@ __Linux users:__ you will need to also install `tkinter` before trying to instal
 On Ubuntu this is done with `sudo apt install python3-tk`.
 <!-- Windows and Mac distributions should come with `python3-tk` installed. -->
 
-Install the module by opening a terminal and typing the following command.
-
+1. Install the module by opening a terminal and typing the following command.
 ```
 conda install -c amoodie rivers2stratigraphy
 ```
-
 If asked to proceed, type `Y` and press enter to continue installation.
-This process may take a few minutes as the necessary source code is downloaded.
+
+1. This process may take a few minutes as the necessary source code is downloaded.
 If the installation succeeds, proceed below to the "Run the module" section.
 
 __Note on permissions:__ you may need to use `sudo` on OSX and Linux.
 
 
-
-See below instructions for downloading the source code if you wish to be able to modify the source code for development.
-
-Please [open an issue](https://github.com/amoodie/rivers2stratigraphy/issues) if you encounter any additional error messages! 
-Please include 1) operating system, 2) installation method, and 3) copy-paste the error.
-
-
-
-
+#### Advanced user installations
 To install with `pip` from Pypi use (not recommended for entry-level users):
 ```
 pip3 install rivers2stratigraphy
 ```
 
-
-
+See below instructions for downloading the source code if you wish to be able to modify the source code for development or for exploration.
 
 
 ### Run the module
 
-Now, open a Python shell by typing `python3` at the terminal (or command prompt) prompt.
+1. Open a Python shell by typing `python` (or `python3`) at the terminal (OSX and Linux users) or at the Conda or Command Prompt (Windows users).
+1. 
+Be 
 
 Finally, run the module from the Python shell with:
 ```
@@ -115,7 +112,6 @@ Alternatively, run the module with provided script (this is the hook used for la
 python3 <path-to-installation>/run_rivers2stratigraphy.py
 ```
 
-
 Please [open an issue](https://github.com/amoodie/rivers2stratigraphy/issues) if you encounter any additional error messages! 
 Please include 1) operating system, 2) installation method, and 3) copy-paste the error.
 
@@ -128,14 +124,16 @@ You can get [Python and pip together here](https://www.python.org/downloads/).
 ## Development
 
 This module is under ongoing development to improve stability and features and optimize performance.
-If you are interested in contributing to code please see below for instructions.
+The module also requires occasional maintenance due to dependency updates.
+If you are interested in contributing to the code-base please see below for instructions.
 
-If you are interested in contributing to the the accompanying activites (which would be greatly appreciated!) please see [Writing Activites for SedEdu](https://github.com/amoodie/sededu/blob/develop/docs/writing_activities.md)
+If you are interested in contributing to the accompanying worksheets/activities (which would be greatly appreciated!) please see [Writing Activities for SedEdu](https://github.com/amoodie/sededu/blob/develop/docs/writing_activities.md)
 
 
 #### Download the source code
 
-You can download this entire repository as a `.zip` by clicking the "Clone or download button on this page", or by [clicking here](https://github.com/amoodie/rivers2stratigraphy/archive/master.zip) to get a `.zip` folder. Unzip the folder in your preferred location.
+You can download this entire repository as a `.zip` by clicking the "Clone or download button on this page", or by [clicking here](https://github.com/amoodie/rivers2stratigraphy/archive/master.zip) to get a `.zip` folder.
+Unzip the folder in your preferred location.
 
 If you have installed `git` and are comfortable working with it, you can simply clone the repository to your preferred location.
 
