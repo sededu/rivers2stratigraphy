@@ -19,42 +19,71 @@ Horizontal stratigraphy is set by 1) lateral migration (drawn from a pdf) and da
 
 
 
-## Installation and running the module
+## Installing and running the module
 
-Visit the section of the text below for more information on installing and executing the `rivers2stratigraphy` program on your computer. 
+This module depends on Python 3, `tkinter`, and the Python packages `numpy`, `scipy`, `matplotlib`, and `shapely`. 
 
+### Installing Python 3
 
-### Requirements
+If you are new to Python, it is recommended that you install Anaconda, which is an open source distribution of Python which includes many basic scientific libraries, some of which are used in the module. 
+Anaconda can be downloaded at https://www.anaconda.com/download/ for Windows, macOS, and Linux. 
+If you do not have storage space on your machine for Anaconda or wish to install a smaller version of Python for another reason, see below on options for Miniconda or vanilla Python.
 
-This module depends on Python 3, `tkinter`, and the Python packages `numpy`, `scipy`, `matplotlib`. 
+1. Visit the website for Anaconda https://www.anaconda.com/download/ and select the installer for your operating system.
+__Be sure to select the Python 3.x installation.__
+1. Start the installer.
+1. If prompted, select to "install just for me", unless you know what you are doing.
+1. When prompted to add Anaconda to the path during installation, select _yes_ if you __know__ you do not have any other Python installed on your computer; otherwise select _no_.
 
-#### Installing Python 3
-
-If you are new to Python, it is recommended that you install Anaconda, which is an open source distribution of Python. 
-It comes with many basic scientific libraries, some of which are used in the module. Anaconda can be downloaded at https://www.anaconda.com/download/ for Windows, macOS, and Linux. 
-Please follow the instruction provided in the website as to how to install and setup Python on your computer.
-Be sure to select the Python 3.x installation.
-
-
-__Linux users:__ you will need to also install `tkinter` before trying to install the module below package through `conda` or `pip3`.
-On Ubuntu this is done with `sudo apt install python3-tk`.
-Windows and Mac distributions should come with `python3-tk` installed.
-
-Note that if you do not want to install the complete Anaconda Python distribution you can install [Miniconda](https://conda.io/miniconda.html) (a smaller version of Anaconda), or you can install Python alone and use a package manager called pip to do the installation. 
-You can get [Python and pip together here](https://www.python.org/downloads/).
+See below for detailed instructions on installing `rivers2stratigraphy` for your operating system.
 
 
-#### Installing the module
+### Installing the module
 
-If you installed Anaconda Python or Miniconda, you can install the module by opening a terminal on Linux or OSX (command prompt in Windows) and typing the following command.
+If you installed Anaconda Python or Miniconda, you can follow the instructions below for your operating system. 
+Otherwise see the instructions for PyPi installation below.
 
-To install with `conda` use:
+#### Windows users
+
+Open your "start menu" and search for the "Anaconda prompt"; start this application.
+
+To install with the module type the following command and hit "enter":
 ```
 conda install -c amoodie rivers2stratigraphy
 ```
 
-If asked to proceed, type `Y`  and press enter to continue installation. This process may take a few minutes as the necessary source code is downloaded.
-If the installation succeeds proceed below to the "Run the module" section.
+If asked to proceed, type `Y` and press "enter" to continue installation. 
+This process may take a few minutes as the necessary source code is downloaded.
+If the installation succeeds, proceed below to the "Run the module" section.
+
+_Note on permissions:__ you may need to run as administrator on Windows.
+
+#### Mac OSX and Linux users
+
+__Linux users:__ you will need to also install `tkinter` before trying to install the module below package through `conda` or `pip3`.
+On Ubuntu this is done with `sudo apt install python3-tk`.
+<!-- Windows and Mac distributions should come with `python3-tk` installed. -->
+
+Install the module by opening a terminal and typing the following command.
+
+```
+conda install -c amoodie rivers2stratigraphy
+```
+
+If asked to proceed, type `Y` and press enter to continue installation.
+This process may take a few minutes as the necessary source code is downloaded.
+If the installation succeeds, proceed below to the "Run the module" section.
+
+__Note on permissions:__ you may need to use `sudo` on OSX and Linux.
+
+
+
+See below instructions for downloading the source code if you wish to be able to modify the source code for development.
+
+Please [open an issue](https://github.com/amoodie/rivers2stratigraphy/issues) if you encounter any additional error messages! 
+Please include 1) operating system, 2) installation method, and 3) copy-paste the error.
+
+
 
 
 To install with `pip` from Pypi use (not recommended for entry-level users):
@@ -62,12 +91,8 @@ To install with `pip` from Pypi use (not recommended for entry-level users):
 pip3 install rivers2stratigraphy
 ```
 
-Note that you may need to use `sudo` on OSX and Linux or run as administrator on Windows.
 
-See below instructions for downloading the source code if you wish to be able to modify the source code for development.
 
-Please [open an issue](https://github.com/amoodie/rivers2stratigraphy/issues) if you encounter any additional error messages! 
-Please include 1) operating system, 2) installation method, and 3) copy-paste the error.
 
 
 ### Run the module
@@ -94,6 +119,10 @@ python3 <path-to-installation>/run_rivers2stratigraphy.py
 Please [open an issue](https://github.com/amoodie/rivers2stratigraphy/issues) if you encounter any additional error messages! 
 Please include 1) operating system, 2) installation method, and 3) copy-paste the error.
 
+
+#### Smaller Python installation options
+Note that if you do not want to install the complete Anaconda Python distribution you can install [Miniconda](https://conda.io/miniconda.html) (a smaller version of Anaconda), or you can install Python alone and use a package manager called pip to do the installation. 
+You can get [Python and pip together here](https://www.python.org/downloads/).
 
 
 ## Development
