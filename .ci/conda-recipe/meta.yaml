@@ -19,6 +19,7 @@ requirements:
     - shapely
 
 test:
+  # we don't run these tests during build (see --no-test on anaconda_build.sh)
   requires:
     - pytest
     - pytest-mpl

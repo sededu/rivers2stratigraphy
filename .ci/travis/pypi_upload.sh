@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # borrowed from Landlab implementation
 
-if [[ "$TRAVIS_TAG" == v* ]]; then
+if [[ "$DEPLOY" == "1" ]]; then
   echo "Uploading to Pypi."
   twine upload -u amoodie -p$PYPI_PASS dist/*
   echo "Done."
