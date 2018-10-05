@@ -68,5 +68,6 @@ artifacts:
   - path: 'dist\*'
 
 deploy_script:
+  - cmd: conda install conda-build anaconda-client
   - cmd: python .ci/appveyor/anaconda_upload.py
   - cmd: python .ci/appveyor/pypi_upload.py

@@ -2,8 +2,8 @@
 
 { # try
 
-    conda install -q conda-build anaconda-client
-	conda build -q .ci/conda-recipe/ --output-folder .ci/conda-build/ --no-test
+    conda install conda-build anaconda-client
+	conda build .ci/conda-recipe/ --output-folder .ci/conda-build/ --no-test
 
 } || { # catch
 

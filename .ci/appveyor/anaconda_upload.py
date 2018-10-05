@@ -15,7 +15,7 @@ print('Using python: {prefix}'.format(prefix=sys.prefix))
 
 repo_tag = os.environ.get('APPVEYOR_REPO_TAG', 'false')
 tag_name = os.environ.get('APPVEYOR_REPO_TAG_NAME', '')
-token = os.environ.get('ANACONDA_TOKEN', 'NOT_A_TOKEN')
+token = os.environ.get('CONDA_TOKEN', 'NOT_A_TOKEN')
 
 if repo_tag == 'true' and tag_name.startswith('v'):
     channel = 'main'
@@ -46,10 +46,10 @@ try:
     print(file_to_upload)
     print(dirname)
     print(filename)
-    print(dirname + b'\\' + b'landlab*.tar.bz2')
+    print(dirname + b'\\' + b'rivers2stratigraphy*.tar.bz2')
     # print(os.linesep.join(os.listdir(dirname)))
-    print(glob.glob(dirname + b'\\' + b'landlab*.tar.bz2'))
-    file_to_upload = glob.glob(dirname + b'\\' + b'landlab*.tar.bz2')[0]
+    print(glob.glob(dirname + b'\\' + b'rivers2stratigraphy*.tar.bz2'))
+    file_to_upload = glob.glob(dirname + b'\\' + b'rivers2stratigraphy*.tar.bz2')[0]
 except IndexError:
     raise RuntimeError('{name}: not a file'.format(name=file_to_upload))
 
@@ -59,8 +59,7 @@ if not os.path.isfile(file_to_upload):
     raise RuntimeError('{name}: not a file'.format(name=file_to_upload))
 
 cmd = ' '.join(['anaconda', '-t', token, 'upload', '--force',
-                '--user', 'landlab', '--channel', channel,
-                file_to_upload.decode('utf-8')])
+                '--user', 'sededu', file_to_upload.decode('utf-8')])
 
 if channel == 'main':
     try:
