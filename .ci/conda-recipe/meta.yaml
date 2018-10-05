@@ -1,10 +1,31 @@
-{% set name = "rivers2stratigraphy" %}
-{% set data = load_setup_py_data() %}
-
 package:
-  name: {{ name }}
-  version: {{ data.get('version') }}
+  name: rivers2stratigraphy
+  version: "{{ load_setup_py_data().version }}"
+
+source:
+  path: ../..
+
+requirements:
+  build:
+    - setuptools
+    - python
+    - numpy >=1.11
+    - re
+
+  run:
+    - python
+    - numpy >=1.11
+    - scipy
+    - matplotlib
+    - shapely
+
+test:
+  requires:
+    - pytest
+    - pytest-mpl
+  commands:
+    - pytest --mpl --mpl-results-path=tests/results
 
 build:
-  script_env:
-   - TRAVIS_TAG
+  number: 0
+  script: python setup.py install --single-version-externally-managed --record record.txt
