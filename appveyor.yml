@@ -59,3 +59,14 @@ build: false
 test_script:
   - py.test --mpl --mpl-results-path=tests/results
 
+after_test:
+  - cmd: pip install twine
+  - cmd: python setup.py bdist_wheel
+
+artifacts:
+  # Archive the generated conda package in the ci.appveyor.com build report.
+  - path: 'dist\*'
+
+deploy_script:
+  - cmd: python .ci/appveyor/anaconda_upload.py
+  - cmd: python .ci/appveyor/pypi_upload.py

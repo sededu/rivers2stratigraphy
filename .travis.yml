@@ -18,11 +18,10 @@ before_install:
       brew cleanup -s
       rm -rf $(brew --cache)
     fi
-  # - |
-  #   if [[ "$TRAVIS_TAG" == v* ]]; then
-  #     DEPLOY=1
-  #   fi
-  - DEPLOY=1
+  - |
+    if [[ "$TRAVIS_TAG" == v* ]]; then
+      DEPLOY=1
+    fi
 
 install:
   - echo "Build on $TRAVIS_OS_NAME for Python $TRAVIS_PYTHON_VERSION"
