@@ -25,6 +25,6 @@ test:
   commands:
     - pytest --mpl --mpl-results-path=tests/results
 
-build:
-  number: 0
-  script: python setup.py install --single-version-externally-managed --record record.txt
+# build:
+#   number: 0
+#   script: python setup.py install --single-version-externally-managed --record record.txt
