@@ -19,10 +19,10 @@ else:
 setup(
     name='rivers2stratigraphy',
     version=verstr,
-    author='Andrew J. Moodie other contributors',
+    author='Andrew J. Moodie',
     author_email='amoodie@rice.edu',
     packages=['rivers2stratigraphy'],
-    url='https://github.com/amoodie/rivers2stratigraphy',
+    url='https://github.com/sededu/rivers2stratigraphy',
     license='LICENSE.txt',
     description='educational activity for teaching how rivers become stratigraphy',
     long_description=open('README.md').read(),
@@ -42,7 +42,7 @@ setup(
         'Intended Audience :: Science/Research',
         'Topic :: Education'],
     project_urls={
-        'Bug Reports': 'https://github.com/amoodie/rivers2stratigraphy/issues',
-        'Source': 'https://github.com/amoodie/rivers2stratigraphy',
+        'Bug Reports': 'https://github.com/sededu/rivers2stratigraphy/issues',
+        'Source': 'https://github.com/sededu/rivers2stratigraphy',
     },
 )
