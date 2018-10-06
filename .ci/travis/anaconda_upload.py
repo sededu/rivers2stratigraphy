@@ -51,6 +51,7 @@ if _upload:
     expected_path = os.path.join('.ci', 'conda-build', '**',
                                  'rivers2stratigraphy*bz2')
     binary_path = glob.glob(expected_path)
+    binary_path = binary_path[0]
     if os.path.isfile(binary_path):
         print('File to upload located at:\n\t', binary_path)
     else:
