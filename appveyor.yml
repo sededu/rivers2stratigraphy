@@ -21,7 +21,6 @@ environment:
     #   CONDA_INSTALL_LOCN: C:\\Miniconda36-x64
     #   CONDA_PY: 36
 
-    # add 37 architecture run later this week, after appveyor rolls out new image.
     # - TARGET_ARCH: x86
     #   CONDA_NPY: 115
     #   CONDA_INSTALL_LOCN: C:\\Miniconda37
@@ -69,8 +68,20 @@ artifacts:
   # Archive the generated conda package in the ci.appveyor.com build report.
   - path: 'dist\*'
 
+# deploy_script:
+#   - cmd: conda install -q conda-build anaconda-client
+#   - cmd: python .ci/appveyor/anaconda_build.py
+#   - cmd: python .ci/appveyor/anaconda_upload.py
+#   - cmd: python .ci/appveyor/pypi_upload.py
+
 deploy_script:
-  - cmd: conda install -q conda-build anaconda-client
-  - cmd: python .ci/appveyor/anaconda_build.py
-  - cmd: python .ci/appveyor/anaconda_upload.py
-  - cmd: python .ci/appveyor/pypi_upload.py
+  - echo "Starting Deployment"
+  # upload conda builds to conda cloud
+  - cmd: set PATH=%PYTHON%;%PYTHON%\Scripts;%PYTHON%\Library\bin;%PATH%
+  - echo %APPVEYOR_REPO_TAG%
+  - ps: If ($env:APPVEYOR_REPO_TAG -eq "true") { $env:conda_upload = 'true' } Else { write-output "Not on a tag, won't deploy to anaconda" }
+  - cmd: IF "%conda_upload%"=="true" anaconda -t %CONDA_TOKEN% upload %PYTHON%\\conda\\win-*\\*.tar.bz2 -u sededu --no-progress --force
+
+
+notifications:
+  email: false
