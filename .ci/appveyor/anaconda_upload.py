@@ -33,7 +33,9 @@ if _upload:
     # try to locate the built file, 
     # if you can't find it, assume build failed
   
-    binary_path = glob.glob('.ci/conda-build/**/rivers2stratigraphy*bz2')
+    expected_path = os.path.join('.ci', 'conda-build', '**',
+                                 'rivers2stratigraphy*bz2')
+    binary_path = glob.glob(expected_path)
     if os.path.isfile(binary_path):
         print('File to upload located at:\n\t', binary_path)
     else:
