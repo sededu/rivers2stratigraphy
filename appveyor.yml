@@ -81,7 +81,3 @@ deploy_script:
   - echo %APPVEYOR_REPO_TAG%
   - ps: If ($env:APPVEYOR_REPO_TAG -eq "true") { $env:conda_upload = 'true' } Else { write-output "Not on a tag, won't deploy to anaconda" }
   - cmd: IF "%conda_upload%"=="true" anaconda -t %CONDA_TOKEN% upload %PYTHON%\\conda\\win-*\\*.tar.bz2 -u sededu --no-progress --force
-
-
-notifications:
-  email: false
