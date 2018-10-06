@@ -70,5 +70,5 @@ after_success:
     python .ci/travis/anaconda_build.py
     python .ci/travis/anaconda_upload.py
     python .ci/travis/pypi_build.py
-    python .ci/travis/pypi_deploy.py
+    python .ci/travis/pypi_upload.py
   fi
