@@ -40,7 +40,7 @@ if _build:
         print('Deploy to Pypi succeeded.')
     except subprocess.CalledProcessError:
         print('\n\tDeploy to PyPi failed.\n\n')
-        traceback.print_exc()
+        # traceback.print_exc()
 else:
     print('No indicators made to deploy to Pypi:')
     print('Not Deploying.......')
