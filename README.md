@@ -3,7 +3,7 @@
 
 Explore how a river becomes stratigraphy
 
-<img src="https://github.com/amoodie/rivers2stratigraphy/blob/master/private/rivers2stratigraphy_demo.gif" alt="demo_gif">
+<img src="https://github.com/sededu/rivers2stratigraphy/blob/master/private/rivers2stratigraphy_demo.gif" alt="demo_gif">
 
 
 This readme file provides an overview of the installation and setup process, as well as a brief description of the module worksheets available.
@@ -43,7 +43,7 @@ See below for detailed instructions on installing `rivers2stratigraphy` for your
 If you installed Anaconda Python or Miniconda, you can follow the instructions below for your operating system. 
 Otherwise see the instructions for PyPi installation below.
 
-__Please__ [open an issue](https://github.com/amoodie/rivers2stratigraphy/issues) if you encounter any troubles installing or any error messages along the way! 
+__Please__ [open an issue](https://github.com/sededu/rivers2stratigraphy/issues) if you encounter any troubles installing or any error messages along the way! 
 Please include 1) operating system, 2) installation method, and 3) copy-paste the error.
 
 
@@ -106,7 +106,7 @@ Alternatively, run the module with provided script (this is the hook used for la
 python3 <path-to-installation>run_rivers2stratigraphy.py
 ```
 
-Please [open an issue](https://github.com/amoodie/rivers2stratigraphy/issues) if you encounter any additional error messages! 
+Please [open an issue](https://github.com/sededu/rivers2stratigraphy/issues) if you encounter any additional error messages! 
 Please include 1) operating system, 2) installation method, and 3) copy-paste the error.
 
 
@@ -121,18 +121,18 @@ This module is under ongoing development to improve stability and features and o
 The module also requires occasional maintenance due to dependency updates.
 If you are interested in contributing to the code-base please see below for instructions.
 
-If you are interested in contributing to the accompanying worksheets/activities (which would be greatly appreciated!) please see [Writing Activities for SedEdu](https://github.com/amoodie/sededu/blob/develop/docs/writing_activities.md)
+If you are interested in contributing to the accompanying worksheets/activities (which would be greatly appreciated!) please see [Writing Activities for SedEdu](https://github.com/sededu/sededu/blob/develop/docs/writing_activities.md)
 
 
 #### Download the source code
 
-You can download this entire repository as a `.zip` by clicking the "Clone or download button on this page", or by [clicking here](https://github.com/amoodie/rivers2stratigraphy/archive/master.zip) to get a `.zip` folder.
+You can download this entire repository as a `.zip` by clicking the "Clone or download button on this page", or by [clicking here](https://github.com/sededu/rivers2stratigraphy/archive/master.zip) to get a `.zip` folder.
 Unzip the folder in your preferred location.
 
 If you have installed `git` and are comfortable working with it, you can simply clone the repository to your preferred location.
 
 ```
-git clone https://github.com/amoodie/rivers2stratigraphy.git
+git clone https://github.com/sededu/rivers2stratigraphy.git
 ```
 
 Open a pull request when you want a review or some comments!

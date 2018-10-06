@@ -66,8 +66,9 @@ after_success:
   if [[ "$DEPLOY" == "1" ]]; then
     echo "DEPLOY = TRUE; building and uploading to Anaconda Cloud and Pypi"
     conda install -q conda-build anaconda-client
+    pip3 install twine wheel
     python .ci/travis/anaconda_build.py
     python .ci/travis/anaconda_upload.py
-    bash .ci/travis/pypi_build.sh
-    bash .ci/travis/pypi_build.sh
+    python .ci/travis/pypi_build.py
+    python .ci/travis/pypi_deploy.py
   fi
