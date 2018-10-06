@@ -10,8 +10,7 @@ repo_tag = os.environ.get('APPVEYOR_REPO_TAG', 'false')
 tag_name = os.environ.get('APPVEYOR_REPO_TAG_NAME', '')
 token = os.environ.get('CONDA_TOKEN', 'NOT_A_TOKEN')
 repo_branch = os.environ.get('APPVEYOR_REPO_BRANCH', '')
-repo_branch = os.environ.get('APPVEYOR_PULL_REQUEST_NUMBER', '')
-
+pull_request_num = os.environ.get('APPVEYOR_PULL_REQUEST_NUMBER', '')
 
 if repo_tag == 'true' and tag_name.startswith('v'):
     # print('Tag made for release:')
@@ -19,13 +18,16 @@ if repo_tag == 'true' and tag_name.startswith('v'):
     _upload = True
     channel = 'main'
     # os.environ['BUILD_STR'] = ''
-elif repo_branch == 'master' and not APPVEYOR_PULL_REQUEST_NUMBER:
+elif repo_branch == 'master' and not pull_request_num:
     # if($env:APPVEYOR_REPO_BRANCH -eq "master" -and !$env:APPVEYOR_PULL_REQUEST_NUMBER)
     # print('Commit made to master, and not PR:')
     print('Uploading to "dev" channel......')
     _upload = True
     channel = 'dev'
     # os.environ['BUILD_STR'] = 'dev'
+elif pull_request_num:
+    print('Build is for a PR, not deploying.....')
+    _upload = False
 else:
     _upload = False
 

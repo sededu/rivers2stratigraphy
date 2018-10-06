@@ -79,5 +79,5 @@ on_success:
   # Python script handles check on tags
   - python .ci\appveyor\anaconda_build.py
   - python .ci\appveyor\anaconda_upload.py
-  - python .ci\appveyor\pypi_build.py
-  - python .ci\appveyor\pypi_upload.py
+  # - python .ci\appveyor\pypi_build.py
+  # - python .ci\appveyor\pypi_upload.py

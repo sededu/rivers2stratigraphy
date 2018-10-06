@@ -23,7 +23,7 @@ before_install:
       DEPLOY=1
     fi
   - |
-    if [[ "TRAVIS_BRANCH" == "master" ]]; then
+    if [[ "$TRAVIS_BRANCH" == "master" ]]; then
       DEPLOY=1
     fi
 

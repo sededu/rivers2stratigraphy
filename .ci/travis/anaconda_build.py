@@ -25,6 +25,9 @@ elif repo_branch == 'master' and not is_pull_request:
     _build = True
     channel = 'dev'
     # os.environ['BUILD_STR'] = 'dev'
+elif is_pull_request:
+    print('Build is for a PR, not building.....')
+    _build = False
 else:
     _build = False
 
