@@ -11,6 +11,13 @@ token = os.environ.get('CONDA_TOKEN', 'NOT_A_TOKEN')
 repo_branch = os.environ.get('TRAVIS_BRANCH', '')
 is_pull_request = os.environ.get('TRAVIS_PULL_REQUEST', 'false')
 
+if is_pull_request == 'false':
+    is_pull_request = False
+elif is_pull_request == 'true':
+    is_pull_request = True
+else:
+    raise RuntimeError('{val} defined for "is_pull_request"'.format(name=val))
+
 print("ENVIRONMENTAL VARIABLES:")
 print("\t$TRAVIS_TAG = ", tag_name)
 print("\t$TRAVIS_BRANCH = ", repo_branch)

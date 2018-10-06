@@ -6,7 +6,7 @@ import glob
 
 print('Using python: {prefix}'.format(prefix=sys.prefix))
 
-repo_tag = os.environ.get('APPVEYOR_REPO_TAG', 'false')
+repo_tag = os.environ.get('APPVEYOR_REPO_TAG', '')
 tag_name = os.environ.get('APPVEYOR_REPO_TAG_NAME', '')
 token = os.environ.get('CONDA_TOKEN', 'NOT_A_TOKEN')
 repo_branch = os.environ.get('APPVEYOR_REPO_BRANCH', '')
@@ -16,7 +16,7 @@ print("ENVIRONMENTAL VARIABLES:")
 print("\t$APPVEYOR_REPO_TAG = ", repo_tag)
 print("\t$APPVEYOR_REPO_TAG_NAME = ", tag_name)
 print("\t$APPVEYOR_REPO_BRANCH = ", repo_branch)
-print("\t$APPVEYOR_PULL_REQUEST_NUMBER = ", is_pull_request)
+print("\t$APPVEYOR_PULL_REQUEST_NUMBER = ", pull_request_num)
 
 
 if repo_tag == 'true' and tag_name.startswith('v'):
