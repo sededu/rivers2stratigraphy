@@ -1,0 +1,11 @@
+{
+  "rivers2stratigraphy-0.3.0-py36_0.tar.bz2": {
+    "activate.d": false,
+    "binary_prefix": false,
+    "deactivate.d": false,
+    "post_link": false,
+    "pre_link": false,
+    "pre_unlink": false,
+    "text_prefix": false
+  }
+}

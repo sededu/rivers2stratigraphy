@@ -4,6 +4,7 @@
 
     conda install conda-build anaconda-client
 	conda build .ci/conda-recipe/ --output-folder .ci/conda-build/ --no-test
+	exit 0
 
 } || { # catch
 

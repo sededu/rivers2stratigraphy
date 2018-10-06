@@ -10,6 +10,8 @@ requirements:
     - setuptools
     - python
     - numpy >=1.11
+    - matplotlib
+    - shapely
 
   run:
     - python
@@ -26,6 +28,8 @@ test:
   commands:
     - pytest --mpl --mpl-results-path=tests/results
 
-# build:
-#   number: 0
-#   script: python setup.py install --single-version-externally-managed --record record.txt
+build:
+  number: 0
+  # we don't define the build script here, 
+  # but instead use the bld.bat and build.sh scripts
+  # script: SEE SCRIPTS
