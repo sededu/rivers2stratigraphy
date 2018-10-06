@@ -22,6 +22,10 @@ before_install:
     if [[ "$TRAVIS_TAG" == v* ]]; then
       DEPLOY=1
     fi
+  - |
+    if [[ "TRAVIS_BRANCH" == "master" ]]; then
+      DEPLOY=1
+    fi
 
 install:
   - echo "Build on $TRAVIS_OS_NAME for Python $TRAVIS_PYTHON_VERSION"
@@ -60,8 +64,8 @@ after_success:
 - |
   if [[ "$DEPLOY" == "1" ]]; then
     echo "DEPLOY = TRUE; building and uploading to Anaconda Cloud and Pypi"
-    bash .ci/travis/anaconda_build.sh
-    bash .ci/travis/anaconda_upload.sh
+    bash .ci/travis/anaconda_build.py
+    bash .ci/travis/anaconda_upload.py
     bash .ci/travis/pypi_build.sh
     bash .ci/travis/pypi_build.sh
   fi

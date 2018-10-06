@@ -6,20 +6,19 @@ import glob
 
 print('Using python: {prefix}'.format(prefix=sys.prefix))
 
-repo_tag = os.environ.get('APPVEYOR_REPO_TAG', 'false')
-tag_name = os.environ.get('APPVEYOR_REPO_TAG_NAME', '')
+tag_name = os.environ.get('TRAVIS_TAG', 'false')
 token = os.environ.get('CONDA_TOKEN', 'NOT_A_TOKEN')
-repo_branch = os.environ.get('APPVEYOR_REPO_BRANCH', '')
-pull_request_num = os.environ.get('APPVEYOR_PULL_REQUEST_NUMBER', '')
+repo_branch = os.environ.get('TRAVIS_BRANCH', '')
+is_pull_request = os.environ.get('TRAVIS_PULL_REQUEST', 'false')
 
 
-if repo_tag == 'true' and tag_name.startswith('v'):
+if tag_name and tag_name.startswith('v'):
     print('Tag made for release:')
     print('Building for "main" channel......')
     _build = True
     channel = 'main'
     # os.environ['BUILD_STR'] = ''
-elif repo_branch == 'master' and not pull_request_num:
+elif repo_branch == 'master' and not is_pull_request:
     # if($env:APPVEYOR_REPO_BRANCH -eq "master" -and !$env:APPVEYOR_PULL_REQUEST_NUMBER)
     print('Commit made to master, and not PR:')
     print('Building for "dev" channel......')

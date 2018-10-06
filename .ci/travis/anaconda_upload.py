@@ -6,23 +6,22 @@ import glob
 
 print('Using python: {prefix}'.format(prefix=sys.prefix))
 
-repo_tag = os.environ.get('APPVEYOR_REPO_TAG', 'false')
-tag_name = os.environ.get('APPVEYOR_REPO_TAG_NAME', '')
+tag_name = os.environ.get('TRAVIS_TAG', 'false')
 token = os.environ.get('CONDA_TOKEN', 'NOT_A_TOKEN')
-repo_branch = os.environ.get('APPVEYOR_REPO_BRANCH', '')
-repo_branch = os.environ.get('APPVEYOR_PULL_REQUEST_NUMBER', '')
+repo_branch = os.environ.get('TRAVIS_BRANCH', '')
+is_pull_request = os.environ.get('TRAVIS_PULL_REQUEST', 'false')
 
 
-if repo_tag == 'true' and tag_name.startswith('v'):
-    # print('Tag made for release:')
-    print('Uploading to "main" channel......')
+if tag_name and tag_name.startswith('v'):
+    print('Tag made for release:')
+    print('Uploading for "main" channel......')
     _upload = True
     channel = 'main'
     # os.environ['BUILD_STR'] = ''
-elif repo_branch == 'master' and not APPVEYOR_PULL_REQUEST_NUMBER:
+elif repo_branch == 'master' and not is_pull_request:
     # if($env:APPVEYOR_REPO_BRANCH -eq "master" -and !$env:APPVEYOR_PULL_REQUEST_NUMBER)
-    # print('Commit made to master, and not PR:')
-    print('Uploading to "dev" channel......')
+    print('Commit made to master, and not PR:')
+    print('Uploading for "dev" channel......')
     _upload = True
     channel = 'dev'
     # os.environ['BUILD_STR'] = 'dev'
