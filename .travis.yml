@@ -21,6 +21,7 @@ before_install:
   - |
     if [[ "$TRAVIS_TAG" == v* ]]; then
       DEPLOY=1
+      RELEASE=1
     fi
   - |
     if [[ "$TRAVIS_BRANCH" == "master" ]]; then

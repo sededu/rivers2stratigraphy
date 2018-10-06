@@ -4,10 +4,11 @@
 TRAVIS_TAG=$TRAVIS_TAG
 TRAVIS_BRANCH=$TRAVIS_BRANCH
 
-echo "Tag is... $TRAVIS_TAG"
-echo "Branch name is... $TRAVIS_BRANCH"
+if [[ "$RELEASE" == "1" ]]; then
+  echo "RELEASE = 1"
+  echo "Tag is... $TRAVIS_TAG"
+  echo "Branch name is... $TRAVIS_BRANCH"
 
-if [[ "$DEPLOY" == "1" ]]; then
   echo "Installing deployment requirements."
   pip3 install twine wheel
   if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
@@ -18,6 +19,7 @@ if [[ "$DEPLOY" == "1" ]]; then
     python setup.py bdist_wheel
   fi
 else
+  echo "RELEASE != 1"
   echo "Not deploying."
   echo "Tag is... $TRAVIS_TAG"
   echo "Branch name is... $TRAVIS_BRANCH"

@@ -59,7 +59,7 @@ if _upload:
 
     cmd = ' '.join(['anaconda', '-t', token, 'upload', '--force',
                     '--user', 'sededu', '--channel', channel,
-                    binary_path.decode('utf-8')])
+                    binary_path])
 
     try:
         print('Uploading to Anaconda Cloud with command:\n\t',

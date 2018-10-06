@@ -45,14 +45,15 @@ if _upload:
     expected_path = os.path.join('.ci', 'conda-build', '**',
                                  'rivers2stratigraphy*bz2')
     binary_path = glob.glob(expected_path)
-    if os.path.isfile(binary_path[0]):
-        print('File to upload located at:\n\t', binary_path[0])
+    binary_path = binary_path[0]
+    if os.path.isfile(binary_path):
+        print('File to upload located at:\n\t', binary_path)
     else:
-        raise RuntimeError('{name}: not a file'.format(name=binary_path[0]))
+        raise RuntimeError('{name}: not a file'.format(name=binary_path))
 
     cmd = ' '.join(['anaconda', '-t', token, 'upload', '--force',
                     '--user', 'sededu', '--channel', channel,
-                    binary_path.decode('utf-8')])
+                    binary_path])
 
     try:
         print('Uploading to Anaconda Cloud with command:\n\t',
