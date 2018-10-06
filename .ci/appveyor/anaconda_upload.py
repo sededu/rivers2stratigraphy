@@ -56,8 +56,6 @@ if _upload:
                     binary_path])
 
     try:
-        print('Uploading to Anaconda Cloud with command:\n\t',
-              cmd)
         subprocess.check_call(cmd, shell=True)
     except subprocess.CalledProcessError:
         traceback.print_exc()
