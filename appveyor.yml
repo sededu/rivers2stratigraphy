@@ -1,25 +1,25 @@
 environment:
 
   matrix:
-    - TARGET_ARCH: x86
-      CONDA_NPY: 115
-      CONDA_INSTALL_LOCN: C:\\Miniconda35
-      CONDA_PY: 35
+    # - TARGET_ARCH: x86
+    #   CONDA_NPY: 115
+    #   CONDA_INSTALL_LOCN: C:\\Miniconda35
+    #   CONDA_PY: 35
 
     - TARGET_ARCH: x64
       CONDA_NPY: 115
       CONDA_INSTALL_LOCN: C:\\Miniconda35-x64
       CONDA_PY: 35
 
-    - TARGET_ARCH: x86
-      CONDA_NPY: 115
-      CONDA_INSTALL_LOCN: C:\\Miniconda36
-      CONDA_PY: 36
+    # - TARGET_ARCH: x86
+    #   CONDA_NPY: 115
+    #   CONDA_INSTALL_LOCN: C:\\Miniconda36
+    #   CONDA_PY: 36
 
-    - TARGET_ARCH: x64
-      CONDA_NPY: 115
-      CONDA_INSTALL_LOCN: C:\\Miniconda36-x64
-      CONDA_PY: 36
+    # - TARGET_ARCH: x64
+    #   CONDA_NPY: 115
+    #   CONDA_INSTALL_LOCN: C:\\Miniconda36-x64
+    #   CONDA_PY: 36
 
     # add 37 architecture run later this week, after appveyor rolls out new image.
     # - TARGET_ARCH: x86
@@ -35,7 +35,9 @@ environment:
 platform:
   - x64
 
-os: Previous Visual Studio 2015
+os: 
+  - Visual Studio 2015
+  - Visual Studio 2017
 
 init:
   - "ECHO %CONDA_INSTALL_LOCN% %CONDA_PY% %HOME% %PLATFORM%"
@@ -47,11 +49,11 @@ install:
   - cmd: set PYTHONUNBUFFERED=1
   - cmd: conda info
   - cmd: conda config --set always_yes yes
-  - cmd: conda update conda
+  - cmd: conda update -q conda
   - cmd: conda create -q -n test-environment python=%PYTHON_VERSION%
   - cmd: activate test-environment
-  - cmd: conda install numpy scipy matplotlib shapely pytest
-  - cmd: conda install -c conda-forge pytest-mpl
+  - cmd: conda install -q numpy scipy matplotlib shapely pytest
+  - cmd: conda install -q -c conda-forge pytest-mpl
   - cmd: conda list
 
 build: false
@@ -68,6 +70,7 @@ artifacts:
   - path: 'dist\*'
 
 deploy_script:
-  - cmd: conda install conda-build anaconda-client
+  - cmd: conda install -q conda-build anaconda-client
+  - cmd: python .ci/appveyor/anaconda_build.py
   - cmd: python .ci/appveyor/anaconda_upload.py
   - cmd: python .ci/appveyor/pypi_upload.py

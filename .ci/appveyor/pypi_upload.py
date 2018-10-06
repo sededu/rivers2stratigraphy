@@ -17,7 +17,7 @@ if repo_tag == 'true' and tag_name.startswith('v'):
     print('Uploading to PyPI')
 
     try:
-        cmd = ' '.join(['twine', 'upload', '-u', 'mcflugen', '-p', token,
+        cmd = ' '.join(['twine', 'upload', '-u', 'amoodie', '-p', token,
                         'dist/*'])
         resp = subprocess.check_output(cmd, shell=True)
     except subprocess.CalledProcessError:

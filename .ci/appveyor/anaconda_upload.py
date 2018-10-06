@@ -35,11 +35,13 @@ print('Uploading to {channel} channel'.format(channel=channel))
 try:
     cmd = ' '.join(['conda', 'build', '.ci/conda-recipe/', '--output-folder', '.ci/conda-build/', '--no-test'])
     resp = subprocess.check_output(cmd, shell=True)
+    print("resp:", resp)
 except subprocess.CalledProcessError:
     traceback.print_exc()
 else:
     file_to_upload = resp.strip().split()[-1]
     # file_to_upload = resp.strip().split(os.linesep.encode('utf-8'))[-1]
+
 
 (dirname, filename) = os.path.split(file_to_upload)
 try:
