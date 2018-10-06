@@ -1,5 +1,5 @@
 # rivers2stratigraphy
-[![Build Status](https://travis-ci.org/amoodie/rivers2stratigraphy.svg?branch=master)](https://travis-ci.org/amoodie/rivers2stratigraphy) [![Build status](https://ci.appveyor.com/api/projects/status/9twedak77iixanb7/branch/master?svg=true)](https://ci.appveyor.com/project/amoodie/rivers2stratigraphy/branch/master)
+[![Build Status](https://travis-ci.org/sededu/rivers2stratigraphy.svg?branch=master)](https://travis-ci.org/sededu/rivers2stratigraphy) [![Build status](https://ci.appveyor.com/api/projects/status/9twedak77iixanb7/branch/master?svg=true)](https://ci.appveyor.com/project/amoodie/rivers2stratigraphy/branch/master)
 
 Explore how a river becomes stratigraphy
 
@@ -8,7 +8,7 @@ Explore how a river becomes stratigraphy
 
 This readme file provides an overview of the installation and setup process, as well as a brief description of the module worksheets available.
 
-This repository is also linked into the [SedEdu suite of education modules](https://github.com/amoodie/sededu), and can be accessed there as well.
+This repository is also linked into the [SedEdu suite of education modules](https://github.com/sededu/sededu), and can be accessed there as well.
 
 
 
@@ -31,9 +31,9 @@ If you do not have storage space on your machine for Anaconda or wish to install
 
 1. Visit the website for Anaconda https://www.anaconda.com/download/ and select the installer for your operating system.
 __Be sure to select the Python 3.x installation.__
-1. Start the installer.
-1. If prompted, select to "install just for me", unless you know what you are doing.
-1. When prompted to add Anaconda to the path during installation, select _yes_ if you __know__ you do not have any other Python installed on your computer; otherwise select _no_.
+2. Start the installer.
+3. If prompted, select to "install just for me", unless you know what you are doing.
+4. When prompted to add Anaconda to the path during installation, select _yes_ if you __know__ you do not have any other Python installed on your computer; otherwise select _no_.
 
 See below for detailed instructions on installing `rivers2stratigraphy` for your operating system.
 
@@ -51,12 +51,12 @@ Please include 1) operating system, 2) installation method, and 3) copy-paste th
 
 1. Open your "start menu" and search for the "Anaconda prompt"; start this application.
 
-1. Install with the module type the following command and hit "enter":
+2. Install with the module type the following command and hit "enter":
 ```
 conda install -c amoodie rivers2stratigraphy
 ```
 If asked to proceed, type `Y` and press "enter" to continue installation. 
-1. This process may take a few minutes as the necessary source code is downloaded.
+3. This process may take a few minutes as the necessary source code is downloaded.
 If the installation succeeds, proceed below to the "Run the module" section.
 
 __Note on permissions:__ you may need to run as administrator on Windows.
@@ -73,7 +73,7 @@ On Ubuntu this is done with `sudo apt install python3-tk`.
 conda install -c amoodie rivers2stratigraphy
 ```
 If asked to proceed, type `Y` and press enter to continue installation.
-1. This process may take a few minutes as the necessary source code is downloaded.
+2. This process may take a few minutes as the necessary source code is downloaded.
 If the installation succeeds, proceed below to the "Run the module" section.
 
 __Note on permissions:__ you may need to use `sudo` on OSX and Linux.
@@ -91,7 +91,7 @@ See below instructions for downloading the source code if you wish to be able to
 ### Run the module
 
 1. Open a Python shell by typing `python` (or `python3`) at the terminal (OSX and Linux users) or at the Conda or Command Prompt (Windows users).
-1. Run the module from the Python shell with:
+2. Run the module from the Python shell with:
 ```
 import rivers2stratigraphy
 ```
@@ -103,7 +103,7 @@ rivers2stratigraphy.run()
 
 Alternatively, run the module with provided script (this is the hook used for launching from SedEdu):
 ```
-python3 <path-to-installation>/run_rivers2stratigraphy.py
+python3 <path-to-installation>run_rivers2stratigraphy.py
 ```
 
 Please [open an issue](https://github.com/amoodie/rivers2stratigraphy/issues) if you encounter any additional error messages! 
