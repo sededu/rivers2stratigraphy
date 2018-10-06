@@ -25,7 +25,6 @@ if repo_tag == 'true' and tag_name.startswith('v'):
     channel = 'main'
     # os.environ['BUILD_STR'] = ''
 elif repo_branch == 'master' and not pull_request_num:
-    # if($env:APPVEYOR_REPO_BRANCH -eq "master" -and !$env:APPVEYOR_PULL_REQUEST_NUMBER)
     print('Commit made to master, and not PR:')
     print('Building for "dev" channel......')
     _build = True
