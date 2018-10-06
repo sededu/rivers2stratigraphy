@@ -11,6 +11,11 @@ token = os.environ.get('CONDA_TOKEN', 'NOT_A_TOKEN')
 repo_branch = os.environ.get('TRAVIS_BRANCH', '')
 is_pull_request = os.environ.get('TRAVIS_PULL_REQUEST', 'false')
 
+print("ENVIRONMENTAL VARIABLES:")
+print("\t$TRAVIS_TAG = ", tag_name)
+print("\t$TRAVIS_BRANCH = ", repo_branch)
+print("\t$TRAVIS_PULL_REQUEST = ", is_pull_request)
+
 
 if tag_name and tag_name.startswith('v'):
     print('Tag made for release:')

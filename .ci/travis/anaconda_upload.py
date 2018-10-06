@@ -11,6 +11,11 @@ token = os.environ.get('CONDA_TOKEN', 'NOT_A_TOKEN')
 repo_branch = os.environ.get('TRAVIS_BRANCH', '')
 is_pull_request = os.environ.get('TRAVIS_PULL_REQUEST', 'false')
 
+print("ENVIRONMENTAL VARIABLES:")
+print("\t$TRAVIS_TAG = ", tag_name)
+print("\t$TRAVIS_BRANCH = ", repo_branch)
+print("\t$TRAVIS_PULL_REQUEST = ", is_pull_request)
+
 
 if tag_name and tag_name.startswith('v'):
     print('Tag made for release:')
@@ -25,6 +30,9 @@ elif repo_branch == 'master' and not is_pull_request:
     _upload = True
     channel = 'dev'
     # os.environ['BUILD_STR'] = 'dev'
+elif is_pull_request:
+    print('Build is for a PR, not deploying.....')
+    _upload = False
 else:
     _upload = False
 
@@ -32,7 +40,9 @@ if _upload:
     # try to locate the built file, 
     # if you can't find it, assume build failed
   
-    binary_path = glob.glob('.ci/conda-build/**/rivers2stratigraphy*bz2')
+    expected_path = os.path.join('.ci', 'conda-build', '**',
+                                 'rivers2stratigraphy*bz2')
+    binary_path = glob.glob(expected_path)
     if os.path.isfile(binary_path):
         print('File to upload located at:\n\t', binary_path)
     else:
