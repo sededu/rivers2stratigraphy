@@ -64,8 +64,8 @@ after_success:
 - |
   if [[ "$DEPLOY" == "1" ]]; then
     echo "DEPLOY = TRUE; building and uploading to Anaconda Cloud and Pypi"
-    bash .ci/travis/anaconda_build.py
-    bash .ci/travis/anaconda_upload.py
+    python .ci/travis/anaconda_build.py
+    python .ci/travis/anaconda_upload.py
     bash .ci/travis/pypi_build.sh
     bash .ci/travis/pypi_build.sh
   fi
