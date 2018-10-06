@@ -18,6 +18,7 @@ print("\t$APPVEYOR_REPO_TAG_NAME = ", tag_name)
 print("\t$APPVEYOR_REPO_BRANCH = ", repo_branch)
 print("\t$APPVEYOR_PULL_REQUEST_NUMBER = ", pull_request_num)
 
+
 if repo_tag == 'true' and tag_name.startswith('v'):
     print('Tag made for release:')
     print('Building for "main" channel......')
