@@ -73,6 +73,7 @@ On Ubuntu this is done with `sudo apt install python3-tk`.
 conda install -c sededu rivers2stratigraphy
 ```
 If asked to proceed, type `Y` and press enter to continue installation.
+
 2. This process may take a few minutes as the necessary source code is downloaded.
 If the installation succeeds, proceed below to the "Run the module" section.
 
