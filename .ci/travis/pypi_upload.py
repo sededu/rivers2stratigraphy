@@ -21,19 +21,19 @@ else:
 if tag_name and tag_name.startswith('v'):
     print('Tag made for release:')
     print('Uploading to Pypi')
-    _build = True
+    _upload = True
     channel = 'main'
 elif repo_branch == 'master' and not is_pull_request:
     print('Commit made to master, and not PR:')
     print('Not uploading to Pypi.')
-    _build = False
+    _upload = False
 elif is_pull_request:
     print('Build is for a PR, not uploading to Pypi.')
-    _build = False
+    _upload = False
 else:
-    _build = False
+    _upload = False
 
-if _build:
+if _upload:
     try:
         cmd = 'twine upload -u amoodie -p{0} dist/*'.format(pypi_pass)
         response = subprocess.check_output(cmd, shell=True)
