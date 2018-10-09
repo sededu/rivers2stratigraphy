@@ -1,5 +1,12 @@
 # rivers2stratigraphy
-[![Build Status](https://travis-ci.org/sededu/rivers2stratigraphy.svg?branch=master)](https://travis-ci.org/sededu/rivers2stratigraphy) [![Build status](https://ci.appveyor.com/api/projects/status/9twedak77iixanb7/branch/master?svg=true)](https://ci.appveyor.com/project/amoodie/rivers2stratigraphy/branch/master)
+
+[![Build Status](https://travis-ci.org/sededu/rivers2stratigraphy.svg?branch=master)](https://travis-ci.org/sededu/rivers2stratigraphy) 
+[![Build status](https://ci.appveyor.com/api/projects/status/9twedak77iixanb7/branch/master?svg=true)](https://ci.appveyor.com/project/amoodie/rivers2stratigraphy/branch/master)
+
+[![GitHub version](https://badge.fury.io/gh/sededu%2Frivers2stratigraphy.svg)](https://badge.fury.io/gh/sededu%2Frivers2stratigraphy)
+[![Anaconda-Server Badge](https://anaconda.org/sededu/rivers2stratigraphy/badges/version.svg)](https://anaconda.org/sededu/rivers2stratigraphy)
+[![PyPI version](https://badge.fury.io/py/rivers2stratigraphy.svg)](https://badge.fury.io/py/rivers2stratigraphy)
+[![Anaconda-Server Badge](https://anaconda.org/sededu/rivers2stratigraphy/badges/platforms.svg)](https://anaconda.org/sededu/rivers2stratigraphy)
 
 Explore how a river becomes stratigraphy
 
