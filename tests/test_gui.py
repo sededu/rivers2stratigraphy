@@ -8,19 +8,19 @@ import numpy as np
 import matplotlib
 
 
-def test_get_matplotlib_backend():
+# def test_get_matplotlib_backend():
 
-    ans = matplotlib.get_backend()
-    platType = platform.system()
+#     ans = matplotlib.get_backend()
+#     platType = platform.system()
 
-    if platType in {'Linux'}:
-        assert ans in {'Qt5Agg', 'Qt4Agg'}
+#     if platType in {'Linux'}:
+#         assert ans in {'Qt5Agg', 'Qt4Agg'}
 
-    elif platType in {'Darwin'}:
-        assert ans in {'Qt5Agg', 'MacOSX'}
+#     elif platType in {'Darwin'}:
+#         assert ans in {'Qt5Agg', 'MacOSX'}
 
-    elif platType in {'Windows'}:
-        assert ans in {'Qt5Agg', 'Qt4Agg'}
+#     elif platType in {'Windows'}:
+#         assert ans in {'Qt5Agg', 'Qt4Agg'}
 
 
 
