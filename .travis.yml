@@ -49,6 +49,8 @@ install:
   - source activate test-environment
   - conda install -q numpy scipy matplotlib shapely pytest pyqt
   - conda install -q -c conda-forge pytest-mpl
+  - conda install -q conda-build anaconda-client
+  - pip install twine wheel
   - hash -r
 
 before_script:
@@ -65,9 +67,6 @@ after_success:
 - |
   if [[ "$BUILD" == "1" ]]; then
     echo "BUILD = TRUE; building and uploading to Anaconda Cloud and Pypi"
-    conda install -q conda-build anaconda-client
-    pip install twine wheel
-    conda config --set anaconda_upload no
     python .ci/travis/anaconda_build_upload.py
     python .ci/travis/pypi_build_upload.py
   fi
