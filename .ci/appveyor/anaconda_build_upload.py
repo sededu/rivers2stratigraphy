@@ -30,10 +30,10 @@ print("\t$APPVEYOR_PULL_REQUEST_NUMBER = ", pull_request_num)
 if repo_tag == 'true' and tag_name.startswith('v'):
     # if tag exists and name begins with a 'v' it is for release to main
     print('\nTag made for release: {tag}'.format(tag=tag_name))
-    print('Building and deploying to "main" and "dev" channels.')
+    print('Building and deploying to "main" and "dev" labels.')
     _build = True
     _upload = True
-    channels = ['main', 'dev']
+    labels = ['main', 'dev']
 elif repo_branch == 'master' and not pull_request_num:
     # if the branch is master and it's been merged (i.e., not a PR),
     # deploy it to dev channel only
@@ -41,21 +41,21 @@ elif repo_branch == 'master' and not pull_request_num:
     print('Building and deploying to "dev" channel.')
     _build = True
     _upload = True
-    channels = ['dev']
+    labels = ['dev']
 elif pull_request_num:
     # don't do anything if this is a pull request
     print('\nTrigger is a PR.')
     print('Not building or deploying.')
     _build = False
     _upload = False
-    channels = []
+    labels = []
 else:
     # not sure what this is...don't do anything
     print('\nTrigger is unspecified type.')
     print('Not building or deploying.')
     _build = False
     _upload = False
-    channels = []
+    labels = []
 
 # if _build, build it
 if _build:
@@ -89,21 +89,27 @@ if _build and _upload:
         raise RuntimeError('{name}: not a file'.format(name=binary_path))
         sys.exit(1)
 
-    # for each channel, upload the build
-    for chn in iter(channels):
-        
-        cmd = ' '.join(['anaconda', '-t', token, 'upload', '--force',
-                        '--user', 'sededu', '--channel', chn,
-                        binary_path])
+    # for each label add a label flag
+    label_args = ''
+    labels_str = ''
+    for label in iter(labels):
+        label_args = label_args + ' '.join([' --label', label])
+        labels_str = labels_str + ''.join([label, ', '])
+    labels_str = labels_str[:-2] # clip off last comma and space
 
-        try:
-            subprocess.check_call(cmd, shell=True)
-            print('Upload succeeded to {channel}'
-                  ' for file:\n\t{file}'.format(channel=chn, 
-                                               file=binary_path))
-        except subprocess.CalledProcessError:
-            raise RuntimeError('Upload failed to {channel}'
-                               ' for file:\n\t{file}'.format(channel=chn, 
-                                                             file=binary_path))
-            traceback.print_exc()
-            sys.exit(1)
+    # upload the file
+    cmd = ' '.join(['anaconda', '-t', 'tok', 'upload', '--force',
+                    '--user', 'sededu', label_args,
+                    'binary_path'])
+
+    try:
+        subprocess.check_call(cmd, shell=True)
+        print('Upload succeeded to {channel}'
+              ' for file:\n\t{file}'.format(channel=labels_str, 
+                                           file=binary_path))
+    except subprocess.CalledProcessError:
+        raise RuntimeError('Upload failed to {channel}'
+                           ' for file:\n\t{file}'.format(channel=labels_str, 
+                                                         file=binary_path))
+        traceback.print_exc()
+        sys.exit(1)
