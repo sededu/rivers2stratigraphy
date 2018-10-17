@@ -20,12 +20,11 @@ before_install:
     fi
   - |
     if [[ "$TRAVIS_TAG" == v* ]]; then
-      BUILD=1
-      RELEASE=1
+      CIBUILD=1
     fi
   - |
     if [[ "$TRAVIS_BRANCH" == "master" ]]; then
-      BUILD=1
+      CIBUILD=1
     fi
 
 install:
@@ -49,8 +48,6 @@ install:
   - source activate test-environment
   - conda install -q numpy scipy matplotlib shapely pytest pyqt
   - conda install -q -c conda-forge pytest-mpl
-  - conda install -q conda-build anaconda-client
-  - pip install twine wheel
   - hash -r
 
 before_script:
@@ -64,9 +61,10 @@ script:
   - pytest --mpl --mpl-results-path=tests/results
 
 after_success:
-- |
-  if [[ "$BUILD" == "1" ]]; then
-    echo "BUILD = TRUE; building and uploading to Anaconda Cloud and Pypi"
-    python .ci/travis/anaconda_build_upload.py
-    python .ci/travis/pypi_build_upload.py
-  fi
+  - |
+    if [[ "$CIBUILD" == "1" ]]; then
+      conda install -q conda-build anaconda-client
+      pip install twine wheel
+    fi
+  - python .ci/travis/anaconda_build_upload.py
+  - python .ci/travis/pypi_build_upload.py
