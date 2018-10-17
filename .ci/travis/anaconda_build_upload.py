@@ -70,7 +70,7 @@ if _build:
     try:
         cmd = ' '.join(['conda', 'build', os.path.join('.ci', 'conda-recipe'),
                         '--output-folder', os.path.join('.ci', 'conda-build'),
-                        '--no-test'])
+                        '--no-test', '--no-anaconda-upload'])
         response = subprocess.check_output(cmd, shell=True)
         print('\nBuild succeeded.')
     except subprocess.CalledProcessError:
@@ -105,11 +105,11 @@ if _build and _upload:
         try:
             subprocess.check_call(cmd, shell=True)
             print('Upload succeeded to {channel}'
-                  'for file:\n\t{file}'.format(channel=channel, 
+                  'for file:\n\t{file}'.format(channel=chn, 
                                                file=binary_path))
         except subprocess.CalledProcessError:
             raise RuntimeError('Upload failed to {channel}'
-                               ' for file:\n\t{file}'.format(channel=channel, 
+                               ' for file:\n\t{file}'.format(channel=chn, 
                                                              file=binary_path))
             traceback.print_exc()
             sys.exit(1)
