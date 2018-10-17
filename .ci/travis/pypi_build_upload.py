@@ -15,6 +15,7 @@ print('Using python: {prefix}\n'.format(prefix=sys.prefix))
 tag_name = os.environ.get('TRAVIS_TAG', '')
 repo_branch = os.environ.get('TRAVIS_BRANCH', '')
 is_pull_request = os.environ.get('TRAVIS_PULL_REQUEST', 'false')
+pypi_pass = os.environ.get('PYPI_PASS', 'NOT_A_PASS')
 
 # process them to python bools
 if is_pull_request == 'false':

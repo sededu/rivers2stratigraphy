@@ -99,7 +99,7 @@ if _build and _upload:
         try:
             subprocess.check_call(cmd, shell=True)
             print('Upload succeeded to {channel}'
-                  'for file:\n\t{file}'.format(channel=chn, 
+                  ' for file:\n\t{file}'.format(channel=chn, 
                                                file=binary_path))
         except subprocess.CalledProcessError:
             raise RuntimeError('Upload failed to {channel}'
