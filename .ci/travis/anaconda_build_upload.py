@@ -105,7 +105,7 @@ if _build and _upload:
     labels_str = labels_str[:-2] # clip off last comma and space
 
     # upload the file
-    cmd = ' '.join(['anaconda', '-t', 'tok', 'upload', '--force',
+    cmd = ' '.join(['anaconda', '-t', token, 'upload', '--force',
                     '--user', 'sededu', label_args,
                     binary_path])
 
