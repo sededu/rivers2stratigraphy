@@ -107,7 +107,7 @@ if _build and _upload:
     # upload the file
     cmd = ' '.join(['anaconda', '-t', 'tok', 'upload', '--force',
                     '--user', 'sededu', label_args,
-                    'binary_path'])
+                    binary_path])
 
     try:
         subprocess.check_call(cmd, shell=True)
