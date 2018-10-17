@@ -108,6 +108,10 @@ Instructions will indicate to use the following command to then run the module:
 rivers2stratigraphy.run()
 ```
 
+Alternatively, you can do this in one line from the standard terminal with:
+```
+python -c "import rivers2stratigraphy; rivers2stratigraphy.run()"
+```
 
 Alternatively, run the module with provided script (this is the hook used for launching from SedEdu):
 ```

@@ -77,8 +77,4 @@ on_success:
   # Python scripts handle check on tags
   - cmd: pip install twine
   - cmd: conda install conda-build anaconda-client
-  - python .ci\appveyor\anaconda_build.py
-  - python .ci\appveyor\anaconda_upload.py
-  # no need since sdist
-  # - python .ci\appveyor\pypi_build.py 
-  # - python .ci\appveyor\pypi_upload.py
+  - python .ci\appveyor\anaconda_build_upload.py
