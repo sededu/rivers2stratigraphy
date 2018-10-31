@@ -67,7 +67,7 @@ if _build:
         print('\nBuild succeeded.')
     except subprocess.CalledProcessError:
         print('\nBuild failed.')
-        # traceback.print_exc()
+        traceback.print_exc()
         raise RuntimeError('Building for anaconda failed with command:'
                            '\n\t{cmd}'.format(cmd=cmd))
         sys.exit(1)
@@ -111,5 +111,5 @@ if _build and _upload:
         raise RuntimeError('Upload failed to {channel}'
                            ' for file:\n\t{file}'.format(channel=labels_str, 
                                                          file=binary_path))
-        traceback.print_exc()
+        # traceback.print_exc()
         sys.exit(1)
