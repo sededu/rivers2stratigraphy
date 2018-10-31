@@ -103,7 +103,7 @@ if _build and _upload:
                     binary_path])
 
     try:
-        subprocess.check_call(cmd, shell=True)
+        upld_call = subprocess.check_call(cmd, shell=True)
         print('Upload succeeded to {channel}'
               ' for file:\n\t{file}'.format(channel=labels_str, 
                                            file=binary_path))
