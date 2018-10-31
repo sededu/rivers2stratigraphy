@@ -38,6 +38,10 @@ os:
   # - Visual Studio 2015
   - Visual Studio 2017
 
+environment:
+  CONDA_TOKEN:
+    secure: NSNXrNECi6Dg8l47eL8SkUf/z4jG6HEKJ29hhDh4Df9sRJFAx0GOXmQL0lGjziZq
+
 init:
   - "ECHO %CONDA_INSTALL_LOCN% %CONDA_PY% %HOME% %PLATFORM%"
   - "ECHO %APPVEYOR_REPO_BRANCH%"
