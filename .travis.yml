@@ -67,5 +67,6 @@ after_success:
       conda install -q conda-build anaconda-client
       pip install twine wheel
     fi
+  - coveralls
   - python .ci/travis/anaconda_build_upload.py
   - python .ci/travis/pypi_build_upload.py
