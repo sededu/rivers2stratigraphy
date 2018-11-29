@@ -59,7 +59,7 @@ before_script:
   - sleep 15 # give xvfb some time to start
 
 script:
-  - pytest --mpl --mpl-results-path=tests/results --cov=sededu/
+  - pytest --mpl --mpl-results-path=tests/results --cov=rivers2stratigraphy/
 
 after_success:
   - |
