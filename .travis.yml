@@ -45,7 +45,7 @@ install:
   - conda info -a
 
   # Create new env and install deps
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy scipy matplotlib shapely pytest=3.8.1 pyqt pytest-mpl
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy scipy matplotlib shapely pytest=3.8.1 pyqt pytest-mpl pytest-cov coveralls
   - source activate test-environment
   # - conda install -q numpy scipy matplotlib shapely pytest=3.8.1 pyqt
   # - conda install -q -c conda-forge pytest-mpl
@@ -59,7 +59,7 @@ before_script:
   - sleep 15 # give xvfb some time to start
 
 script:
-  - pytest --mpl --mpl-results-path=tests/results
+  - pytest --mpl --mpl-results-path=tests/results --cov=rivers2stratigraphy/
 
 after_success:
   - |
@@ -67,5 +67,6 @@ after_success:
       conda install -q conda-build anaconda-client
       pip install twine wheel
     fi
+  - coveralls
   - python .ci/travis/anaconda_build_upload.py
   - python .ci/travis/pypi_build_upload.py
