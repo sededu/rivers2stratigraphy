@@ -1,7 +1,7 @@
 {
     "title": "Rivers to Stratigraphy",
     "author": "Andrew J. Moodie",
-    "version": "0.3.16",
+    "version": "0.3.17",
     "shortdesc": "Explore how a migrating river becomes stratigraphy",
     "difficulty": 7,
     "license": "MIT",
@@ -9,8 +9,5 @@
     "projreadme": ["README.md"],
     "preview": ["private", "rivers2stratigraphy_demo.png"],
     "exec": ["run_rivers2stratigraphy.py"],
-    "docloc": ["docs"],
-    "doclist": {
-    	"blankdoc.txt": "A blank textfile"
-    }
+    "docloc": ["docs"]
 }
