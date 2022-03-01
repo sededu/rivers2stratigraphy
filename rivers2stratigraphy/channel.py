@@ -82,13 +82,13 @@ class ChannelBody(object):
             # same method for all
             stateSeriesConvexHull = []
             for i, j in zip(stateBoxes[1:], stateBoxes[:-1]):
-                seriesUnionTemp = so.cascaded_union([i, j])
+                seriesUnionTemp = so.unary_union([i, j])
                 stateSeriesConvexHull.append(seriesUnionTemp.convex_hull)
-            stateUnion = so.cascaded_union(stateSeriesConvexHull)
-            self.polygonAsArray = np.asarray(stateUnion.exterior)
+            stateUnion = so.unary_union(stateSeriesConvexHull)
+            self.polygonAsArray = np.asarray(stateUnion.exterior.coords)
         elif self.conversionFlag == "diff":
             # different methods for polygon and multipolygon
-            stateUnion = so.cascaded_union(stateBoxes) # try so.cascaded_union(stateBoxes[::2]) for speed?
+            stateUnion = so.unary_union(stateBoxes)  # try so.unary_union(stateBoxes[::2]) for speed?
             # if type is polygon
             uniontype = stateUnion.geom_type
             if uniontype == 'Polygon':
@@ -96,14 +96,12 @@ class ChannelBody(object):
             elif uniontype == 'MultiPolygon':
                 stateSeriesConvexHull = []
                 for i, j in zip(stateBoxes[1:], stateBoxes[:-1]):
-                    seriesUnionTemp = so.cascaded_union([i, j])
+                    seriesUnionTemp = so.unary_union([i, j])
                     stateSeriesConvexHull.append(seriesUnionTemp.convex_hull)
-                stateUnion = so.cascaded_union(stateSeriesConvexHull)
-                self.polygonAsArray = np.asarray(stateUnion.exterior)
+                stateUnion = so.unary_union(stateSeriesConvexHull)
+                self.polygonAsArray = np.asarray(stateUnion.exterior.coords)
         else:
             raise ValueError("invalid conversionFlag in ChannelBody")
-
-        
 
         self.polygonXs = self.polygonAsArray[:,0]
         self.polygonYs = self.polygonAsArray[:,1]

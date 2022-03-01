@@ -1,12 +1,10 @@
 # rivers2stratigraphy
 
-[![Build Status](https://travis-ci.org/sededu/rivers2stratigraphy.svg?branch=master)](https://travis-ci.org/sededu/rivers2stratigraphy) 
-[![Build status](https://ci.appveyor.com/api/projects/status/9twedak77iixanb7/branch/master?svg=true)](https://ci.appveyor.com/project/amoodie/rivers2stratigraphy/branch/master)
+[![Build Status](https://github.com/sededu/rivers2stratigraphy/actions/workflows/test.yml/badge.svg)](https://github.com/sededu/rivers2stratigraphy/actions/workflows/test.yml)
 
 [![GitHub version](https://badge.fury.io/gh/sededu%2Frivers2stratigraphy.svg)](https://badge.fury.io/gh/sededu%2Frivers2stratigraphy)
 [![Anaconda-Server Badge](https://anaconda.org/sededu/rivers2stratigraphy/badges/version.svg)](https://anaconda.org/sededu/rivers2stratigraphy)
 [![PyPI version](https://badge.fury.io/py/rivers2stratigraphy.svg)](https://badge.fury.io/py/rivers2stratigraphy)
-[![Anaconda-Server Badge](https://anaconda.org/sededu/rivers2stratigraphy/badges/platforms.svg)](https://anaconda.org/sededu/rivers2stratigraphy)
 
 Explore how a river becomes stratigraphy
 
@@ -129,8 +127,7 @@ You can get [Python and pip together here](https://www.python.org/downloads/).
 
 ## Development
 
-This module is under ongoing development to improve stability and features and optimize performance.
-The module also requires occasional maintenance due to dependency updates.
+The module requires occasional maintenance due to dependency updates.
 If you are interested in contributing to the code-base please see below for instructions.
 
 If you are interested in contributing to the accompanying worksheets/activities (which would be greatly appreciated!) please see [Writing Activities for SedEdu](https://github.com/sededu/sededu/blob/develop/docs/writing_activities.md)

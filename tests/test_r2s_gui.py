@@ -23,8 +23,6 @@ import matplotlib
 #         assert ans in {'Qt5Agg', 'Qt4Agg'}
 
 
-
-@pytest.mark.mpl_image_compare(baseline_dir='figs_baseline')
 def test_launch_fig():
 
     from rivers2stratigraphy.gui import GUI
@@ -33,8 +31,6 @@ def test_launch_fig():
     return gui.fig
 
 
-
-@pytest.mark.mpl_image_compare(baseline_dir='figs_baseline')
 def test_line_into_strat_ax():
 
     from rivers2stratigraphy.gui import GUI
@@ -46,8 +42,6 @@ def test_line_into_strat_ax():
     return gui.fig
 
 
-
-@pytest.mark.mpl_image_compare(baseline_dir='figs_baseline')
 def test_change_Qw_slider():
 
     from rivers2stratigraphy.gui import GUI
@@ -59,8 +53,6 @@ def test_change_Qw_slider():
     return gui.fig
 
 
-
-@pytest.mark.mpl_image_compare(baseline_dir='figs_baseline')
 def test_change_sig_slider():
 
     from rivers2stratigraphy.gui import GUI
@@ -72,8 +64,6 @@ def test_change_sig_slider():
     return gui.fig
 
 
-
-@pytest.mark.mpl_image_compare(baseline_dir='figs_baseline')
 def test_change_Ta_slider():
 
     from rivers2stratigraphy.gui import GUI
@@ -85,8 +75,6 @@ def test_change_Ta_slider():
     return gui.fig
 
 
-
-@pytest.mark.mpl_image_compare(baseline_dir='figs_baseline')
 def test_change_yView_slider():
 
     from rivers2stratigraphy.gui import GUI
@@ -98,8 +86,6 @@ def test_change_yView_slider():
     return gui.fig
 
 
-
-@pytest.mark.mpl_image_compare(baseline_dir='figs_baseline')
 def test_change_Bb_slider():
 
     from rivers2stratigraphy.gui import GUI
@@ -111,7 +97,6 @@ def test_change_Bb_slider():
     return gui.fig
 
 
-@pytest.mark.mpl_image_compare(baseline_dir='figs_baseline')
 def test_change_rad_col():
 
     from rivers2stratigraphy.gui import GUI
@@ -123,8 +108,6 @@ def test_change_rad_col():
     return gui.fig
 
 
-
-@pytest.mark.mpl_image_compare(baseline_dir='figs_baseline')
 def test_reset_sliders_button_image():
 
     from rivers2stratigraphy.gui import GUI
@@ -141,8 +124,6 @@ def test_reset_sliders_button_image():
     return gui.fig
 
 
-
-@pytest.mark.mpl_image_compare(baseline_dir='figs_baseline', tolerance=20)
 def test_gui_convert_to_channel_body_call():
 
     from rivers2stratigraphy.gui import GUI
@@ -159,8 +140,6 @@ def test_gui_convert_to_channel_body_call():
     return gui.fig
 
 
-
-@pytest.mark.mpl_image_compare(baseline_dir='figs_baseline')
 def test_reset_strat_button_image():
 
     from rivers2stratigraphy.gui import GUI

@@ -92,7 +92,7 @@ class GUI(object):
         plt.rcParams['toolbar'] = 'None'
         plt.rcParams['figure.figsize'] = 8, 6
         self.fig, self.strat_ax = plt.subplots()
-        self.fig.canvas.set_window_title('SedEdu -- rivers2stratigraphy')
+        self.fig.canvas.manager.set_window_title('SedEdu -- rivers2stratigraphy')
         plt.subplots_adjust(left=0.085, bottom=0.1, top=0.95, right=0.5)
         self.strat_ax.set_xlabel("channel belt (km)")
         self.strat_ax.set_ylabel("stratigraphy (m)")
