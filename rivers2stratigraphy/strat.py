@@ -79,7 +79,8 @@ class Strat(object):
 
             else:
                 # once an avulsion has occurred:
-                self.channelBodyList.append( ChannelBody(self.activeChannel) )
+                cb = ChannelBody(self.activeChannel)
+                self.channelBodyList.append(cb)
                 self.avul_num += 1
                 self.color = True
 
