@@ -69,7 +69,7 @@ __Note on permissions:__ you may need to run as administrator on Windows.
 
 #### Mac OSX and Linux users
 
-__Linux users:__ you will need to also install `tkinter` before trying to install the module below package through `conda` or `pip3`.
+__Linux users:__ you will need to also install `tkinter` before trying to install the module below package through `conda` or `pip`.
 On Ubuntu this is done with `sudo apt install python3-tk`.
 <!-- Windows and Mac distributions should come with `python3-tk` installed. -->
 
@@ -88,7 +88,7 @@ __Note on permissions:__ you may need to use `sudo` on OSX and Linux.
 #### Advanced user installations
 To install with `pip` from Pypi use (not recommended for entry-level users):
 ```
-pip3 install pyqt rivers2stratigraphy
+pip install rivers2stratigraphy
 ```
 
 See below instructions for downloading the source code if you wish to be able to modify the source code for development or for exploration.
@@ -113,7 +113,7 @@ python -c "import rivers2stratigraphy; rivers2stratigraphy.run()"
 
 Alternatively, run the module with provided script (this is the hook used for launching from SedEdu):
 ```
-python3 <path-to-installation>run_rivers2stratigraphy.py
+python <path-to-installation>run_rivers2stratigraphy.py
 ```
 
 Please [open an issue](https://github.com/sededu/rivers2stratigraphy/issues) if you encounter any additional error messages! 
