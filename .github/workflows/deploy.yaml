@@ -28,3 +28,39 @@ jobs:
       run: |
         python setup.py sdist bdist_wheel
         twine upload dist/*
+
+  deploy-conda:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout rivers2stratigraphy
+      uses: actions/checkout@v2
+    - name: Setup conda
+      uses: s-weigand/setup-conda@v1
+      with:
+        update-conda: true
+        python-version: '3.9'
+        conda-channels: anaconda, conda-forge
+    - name: Install Python dependencies
+      run: |
+        conda install scipy numpy matplotlib shapely
+        conda install conda-build anaconda-client
+    - name: Conda info
+      run: |
+        conda info
+        conda list
+
+    - name: Build conda package
+      run: |
+        conda build .github/conda-recipe --output-folder .github/conda-build --no-test --no-anaconda-upload
+    - name: Convert conda package
+      run: |
+        conda convert -p osx-64 linux-64/*.tar.bz2
+        conda convert -p win-64 linux-64/*.tar.bz2
+    - name: Deploy conda package
+      env:
+        ANACONDA_API_TOKEN: ${{ secrets.ANACONDA_TOKEN }}
+      run: |
+        anaconda upload --user sededu --label main .github/conda-build/linux-64/*.tar.bz2
+        anaconda upload --user sededu --label main .github/conda-build/osx-64/*.tar.bz2
+        anaconda upload --user sededu --label main .github/conda-build/win-64/*.tar.bz2

@@ -18,7 +18,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install pytest pytest-mpl pytest-cov coveralls
+        pip install pytest pytest-cov coveralls
         pip install scipy numpy matplotlib shapely
     
     - name: Install rivers2stratigraphy
