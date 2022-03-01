@@ -17,8 +17,7 @@ def test_single_strat_call():
     gui.strat(i=0)
 
     assert len(gui.strat.activeChannelPatches) == 2
-    assert not gui.strat.channelBodyList # list is empty
-
+    assert not gui.strat.channelBodyList  # list is empty
 
 
 def test_convert_active_channel_to_channel_body():
@@ -35,8 +34,6 @@ def test_convert_active_channel_to_channel_body():
     assert len(gui.strat.channelBodyList) == 1
 
 
-
-@pytest.mark.mpl_image_compare(baseline_dir='figs_baseline')
 def test_gui_strat_call():
 
     from rivers2stratigraphy.gui import GUI
@@ -52,8 +49,6 @@ def test_gui_strat_call():
     return gui.fig
 
 
-
-@pytest.mark.mpl_image_compare(baseline_dir='figs_baseline')
 def test_gui_convert_to_channel_body_call():
 
     from rivers2stratigraphy.gui import GUI
